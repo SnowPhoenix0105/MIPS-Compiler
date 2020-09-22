@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "../Develop/LexicalAnalyzer.h"
+#include "../Develop/compile_controller.h"
 #include <string>
+#include <sstream>
 #include <vector>
 #include <functional>
 
@@ -10,6 +12,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using std::string;
 using std::vector;
 using std::wstring;
+using std::ostream;
+
 
 namespace Microsoft {
 	namespace VisualStudio {
@@ -80,6 +84,95 @@ namespace LexicalAnalyzerTest
 					if (s == SymbolType::identifier) Assert::AreEqual(string("while1"), a.get_content());
 					if (s == SymbolType::number) Assert::AreEqual(5, std::atoi(a.get_content().c_str()));
 				});
+		}
+
+		TEST_METHOD(SimpleStringTest2)
+		{
+			string test_case = 
+				"coNst int cONst1 = 001, const2 = -100;"
+				"const char const3 = \'_\';"
+				"int change1;"
+				"char change3;"
+				"int gets1(int var1, int var2) {"
+				"	change1 = var1 + var2;"
+				"	return (change1);"
+				"}"
+				"void main() {"
+					"printf(\"Hello World\");"
+					"printf(gets1(10, 20));"
+				"}";
+			string expect_answer =
+				"CONSTTK coNst\n"
+				"INTTK int\n"
+				"IDENFR cONst1\n"
+				"ASSIGN =\n"
+				"INTCON 001\n"
+				"COMMA ,\n"
+				"IDENFR const2\n"
+				"ASSIGN =\n"
+				"MINU -\n"
+				"INTCON 100\n"
+				"SEMICN ;\n"
+				"CONSTTK const\n"
+				"CHARTK char\n"
+				"IDENFR const3\n"
+				"ASSIGN =\n"
+				"CHARCON _\n"
+				"SEMICN;\n"
+				"INTTK int\n"
+				"IDENFR change1\n"
+				"SEMICN;\n"
+				"CHARTK char\n"
+				"IDENFR change3\n"
+				"SEMICN;\n"
+				"INTTK int\n"
+				"IDENFR gets1\n"
+				"LPARENT (\n"
+				"INTTK int\n"
+				"IDENFR var1\n"
+				"COMMA ,\n"
+				"INTTK int\n"
+				"IDENFR var2\n"
+				"RPARENT )\n"
+				"LBRACE {\n"
+				"IDENFR change1\n"
+				"ASSIGN =\n"
+				"IDENFR var1\n"
+				"PLUS +\n"
+				"IDENFR var2\n"
+				"SEMICN ;\n"
+				"RETURNTK return\n"
+				"LPARENT (\n"
+				"IDENFR change1\n"
+				"RPARENT )\n"
+				"SEMICN ;\n"
+				"RBRACE }\n"
+				"VOIDTK void\n"
+				"MAINTK main\n"
+				"LPARENT (\n"
+				"RPARENT )\n"
+				"LBRACE {\n"
+				"PRINTFTK printf\n"
+				"LPARENT (\n"
+				"STRCON Hello World\n"
+				"RPARENT )\n"
+				"SEMICN ;\n"
+				"PRINTFTK printf\n"
+				"LPARENT (\n"
+				"IDENFR gets1\n"
+				"LPARENT (\n"
+				"INTCON 10\n"
+				"COMMA ,\n"
+				"INTCON 20\n"
+				"RPARENT )\n"
+				"RPARENT )\n"
+				"SEMICN ;\n"
+				"RBRACE }";
+			unique_ptr<istream> input_istream(new std::istringstream(test_case));
+			unique_ptr<ostringstream> output_ostream(new std::ostringstream());
+			unique_ptr<ostream> result(lexical_analyze(std::move(input_istream), std::move(output_ostream)));
+			string answer = static_cast<unique_ptr<ostringstream>>(result)-> str();
+			Assert::AreEqual(expect_answer, answer);
 		}
 
 		TEST_METHOD(UpperLowerTest1)

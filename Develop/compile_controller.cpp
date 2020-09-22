@@ -18,15 +18,30 @@ void start_compile(const std::string& input_file_name, const std::string& output
 	cout << "start compile" << endl;
 }
 
-void lexical_analyze(unique_ptr<istream> input_file, unique_ptr<ostream> output_file)
+unique_ptr<std::ostream> lexical_analyze(unique_ptr<istream> input_file, unique_ptr<ostream> output_file)
 {
 	LexicalAnalyzer analyzer(std::move(input_file));
 	while (analyzer.has_next())
 	{
-		*output_file << symboltype_output_dictionary.at(analyzer.next())
+		SymbolType sym = analyzer.next();
+		string content;
+		const string& origin = analyzer.get_content();
+		switch (sym)
+		{
+		case SymbolType::character:
+			content = origin[1];
+			break;
+		case SymbolType::string:
+			content = origin.substr(1, origin.size() - 1);
+			break;
+		default:
+			content = origin;
+		}
+		*output_file << symboltype_output_dictionary.at(sym)
 			<< ' '
-			<< analyzer.get_content()
+			<< content
 			<< endl;
 	}
+	return output_file;
 }
 

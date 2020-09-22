@@ -12,7 +12,7 @@
 
 void start_compile(const std::string& input_file_name, const std::string& output_file_name);
 
-void lexical_analyze(std::unique_ptr<std::istream> input_file, std::unique_ptr<std::ostream> output_file);
+std::unique_ptr<std::ostream> lexical_analyze(std::unique_ptr<std::istream> input_file, std::unique_ptr<std::ostream> output_file);
 
 #endif // !__COMPILE_CONTROLLER_H__
 
