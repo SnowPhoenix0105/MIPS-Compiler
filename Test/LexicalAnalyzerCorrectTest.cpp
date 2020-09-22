@@ -45,7 +45,7 @@ namespace LexicalAnalyzerTest
 			{
 				SymbolType::key_const,
 				SymbolType::key_int,
-				SymbolType::names,
+				SymbolType::identifier,
 				SymbolType::assign,
 				SymbolType::number,
 				SymbolType::semicolon,
@@ -56,7 +56,7 @@ namespace LexicalAnalyzerTest
 				SymbolType::left_brance,
 				SymbolType::key_if,
 				SymbolType::left_paren,
-				SymbolType::names,
+				SymbolType::identifier,
 				SymbolType::equal,
 				SymbolType::number,
 				SymbolType::right_paren,
@@ -77,9 +77,67 @@ namespace LexicalAnalyzerTest
 			LexicalAnalyzer analyzer(std::move(input_istream));
 			test(analyzer, expect_answer, [](LexicalAnalyzer& a, SymbolType s)
 				{
-					if (s == SymbolType::names) Assert::AreEqual(string("while1"), a.get_content());
+					if (s == SymbolType::identifier) Assert::AreEqual(string("while1"), a.get_content());
 					if (s == SymbolType::number) Assert::AreEqual(5, std::atoi(a.get_content().c_str()));
 				});
+		}
+
+		TEST_METHOD(UpperLowerTest1)
+		{
+			string test_case = "coNst int While1=5; void main(){if(While1==5)printf(\"success!\");else printf(\"fail!\");}\n\n";
+			vector<SymbolType> expect_answer =
+			{
+				SymbolType::key_const,
+				SymbolType::key_int,
+				SymbolType::identifier,
+				SymbolType::assign,
+				SymbolType::number,
+				SymbolType::semicolon,
+				SymbolType::key_void,
+				SymbolType::key_main,
+				SymbolType::left_paren,
+				SymbolType::right_paren,
+				SymbolType::left_brance,
+				SymbolType::key_if,
+				SymbolType::left_paren,
+				SymbolType::identifier,
+				SymbolType::equal,
+				SymbolType::number,
+				SymbolType::right_paren,
+				SymbolType::key_printf,
+				SymbolType::left_paren,
+				SymbolType::string,
+				SymbolType::right_paren,
+				SymbolType::semicolon,
+				SymbolType::key_else,
+				SymbolType::key_printf,
+				SymbolType::left_paren,
+				SymbolType::string,
+				SymbolType::right_paren,
+				SymbolType::semicolon,
+				SymbolType::right_brance
+			};
+			unique_ptr<istream> input_istream(new std::istringstream(test_case));
+			LexicalAnalyzer analyzer(std::move(input_istream));
+			test(analyzer, expect_answer, [](LexicalAnalyzer& a, SymbolType s)
+				{
+					if (s == SymbolType::key_const)
+					{
+						Assert::AreEqual(string("coNst"), a.get_content());
+						Assert::AreEqual(string("const"), a.get_lower_ident());
+					}
+					if (s == SymbolType::identifier)
+					{
+						Assert::AreEqual(string("While1"), a.get_content());
+						Assert::AreEqual(string("while1"), a.get_lower_ident());
+					}
+					if (s == SymbolType::number)
+					{
+						Assert::AreEqual(5, std::atoi(a.get_content().c_str()));
+					}
+						
+				});
+
 		}
 
 		TEST_METHOD(ComplexFileTest1)
@@ -175,7 +233,7 @@ namespace LexicalAnalyzerTest
 //#define character       SymbolType::character		// 字符
 //#define string          SymbolType::string			// 字符串
 //#define number          SymbolType::number			// 数字
-//#define names           SymbolType::names			// 其它合法标识符
+//#define identifier           SymbolType::identifier			// 其它合法标识符
 //
 //
 //#define wrong           SymbolType::wrong			// 错误

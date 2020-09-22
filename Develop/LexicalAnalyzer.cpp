@@ -1,5 +1,6 @@
 #include "LexicalAnalyzer.h"
 #include <sstream>
+#include <algorithm>
 
 
 ///////////////////////////////////////							///////////////////////////////////////
@@ -7,7 +8,7 @@
 ///////////////////////////////////////							///////////////////////////////////////
 
 LexicalAnalyzer::LexicalAnalyzer(LexicalAnalyzer&& mov) noexcept
-	:input_stream(mov.input_stream.release()), last_symbol(), last_content()
+	:input_stream(mov.input_stream.release())
 {
 	*input_stream >> std::noskipws;
 	read_until_not_space();
@@ -23,14 +24,14 @@ LexicalAnalyzer& LexicalAnalyzer::operator=(LexicalAnalyzer&& mov) noexcept
 }
 
 LexicalAnalyzer::LexicalAnalyzer(const string& input_file_name)
-	:input_stream(new std::ifstream(input_file_name)), last_symbol(), last_content()
+	:input_stream(new std::ifstream(input_file_name))
 {
 	*input_stream >> std::noskipws;
 	read_until_not_space();
 }
 
 LexicalAnalyzer::LexicalAnalyzer(unique_ptr<istream>&& input_file)
-	:input_stream(std::move(input_file)), last_symbol(), last_content()
+	:input_stream(std::move(input_file))
 {
 	*input_stream >> std::noskipws;
 	read_until_not_space();
@@ -131,17 +132,15 @@ void LexicalAnalyzer::check_name_symbol()
 	{
 		last_content.push_back(last_ch);
 	}
-	for (char& ch : last_content)
+	lower_ident.clear();
+	for (char c : last_content)
 	{
-		if (std::isupper(ch))
-		{
-			ch = std::tolower(ch);
-		}
+		lower_ident.push_back(std::tolower(c));
 	}
-	auto result = saved_key_words_dictionary.find(last_content);
+	auto result = saved_key_words_dictionary.find(lower_ident);
 	if (result == saved_key_words_dictionary.end())
 	{
-		last_symbol = SymbolType::names;
+		last_symbol = SymbolType::identifier;
 	}
 	else
 	{

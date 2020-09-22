@@ -68,7 +68,7 @@ namespace BlackboxTest
 		//TEST_CASE(fuck_you)
 	};
 
-	const string BlackboxTest::test_resource_path("D:\\Projects\\C++\\MIPS-Complier\\Test\\TestResource\\blackboc_test");
+	const string BlackboxTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\Test\\TestResource\\blackbox_test");
 	shared_ptr<string> BlackboxTest::base_result = nullptr;
 
 	// 测试一个系列: 需求的外部资源有:源文件,输入,期望输出 

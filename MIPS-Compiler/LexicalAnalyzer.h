@@ -20,6 +20,12 @@ public:
 	using std::logic_error::logic_error;
 };
 
+class TryToGetUnexistIdentException : public std::logic_error
+{
+public:
+	using std::logic_error::logic_error;
+};
+
 /// <summary>
 /// 词法分析器, 从给定的流中读取源程序并进行词法分析;
 /// 每次调用next()将分析并返回一个词(符号)的类型, 可以通过get_content()方法获得本次获得的符号的内容.
@@ -30,6 +36,7 @@ private:
 	unique_ptr<istream> input_stream;
 	SymbolType last_symbol;
 	string last_content;
+	string lower_ident;
 	int line_number = 1;
 	char last_ch = ' ';
 
@@ -126,12 +133,27 @@ public:
 	SymbolType next();
 
 	/// <summary>
-	/// 获取本次调用 next() 分析的词(符号)的内容.
+	/// 获取本次调用 next() 分析的词(符号)的原内容.
 	/// </summary>
 	/// <returns></returns>
 	const string& get_content() const
 	{
 		return last_content;
+	}
+
+	/// <summary>
+	/// 获取本次调用 next() 分析的标识符的小写版本
+	/// </summary>
+	/// <returns></returns>
+	const string& get_lower_ident()
+	{
+		if (last_symbol != SymbolType::identifier && keyword_symbol_set.find(last_symbol) == keyword_symbol_set.end())
+		{
+			throw TryToGetUnexistIdentException(
+				"try to call get_lower_ident() at a LexicalAnalyzer with get_symbol() != identifier "
+				"and get_symbol() not in keyword_symbol_set");
+		}
+		return lower_ident;
 	}
 
 	/// <summary>

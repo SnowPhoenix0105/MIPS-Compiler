@@ -37,6 +37,25 @@ const std::unordered_map<char, SymbolType> simple_symbol_dictionary =
 	{	'/'		,	SymbolType::div				}
 };
 
+const std::unordered_set<SymbolType> keyword_symbol_set =
+{
+	SymbolType::key_case,		// 关键字 case
+	SymbolType::key_char,		// 关键字 char
+	SymbolType::key_const,		// 关键字 const
+	SymbolType::key_default,	// 关键字 default
+	SymbolType::key_else,		// 关键字 else
+	SymbolType::key_for,		// 关键字 for
+	SymbolType::key_if,			// 关键字 if
+	SymbolType::key_int,		// 关键字 int
+	SymbolType::key_main,		// 关键字 main
+	SymbolType::key_printf,		// 关键字 printf
+	SymbolType::key_return,		// 关键字 return
+	SymbolType::key_scanf,		// 关键字 scanf
+	SymbolType::key_switch,		// 关键字 switch
+	SymbolType::key_void,		// 关键字 void
+	SymbolType::key_while		// 关键字 while
+};
+
 
 #ifdef DEBUG_LEVEL
 const std::unordered_map<SymbolType, wstring> symboltype_translate_dictionary =
@@ -79,7 +98,7 @@ const std::unordered_map<SymbolType, wstring> symboltype_translate_dictionary =
 	{	SymbolType::character		,		L"字符"				},
 	{	SymbolType::string			,		L"字符串"			},
 	{	SymbolType::number			,		L"数字"				},
-	{	SymbolType::names			,		L"其它合法标识符"		},
+	{	SymbolType::identifier		,		L"其它合法标识符"		},
 	{	SymbolType::wrong			,		L"错误"				}
 };
 #endif // DEBUG_LEVEL
@@ -129,7 +148,7 @@ const std::unordered_map<SymbolType, string> symboltype_output_dictionary =
 	{	SymbolType::character		,		"CHARCON"		},
 	{	SymbolType::string			,		"STRCON"		},
 	{	SymbolType::number			,		"INTCON"		},
-	{	SymbolType::names			,		"IDENFR"		},
+	{	SymbolType::identifier		,		"IDENFR"		},
 
 	{	SymbolType::wrong			,		"WRONG"			}
 };

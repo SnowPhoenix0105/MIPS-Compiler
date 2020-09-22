@@ -67,7 +67,7 @@ enum class SymbolType
 	character,		// 字符
 	string,			// 字符串
 	number,			// 数字
-	names,			// 其它合法标识符
+	identifier,		// 其它合法标识符
 
 
 
@@ -97,6 +97,7 @@ extern const std::unordered_map<SymbolType, wstring> symboltype_translate_dictio
 extern const std::unordered_map<SymbolType, string> symboltype_output_dictionary;
 #endif //HW_1
 
+extern const std::unordered_set<SymbolType> keyword_symbol_set;
 
 extern const std::unordered_map<string, SymbolType> saved_key_words_dictionary;
 
