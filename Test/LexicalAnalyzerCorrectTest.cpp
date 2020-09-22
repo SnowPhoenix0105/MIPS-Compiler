@@ -86,6 +86,49 @@ namespace LexicalAnalyzerTest
 				});
 		}
 
+		TEST_METHOD(SimpleStringTest2)
+		{
+			string test_case = "const char while1='-'; void main(){if(while1=='*')printf(\"success!\");else printf(\"fail!\");}\n\n";
+			vector<SymbolType> expect_answer =
+			{
+				SymbolType::key_const,
+				SymbolType::key_char,
+				SymbolType::identifier,
+				SymbolType::assign,
+				SymbolType::character,
+				SymbolType::semicolon,
+				SymbolType::key_void,
+				SymbolType::key_main,
+				SymbolType::left_paren,
+				SymbolType::right_paren,
+				SymbolType::left_brance,
+				SymbolType::key_if,
+				SymbolType::left_paren,
+				SymbolType::identifier,
+				SymbolType::equal,
+				SymbolType::character,
+				SymbolType::right_paren,
+				SymbolType::key_printf,
+				SymbolType::left_paren,
+				SymbolType::string,
+				SymbolType::right_paren,
+				SymbolType::semicolon,
+				SymbolType::key_else,
+				SymbolType::key_printf,
+				SymbolType::left_paren,
+				SymbolType::string,
+				SymbolType::right_paren,
+				SymbolType::semicolon,
+				SymbolType::right_brance
+			};
+			unique_ptr<istream> input_istream(new std::istringstream(test_case));
+			LexicalAnalyzer analyzer(std::move(input_istream));
+			test(analyzer, expect_answer, [](LexicalAnalyzer& a, SymbolType s)
+				{
+					if (s == SymbolType::identifier) Assert::AreEqual(string("while1"), a.get_content());
+				});
+		}
+
 		TEST_METHOD(HW_1_Test1)
 		{
 			string test_case = 
