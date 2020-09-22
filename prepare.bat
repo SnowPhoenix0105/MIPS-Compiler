@@ -1,1 +1,0 @@
-python prepare_to_release.py
