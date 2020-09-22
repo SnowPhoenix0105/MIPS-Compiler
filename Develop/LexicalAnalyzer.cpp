@@ -206,3 +206,14 @@ SymbolType LexicalAnalyzer::next()
 	read_until_not_space();
 	return last_symbol;
 }
+
+void swap(LexicalAnalyzer& a, LexicalAnalyzer& b) noexcept
+{
+	using std::swap;
+	swap(a.input_stream, b.input_stream);
+	swap(a.last_symbol, b.last_symbol);
+	swap(a.last_content, b.last_content);
+	swap(a.lower_ident, b.lower_ident);
+	swap(a.line_number, b.line_number);
+	swap(a.last_ch, b.last_ch);
+}

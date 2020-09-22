@@ -20,7 +20,7 @@ const std::unordered_map<string, SymbolType> saved_key_words_dictionary =
 };
 
 
-const std::unordered_map<char, SymbolType> simple_symbol_dictionary =
+const std::unordered_map<char, SymbolType> simple_symbol_dictionary = 
 {
 	{	':'		,	SymbolType::colon			},
 	{	','		,	SymbolType::comma			},

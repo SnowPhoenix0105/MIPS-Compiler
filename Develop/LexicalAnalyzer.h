@@ -92,6 +92,8 @@ public:
 	/// <returns></returns>
 	LexicalAnalyzer& operator=(LexicalAnalyzer&& mov) noexcept;
 
+	friend void swap(LexicalAnalyzer& a, LexicalAnalyzer& b) noexcept;
+
 
 
 	/////////////////////////// constructors //////////////////////
