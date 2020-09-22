@@ -86,7 +86,7 @@ namespace LexicalAnalyzerTest
 				});
 		}
 
-		TEST_METHOD(SimpleStringTest2)
+		TEST_METHOD(HW_1_Test1)
 		{
 			string test_case = 
 				"coNst int cONst1 = 001, const2 = -100;"
@@ -256,7 +256,7 @@ namespace LexicalAnalyzerTest
 		}
 	};
 
-	const string CorrectInputTest::test_resource_path("D:\\Projects\\C++\\Complier\\UnitTest\\TestResource");
+	const string CorrectInputTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\Test\\TestResource");
 
 	void file_test(const string& source_file_name, const vector<SymbolType>& expect_answer)
 	{
@@ -292,53 +292,3 @@ namespace LexicalAnalyzerTest
 		}
 	}
 }
-
-
-//
-//#define key_case        SymbolType::key_case		// 关键字 case
-//#define key_char        SymbolType::key_char		// 关键字 char
-//#define key_const       SymbolType::key_const		// 关键字 const
-//#define key_default     SymbolType::key_default		// 关键字 default
-//#define key_else        SymbolType::key_else		// 关键字 else
-//#define key_for         SymbolType::key_for			// 关键字 for
-//#define key_if          SymbolType::key_if			// 关键字 if
-//#define key_int         SymbolType::key_int			// 关键字 int
-//#define key_main        SymbolType::key_main		// 关键字 main
-//#define key_printf      SymbolType::key_printf		// 关键字 printf
-//#define key_return      SymbolType::key_return		// 关键字 return
-//#define key_scanf       SymbolType::key_scanf		// 关键字 scanf
-//#define key_switch      SymbolType::key_switch		// 关键字 switch
-//#define key_void        SymbolType::key_void		// 关键字 void
-//#define key_while       SymbolType::key_while		// 关键字 while
-//
-//
-//#define colon           SymbolType::colon			// 冒号 :
-//#define comma           SymbolType::comma			// 逗号 
-//#define semicolon       SymbolType::semicolon		// 分号 
-//#define left_paren      SymbolType::left_paren		// 左圆括号 (
-//#define right_paren     SymbolType::right_paren		// 右圆括号 )
-//#define left_brance     SymbolType::left_brance		// 左花括号 {
-//#define right_brance    SymbolType::right_brance	// 右花括号 }
-//#define left_square     SymbolType::left_square		// 左方括号 [
-//#define right_square    SymbolType::right_square	// 右方括号 ]
-//#define plus            SymbolType::plus			// 加号		+
-//#define minus           SymbolType::minus			// 减号		-
-//#define mult            SymbolType::mult			// 乘号		*
-//#define div             SymbolType::div				// 除号		/
-//
-//
-//#define assign          SymbolType::assign			// 赋值号	=
-//#define less            SymbolType::less			// 小于		<
-//#define greater         SymbolType::greater			// 大于		>
-//#define less_equal      SymbolType::less_equal		// 小于等于	<=
-//#define greater_equal   SymbolType::greater_equal	// 大于等于	>=
-//#define equal           SymbolType::equal			// 等于号	==
-//#define not_equal       SymbolType::not_equal		// 不等号	!=
-//
-//#define character       SymbolType::character		// 字符
-//#define string          SymbolType::string			// 字符串
-//#define number          SymbolType::number			// 数字
-//#define identifier           SymbolType::identifier			// 其它合法标识符
-//
-//
-//#define wrong           SymbolType::wrong			// 错误
