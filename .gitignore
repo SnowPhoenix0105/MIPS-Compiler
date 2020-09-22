@@ -1,0 +1,44 @@
+# Visual Studio
+.[Vv]s/
+.[Vv]scode/
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+
+# other tools
+count.bat
+*result.txt
+*assembly.asm
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
