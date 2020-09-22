@@ -18,7 +18,7 @@ email：1595763343@qq.com
 
 ## 环境
 
-使用 `Visual Studio 2019 Community` 开发，需要C++开发相关组件，采用 `Microsoft CppUnitTest` 进行单元测试和整体黑箱测试，整体黑箱测试依赖于MARS4.5，请从[MARS官网](http://courses.missouristate.edu/kenvollmar/mars/)下载 `Mars4_5.jar` 并将其置于 `Test\TestResource\blackbox_test` 文件夹下。
+使用 `Visual Studio 2019 Community` 开发，需要C++桌面开发相关组件，需要安装可选组件中的clang编译器支持, 采用 `Microsoft CppUnitTest` 进行单元测试和整体黑箱测试，整体黑箱测试依赖于MARS4.5，请从[MARS官网](http://courses.missouristate.edu/kenvollmar/mars/)下载 `Mars4_5.jar` 并将其置于 `Test\TestResource\blackbox_test` 文件夹下。
 
 ## 结构安排
 

@@ -6,11 +6,12 @@
 [Bb]uild/
 
 # other tools
-count.bat
+*.bat
 *result.txt
 *assembly.asm
 *.zip
 [Zz]ips/
+*.jar
 
 # Prerequisites
 *.d
