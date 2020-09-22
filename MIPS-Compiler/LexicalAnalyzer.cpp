@@ -79,7 +79,7 @@ void LexicalAnalyzer::check_compare_symbol(SymbolType long_type, SymbolType shor
 void LexicalAnalyzer::check_character_symbol()
 {
 	*input_stream >> last_ch;
-	if (std::isdigit(last_ch) || is_legal_alpha(last_ch) || last_ch == '*' || last_ch == '+')
+	if (std::isdigit(last_ch) || is_legal_alpha(last_ch) || last_ch == '*' || last_ch == '+' || last_ch == '-' || last_ch == '/')
 	{
 		last_content.push_back(last_ch);
 		*input_stream >> last_ch;

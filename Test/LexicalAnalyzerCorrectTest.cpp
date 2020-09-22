@@ -101,78 +101,90 @@ namespace LexicalAnalyzerTest
 					"printf(\"Hello World\");"
 					"printf(gets1(10, 20));"
 				"}";
-			string expect_answer =
-				"CONSTTK coNst\n"
-				"INTTK int\n"
-				"IDENFR cONst1\n"
-				"ASSIGN =\n"
-				"INTCON 001\n"
-				"COMMA ,\n"
-				"IDENFR const2\n"
-				"ASSIGN =\n"
-				"MINU -\n"
-				"INTCON 100\n"
-				"SEMICN ;\n"
-				"CONSTTK const\n"
-				"CHARTK char\n"
-				"IDENFR const3\n"
-				"ASSIGN =\n"
-				"CHARCON _\n"
-				"SEMICN;\n"
-				"INTTK int\n"
-				"IDENFR change1\n"
-				"SEMICN;\n"
-				"CHARTK char\n"
-				"IDENFR change3\n"
-				"SEMICN;\n"
-				"INTTK int\n"
-				"IDENFR gets1\n"
-				"LPARENT (\n"
-				"INTTK int\n"
-				"IDENFR var1\n"
-				"COMMA ,\n"
-				"INTTK int\n"
-				"IDENFR var2\n"
-				"RPARENT )\n"
-				"LBRACE {\n"
-				"IDENFR change1\n"
-				"ASSIGN =\n"
-				"IDENFR var1\n"
-				"PLUS +\n"
-				"IDENFR var2\n"
-				"SEMICN ;\n"
-				"RETURNTK return\n"
-				"LPARENT (\n"
-				"IDENFR change1\n"
-				"RPARENT )\n"
-				"SEMICN ;\n"
-				"RBRACE }\n"
-				"VOIDTK void\n"
-				"MAINTK main\n"
-				"LPARENT (\n"
-				"RPARENT )\n"
-				"LBRACE {\n"
-				"PRINTFTK printf\n"
-				"LPARENT (\n"
-				"STRCON Hello World\n"
-				"RPARENT )\n"
-				"SEMICN ;\n"
-				"PRINTFTK printf\n"
-				"LPARENT (\n"
-				"IDENFR gets1\n"
-				"LPARENT (\n"
-				"INTCON 10\n"
-				"COMMA ,\n"
-				"INTCON 20\n"
-				"RPARENT )\n"
-				"RPARENT )\n"
-				"SEMICN ;\n"
-				"RBRACE }";
+			vector<string> expect_answer =
+			{
+				"CONSTTK coNst",
+				"INTTK int",
+				"IDENFR cONst1",
+				"ASSIGN =",
+				"INTCON 001",
+				"COMMA ,",
+				"IDENFR const2",
+				"ASSIGN =",
+				"MINU -",
+				"INTCON 100",
+				"SEMICN ;",
+				"CONSTTK const",
+				"CHARTK char",
+				"IDENFR const3",
+				"ASSIGN =",
+				"CHARCON _",
+				"SEMICN ;",
+				"INTTK int",
+				"IDENFR change1",
+				"SEMICN ;",
+				"CHARTK char",
+				"IDENFR change3",
+				"SEMICN ;",
+				"INTTK int",
+				"IDENFR gets1",
+				"LPARENT (",
+				"INTTK int",
+				"IDENFR var1",
+				"COMMA ,",
+				"INTTK int",
+				"IDENFR var2",
+				"RPARENT )",
+				"LBRACE {",
+				"IDENFR change1",
+				"ASSIGN =",
+				"IDENFR var1",
+				"PLUS +",
+				"IDENFR var2",
+				"SEMICN ;",
+				"RETURNTK return",
+				"LPARENT (",
+				"IDENFR change1",
+				"RPARENT )",
+				"SEMICN ;",
+				"RBRACE }",
+				"VOIDTK void",
+				"MAINTK main",
+				"LPARENT (",
+				"RPARENT )",
+				"LBRACE {",
+				"PRINTFTK printf",
+				"LPARENT (",
+				"STRCON Hello World",
+				"RPARENT )",
+				"SEMICN ;",
+				"PRINTFTK printf",
+				"LPARENT (",
+				"IDENFR gets1",
+				"LPARENT (",
+				"INTCON 10",
+				"COMMA ,",
+				"INTCON 20",
+				"RPARENT )",
+				"RPARENT )",
+				"SEMICN ;",
+				"RBRACE }"
+			};
 			unique_ptr<istream> input_istream(new std::istringstream(test_case));
 			unique_ptr<ostringstream> output_ostream(new std::ostringstream());
-			unique_ptr<ostream> result(lexical_analyze(std::move(input_istream), std::move(output_ostream)));
-			string answer = static_cast<unique_ptr<ostringstream>>(result)-> str();
-			Assert::AreEqual(expect_answer, answer);
+			output_ostream.reset(
+				dynamic_cast<ostringstream*>(
+					lexical_analyze(std::move(input_istream), std::move(output_ostream)).release()
+				)
+			);
+			string answer = output_ostream->str();
+			std::istringstream is(answer);
+			auto it = expect_answer.cbegin();
+			while (std::getline(is, answer))
+			{
+				Assert::AreEqual(*it++, answer);
+			}
+			Assert::IsTrue(it == expect_answer.cend());
 		}
 
 		TEST_METHOD(UpperLowerTest1)

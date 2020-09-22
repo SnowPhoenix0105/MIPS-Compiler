@@ -127,7 +127,7 @@ const std::unordered_map<SymbolType, string> symboltype_output_dictionary =
 	{	SymbolType::comma			,		"COMMA"			},
 	{	SymbolType::semicolon		,		"SEMICN"		},
 	{	SymbolType::left_paren		,		"LPARENT"		},
-	{	SymbolType::right_paren		,		"TPARENT"		},
+	{	SymbolType::right_paren		,		"RPARENT"		},
 	{	SymbolType::left_brance		,		"LBRACE"		},
 	{	SymbolType::right_brance	,		"RBRACE"		},
 	{	SymbolType::left_square		,		"LBRACK"		},

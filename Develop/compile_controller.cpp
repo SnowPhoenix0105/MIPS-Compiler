@@ -32,7 +32,7 @@ unique_ptr<std::ostream> lexical_analyze(unique_ptr<istream> input_file, unique_
 			content = origin[1];
 			break;
 		case SymbolType::string:
-			content = origin.substr(1, origin.size() - 1);
+			content = origin.substr(1, origin.size() - 2);
 			break;
 		default:
 			content = origin;
