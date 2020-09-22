@@ -9,6 +9,8 @@
 count.bat
 *result.txt
 *assembly.asm
+*.zip
+[Zz]ips/
 
 # Prerequisites
 *.d
