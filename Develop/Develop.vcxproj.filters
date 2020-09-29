@@ -24,6 +24,9 @@
     <ClCompile Include="compile_controller.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="AbstractSyntaxTree.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LexicalAnalyzer.h">
@@ -36,6 +39,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="global_control.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AbstractSyntaxTree.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
