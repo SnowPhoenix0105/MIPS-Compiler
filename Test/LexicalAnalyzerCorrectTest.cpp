@@ -81,8 +81,8 @@ namespace LexicalAnalyzerTest
 			LexicalAnalyzer analyzer(std::move(input_istream));
 			test(analyzer, expect_answer, [](LexicalAnalyzer& a, SymbolType s)
 				{
-					if (s == SymbolType::identifier) Assert::AreEqual(string("while1"), a.get_content());
-					if (s == SymbolType::number) Assert::AreEqual(5, std::atoi(a.get_content().c_str()));
+					if (s == SymbolType::identifier) Assert::AreEqual(string("while1"), *a.get_content());
+					if (s == SymbolType::number) Assert::AreEqual(5, std::atoi(a.get_content()->c_str()));
 				});
 		}
 
@@ -125,7 +125,7 @@ namespace LexicalAnalyzerTest
 			LexicalAnalyzer analyzer(std::move(input_istream));
 			test(analyzer, expect_answer, [](LexicalAnalyzer& a, SymbolType s)
 				{
-					if (s == SymbolType::identifier) Assert::AreEqual(string("while1"), a.get_content());
+					if (s == SymbolType::identifier) Assert::AreEqual(string("while1"), *a.get_content());
 				});
 		}
 
@@ -271,17 +271,17 @@ namespace LexicalAnalyzerTest
 				{
 					if (s == SymbolType::key_const)
 					{
-						Assert::AreEqual(string("coNst"), a.get_content());
-						Assert::AreEqual(string("const"), a.get_lower_ident());
+						Assert::AreEqual(string("coNst"), *a.get_content());
+						Assert::AreEqual(string("const"), *a.get_lower_ident());
 					}
 					if (s == SymbolType::identifier)
 					{
-						Assert::AreEqual(string("While1"), a.get_content());
-						Assert::AreEqual(string("while1"), a.get_lower_ident());
+						Assert::AreEqual(string("While1"), *a.get_content());
+						Assert::AreEqual(string("while1"), *a.get_lower_ident());
 					}
 					if (s == SymbolType::number)
 					{
-						Assert::AreEqual(5, std::atoi(a.get_content().c_str()));
+						Assert::AreEqual(5, std::atoi(a.get_content()->c_str()));
 					}
 						
 				});

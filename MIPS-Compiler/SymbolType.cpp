@@ -37,7 +37,7 @@ const std::unordered_map<char, SymbolType> simple_symbol_dictionary =
 	{	'/'		,	SymbolType::div				}
 };
 
-const std::unordered_set<SymbolType> keyword_symbol_set =
+const std::unordered_set<SymbolType> keyword_symbol_set = 
 {
 	SymbolType::key_case,		// 关键字 case
 	SymbolType::key_char,		// 关键字 char
@@ -75,6 +75,7 @@ const std::unordered_map<SymbolType, wstring> symboltype_translate_dictionary =
 	{	SymbolType::key_switch		,		L"关键字 switch"		},
 	{	SymbolType::key_void		,		L"关键字 void"		},
 	{	SymbolType::key_while		,		L"关键字 while"		},
+
 	{	SymbolType::colon			,		L"冒号 :"			},
 	{	SymbolType::comma			,		L"逗号 ,"			},
 	{	SymbolType::semicolon		,		L"分号 ;"			},
@@ -88,17 +89,20 @@ const std::unordered_map<SymbolType, wstring> symboltype_translate_dictionary =
 	{	SymbolType::minus			,		L"减号 -"			},
 	{	SymbolType::mult			,		L"乘号 *"			},
 	{	SymbolType::div				,		L"除号 /"			},
+
 	{	SymbolType::assign			,		L"赋值号 ="			},
 	{	SymbolType::less			,		L"小于 <"			},
 	{	SymbolType::greater			,		L"大于 >"			},
-	{	SymbolType::less_equal		,		L"小于等于	<="		},
-	{	SymbolType::greater_equal	,		L"大于等于	>="		},
+	{	SymbolType::less_equal		,		L"小于等于 <="		},
+	{	SymbolType::greater_equal	,		L"大于等于 >="		},
 	{	SymbolType::equal			,		L"等于号 =="			},
 	{	SymbolType::not_equal		,		L"不等号 !="			},
+
 	{	SymbolType::character		,		L"字符"				},
 	{	SymbolType::string			,		L"字符串"			},
 	{	SymbolType::number			,		L"数字"				},
 	{	SymbolType::identifier		,		L"其它合法标识符"		},
+
 	{	SymbolType::wrong			,		L"错误"				}
 };
 #endif // DEBUG_LEVEL

@@ -10,6 +10,8 @@
 #include "SymbolType.h"
 
 using std::unique_ptr;
+using std::shared_ptr;
+using std::make_shared;
 using std::string;
 using std::istream;
 using std::ostringstream;
@@ -35,8 +37,8 @@ class LexicalAnalyzer
 private:
 	unique_ptr<istream> input_stream;
 	SymbolType last_symbol;
-	string last_content;
-	string lower_ident;
+	shared_ptr<string> last_content;
+	shared_ptr<string> lower_ident;
 	int line_number = 1;
 	char last_ch = ' ';
 
@@ -92,6 +94,8 @@ public:
 	/// <returns></returns>
 	LexicalAnalyzer& operator=(LexicalAnalyzer&& mov) noexcept;
 
+	friend void swap(LexicalAnalyzer& a, LexicalAnalyzer& b) noexcept;
+
 
 
 	/////////////////////////// constructors //////////////////////
@@ -136,7 +140,7 @@ public:
 	/// 获取本次调用 next() 分析的词(符号)的原内容.
 	/// </summary>
 	/// <returns></returns>
-	const string& get_content() const
+	shared_ptr<const string> get_content() const
 	{
 		return last_content;
 	}
@@ -145,7 +149,7 @@ public:
 	/// 获取本次调用 next() 分析的标识符的小写版本
 	/// </summary>
 	/// <returns></returns>
-	const string& get_lower_ident()
+	shared_ptr<const string> get_lower_ident()
 	{
 		if (last_symbol != SymbolType::identifier && keyword_symbol_set.find(last_symbol) == keyword_symbol_set.end())
 		{

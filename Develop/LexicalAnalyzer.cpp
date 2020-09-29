@@ -67,7 +67,7 @@ void LexicalAnalyzer::check_compare_symbol(SymbolType long_type, SymbolType shor
 	if (*input_stream >> last_ch && last_ch == '=')
 	{
 		last_symbol = long_type;
-		last_content.push_back('=');
+		last_content->push_back('=');
 		*input_stream >> last_ch;
 	}
 	else
@@ -81,11 +81,11 @@ void LexicalAnalyzer::check_character_symbol()
 	*input_stream >> last_ch;
 	if (std::isdigit(last_ch) || is_legal_alpha(last_ch) || last_ch == '*' || last_ch == '+' || last_ch == '-' || last_ch == '/')
 	{
-		last_content.push_back(last_ch);
+		last_content->push_back(last_ch);
 		*input_stream >> last_ch;
 		if (last_ch == '\'')
 		{
-			last_content.push_back('\'');
+			last_content->push_back('\'');
 			last_symbol = SymbolType::character;
 			*input_stream >> last_ch;
 			return;
@@ -100,7 +100,7 @@ void LexicalAnalyzer::check_string_symbol()
 	{
 		if (last_ch >= ' ' && last_ch <= '~')
 		{
-			last_content.push_back(last_ch);
+			last_content->push_back(last_ch);
 			if (last_ch == '\"')
 			{
 				last_symbol = SymbolType::string;
@@ -121,7 +121,7 @@ void LexicalAnalyzer::check_number_symbol()
 {
 	while (*input_stream >> last_ch && std::isdigit(last_ch))
 	{
-		last_content.push_back(last_ch);
+		last_content->push_back(last_ch);
 	}
 	last_symbol = SymbolType::number;
 }
@@ -130,14 +130,14 @@ void LexicalAnalyzer::check_name_symbol()
 {
 	while (*input_stream >> last_ch && (is_legal_alpha(last_ch) || std::isdigit(last_ch)))
 	{
-		last_content.push_back(last_ch);
+		last_content->push_back(last_ch);
 	}
-	lower_ident.clear();
-	for (char c : last_content)
+	lower_ident = make_shared<string>();
+	for (char c : *last_content)
 	{
-		lower_ident.push_back(std::tolower(c));
+		lower_ident->push_back(std::tolower(c));
 	}
-	auto result = saved_key_words_dictionary.find(lower_ident);
+	auto result = saved_key_words_dictionary.find(*lower_ident);
 	if (result == saved_key_words_dictionary.end())
 	{
 		last_symbol = SymbolType::identifier;
@@ -159,8 +159,8 @@ SymbolType LexicalAnalyzer::next()
 	{
 		throw TryToGetUnexistNextException("try to call next() at a LexicalAnalyzer with has_next() == false");
 	}
-	last_content.clear();
-	last_content.push_back(last_ch);
+	last_content = make_shared<string>();
+	last_content->push_back(last_ch);
 	switch (last_ch)
 	{
 	case '\'':
