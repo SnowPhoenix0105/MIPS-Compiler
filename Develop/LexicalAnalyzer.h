@@ -149,7 +149,7 @@ public:
 	/// 获取本次调用 next() 分析的标识符的小写版本
 	/// </summary>
 	/// <returns></returns>
-	shared_ptr<const string> get_lower_ident()
+	shared_ptr<const string> get_lower_ident() const
 	{
 		if (last_symbol != SymbolType::identifier && keyword_symbol_set.find(last_symbol) == keyword_symbol_set.end())
 		{
@@ -177,6 +177,8 @@ public:
 	{
 		return line_number;
 	}
+
+	unique_ptr<string> formated_content() const;
 };
 
 

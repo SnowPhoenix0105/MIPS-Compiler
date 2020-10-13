@@ -108,7 +108,6 @@ const std::unordered_map<SymbolType, wstring> symboltype_translate_dictionary =
 #endif // DEBUG_LEVEL
 
 
-#ifdef HW_1
 const std::unordered_map<SymbolType, string> symboltype_output_dictionary =
 {
 	{	SymbolType::key_case		,		"CASETK"		},
@@ -157,7 +156,6 @@ const std::unordered_map<SymbolType, string> symboltype_output_dictionary =
 	{	SymbolType::wrong			,		"WRONG"			}
 };
 
-#endif // HW_1
 
 
 

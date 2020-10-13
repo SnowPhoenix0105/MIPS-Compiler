@@ -207,6 +207,24 @@ SymbolType LexicalAnalyzer::next()
 	return last_symbol;
 }
 
+unique_ptr<string> LexicalAnalyzer::formated_content() const
+{
+	unique_ptr<string> ret;
+	switch (last_symbol)
+	{
+	case SymbolType::character:
+		ret.reset(new string);
+		ret->push_back((*last_content)[1]);
+		break;
+	case SymbolType::string:
+		ret.reset(new string(last_content->substr(1, last_content->size() - 2)));
+		break;
+	default:
+		ret.reset(new string(*last_content));
+	}
+	return ret;
+}
+
 void swap(LexicalAnalyzer& a, LexicalAnalyzer& b) noexcept
 {
 	using std::swap;

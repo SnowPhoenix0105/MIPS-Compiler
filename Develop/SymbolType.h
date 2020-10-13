@@ -93,9 +93,7 @@ namespace std
 extern const std::unordered_map<SymbolType, wstring> symboltype_translate_dictionary;
 #endif //DEBUG_LEVEL
 
-#ifdef HW_1
 extern const std::unordered_map<SymbolType, string> symboltype_output_dictionary;
-#endif //HW_1
 
 extern const std::unordered_set<SymbolType> keyword_symbol_set;
 

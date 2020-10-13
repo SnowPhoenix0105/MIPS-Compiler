@@ -27,6 +27,9 @@
     <ClCompile Include="AbstractSyntaxTree.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="SyntacticAnalyzer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LexicalAnalyzer.h">
@@ -42,6 +45,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="AbstractSyntaxTree.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SyntacticAnalyzer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
