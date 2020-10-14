@@ -270,7 +270,7 @@ struct StepLengthNode : IAbstractSyntaxTreeNode
 private:
 	//TODO
 public:
-	shared_ptr<SymbolUnsignedInfo> unsigned_integer;
+	shared_ptr<UnsignedToken> unsigned_integer;
 	virtual ~StepLengthNode() = default;
 	virtual string print() const;
 };

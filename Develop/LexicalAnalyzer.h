@@ -7,7 +7,9 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include "global_control.h"
 #include "SymbolType.h"
+#include "SymbolToken.h"
 
 using std::unique_ptr;
 using std::shared_ptr;
@@ -15,6 +17,7 @@ using std::make_shared;
 using std::string;
 using std::istream;
 using std::ostringstream;
+using std::dynamic_pointer_cast;
 
 class TryToGetUnexistNextException : public std::logic_error
 {
@@ -178,7 +181,9 @@ public:
 		return line_number;
 	}
 
-	unique_ptr<string> formated_content() const;
+	shared_ptr<string> formated_content() const;
+
+	shared_ptr<const Token> get_token() const;
 };
 
 
