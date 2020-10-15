@@ -13,6 +13,7 @@
 #include "SymbolType.h"
 #include "LexicalAnalyzer.h"
 #include "SymbolToken.h"
+#include "IdentifierTable.h"
 
 using std::string;
 using std::vector;
@@ -43,17 +44,20 @@ private:
 	state_t state;
 	vector<shared_ptr<const Token>> symbols;
 	vector<string> messages;
+	IdentifierTable global_table;
+	IdentifierTable local_table;
+	bool using_global_table = true;
 
 	void ensure_capacity(size_t size);
 public:
 	SyntacticAnalyzerEnvironment(unique_ptr<LexicalAnalyzer> lexical_analyzer)
-		: lexical_analyzer(std::move(lexical_analyzer)) 
+		: lexical_analyzer(std::move(lexical_analyzer))
 	{ }
 
 	state_t state() { return state; }
 
-	state_t state(const state_t& state) 
-	{ 
+	state_t state(const state_t& state)
+	{
 		state_t old = this->state;
 		this->state = state;
 		return old;
@@ -81,6 +85,71 @@ public:
 		ensure_capacity(state.sym_index);
 		push_message(symbols[state.sym_index]->to_print_string());
 		return symbols[state.sym_index++];
+	}
+
+	void change_to_local_table()
+	{
+		using_global_table = false;
+		local_table.clear();
+	}
+
+	void change_to_global_table()
+	{
+		using_global_table = true;
+	}
+
+	void insert_identifier(shared_ptr<const IdentifierInfo> id)
+	{
+		if (using_global_table)
+		{
+			global_table.insert_identifier(id);
+		}
+		else
+		{
+			local_table.insert_identifier(id);
+		}
+	}
+
+	void remove_identifier(shared_ptr<const IdentifierInfo> id)
+	{
+		if (using_global_table)
+		{
+			global_table.remove_identifier(id);
+		}
+		else
+		{
+			local_table.remove_identifier(id);
+		}
+	}
+
+	template<class T>
+	shared_ptr<const IdentifierInfo> get_identifier_info(T id, bool all=true)
+	{
+		shared_ptr<const IdentifierInfo> ret;
+		if (!using_global_table)
+		{
+			try
+			{
+				ret = local_table.get_identifier(id);
+				return ret;
+			}
+			catch (const std::out_of_range&) 
+			{ 
+				if (!all)
+				{
+					return nullptr;
+				}
+			}
+		}
+		try
+		{
+			ret = global_table.get_identifier(id);
+		}
+		catch (const std::out_of_range&) 
+		{
+			return nullptr;
+		}
+		return ret;
 	}
 
 	template<typename T>

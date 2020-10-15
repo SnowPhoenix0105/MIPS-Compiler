@@ -7,6 +7,7 @@
 #include <utility>
 #include "global_control.h"
 #include "SyntacticAnalyzer.h"
+#include "IdentifierTable.h"
 
 using std::endl;
 using std::unordered_map;
@@ -28,11 +29,18 @@ private:
 protected:
 	virtual void analyze(Env& env) = 0;
 
-	static bool in_first_set_of(
-		const std::type_info& type_id, 
-		Env& env, 
-		const initializer_list<SymbolType>& first_set
-	);
+	template<class T>
+	static bool in_first_set_of(Env& env)
+	{
+		auto it = first_sets.find(typeid(T));
+		if (it == first_sets.end())
+		{
+			first_sets[type_id] = unordered_set<SymbolType>(T::first_set);
+			it = first_sets.find(type_id);
+		}
+		const auto& set = it->second;
+		return set.find(env.peek()) != set.end();
+	}
 
 
 	template<class T>
@@ -44,25 +52,37 @@ protected:
 	template<>
 	static bool in_branch_of<VariableDefinationAnalyze>(Env& env)
 	{
-		return env.peek(2) != SymbolType::left_paren && in_first_set_of(typeid(VariableDefinationAnalyze), env, VariableDefinationAnalyze::first_set);
+		return env.peek(2) != SymbolType::left_paren && in_first_set_of<VariableDefinationAnalyze>(env);
 	}
 
 	template<>
 	static bool in_branch_of<ReturnFunctionDefinationAnalyze>(Env& env)
 	{
-		return env.peek(2) == SymbolType::left_paren && in_first_set_of(typeid(ReturnFunctionDefinationAnalyze), env, ReturnFunctionDefinationAnalyze::first_set);
+		return env.peek(2) == SymbolType::left_paren && in_first_set_of<ReturnFunctionDefinationAnalyze>(env);
 	}
 
 	template<>
 	static bool in_branch_of<VoidFunctionDefinationAnalyze>(Env& env)
 	{
-		return env.peek(1) != SymbolType::key_main && in_first_set_of(typeid(VoidFunctionDefinationAnalyze), env, VoidFunctionDefinationAnalyze::first_set);
+		return env.peek(1) != SymbolType::key_main && in_first_set_of<VoidFunctionDefinationAnalyze>(env);
 	}
 
 	template<>
 	static bool in_branch_of<MainFunctionAnalyze>(Env& env)
 	{
-		return env.peek(1) == SymbolType::key_main && in_first_set_of(typeid(MainFunctionAnalyze), env, MainFunctionAnalyze::first_set);
+		return env.peek(1) == SymbolType::key_main && in_first_set_of<MainFunctionAnalyze>(env);
+	}
+
+	template<>
+	static bool in_branch_of<VariableDefinationWithInitializationAnalyze>(Env& env)
+	{
+		return env.peek(2) == SymbolType::assign && in_first_set_of<VariableDefinationWithInitializationAnalyze>(env);
+	}
+
+	template<>
+	static bool in_branch_of<VariableDefinationNoInitializationAnalyze>(Env& env)
+	{
+		return env.peek(2) != SymbolType::assign && in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
 	}
 
 	/*
@@ -70,7 +90,7 @@ protected:
 	template<>
 	static bool in_branch_of<>(Env& env)
 	{
-		return  && in_first_set_of(typeid(), env);
+		return  && in_first_set_of<>(env);
 	}
 	
 	*/
@@ -132,6 +152,30 @@ protected:
 	virtual void analyze(Env& env);
 };
 
+// 变量定义及初始化
+struct VariableDefinationWithInitializationAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_int, SymbolType::key_char
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 变量定义无初始化
+struct VariableDefinationNoInitializationAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_int, SymbolType::key_char
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
 // 有返回值函数定义
 struct ReturnFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
@@ -176,33 +220,14 @@ struct IntegerAnalyze : AbstractSyntacticAnalyzeTactics
 		SymbolType::plus, SymbolType::minus, SymbolType::number
 	};
 
-	static const symset_ptr first_set;
-protected:
-	virtual void analyze(Env& env);
-};
-
-//
-struct : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
+	int get_value()
 	{
-		//TODO 
-	};
-
+		return value;
+	}
 protected:
 	virtual void analyze(Env& env);
-};
-
-//
-struct : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		//TODO 
-	};
-
-protected:
-	virtual void analyze(Env& env);
+private:
+	int value;
 };
 
 //
