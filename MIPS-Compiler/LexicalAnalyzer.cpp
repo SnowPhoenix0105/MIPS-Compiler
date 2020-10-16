@@ -1,4 +1,5 @@
 #include "LexicalAnalyzer.h"
+#include "SymbolToken.h"
 #include <sstream>
 #include <algorithm>
 
@@ -205,6 +206,54 @@ SymbolType LexicalAnalyzer::next()
 	// 结束时要保证 last_symbol 与 last_content 被更新, 并且 last_ch 指向下一个未被添加进 last_content 的非空字符.
 	read_until_not_space();
 	return last_symbol;
+}
+
+shared_ptr<string> LexicalAnalyzer::formated_content() const
+{
+	shared_ptr<string> ret;
+	switch (last_symbol)
+	{
+	case SymbolType::character:
+		ret.reset(new string);
+		ret->push_back((*last_content)[1]);
+		break;
+	case SymbolType::string:
+		ret.reset(new string(last_content->substr(1, last_content->size() - 2)));
+		break;
+	default:
+		ret.reset(new string(*last_content));
+	}
+	return ret;
+}
+
+shared_ptr<const Token> LexicalAnalyzer::get_token() const
+{
+	shared_ptr<Token> ret;
+	switch (last_symbol)
+	{
+	case SymbolType::character:
+		ret = make_shared<CharToken>();
+		dynamic_pointer_cast<CharToken>(ret)->char_content = last_content->at(1);
+		break;
+	case SymbolType::key_int:
+		ret = make_shared<UnsignedToken>();
+		dynamic_pointer_cast<UnsignedToken>(ret)->unsigned_content = std::stoi(*last_content);
+		break;
+	case SymbolType::string:
+		ret = make_shared<StringToken>();
+		dynamic_pointer_cast<StringToken>(ret)->string_content = last_content;
+		break;
+	case SymbolType::identifier:
+		ret = make_shared<IdentifierToken>();
+		dynamic_pointer_cast<IdentifierToken>(ret)->id_name_content = lower_ident;
+		break;
+	default:
+		ret = make_shared<Token>();
+	}
+	ret->type = last_symbol;
+	ret->print_content = formated_content();
+	ret->line_number = line_number;
+	return ret;
 }
 
 void swap(LexicalAnalyzer& a, LexicalAnalyzer& b) noexcept

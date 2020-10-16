@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef __ANSTRACT_SYNTACTIC_ANALYZER_TACTICS_H__
 #define __ANSTRACT_SYNTACTIC_ANALYZER_TACTICS_H__
@@ -73,38 +72,16 @@ protected:
 		return env.peek(1) == SymbolType::key_main && in_first_set_of<MainFunctionAnalyze>(env);
 	}
 
-	static bool is_assigned_variable(Env& env)
-	{
-		return
-			(
-				env.peek(2) == SymbolType::assign
-				|| (
-					env.peek(2) == SymbolType::left_square
-					&& (
-						env.peek(5) == SymbolType::assign
-						|| (
-							env.peek(5) == SymbolType::left_square
-							&& env.peek(8) == SymbolType::assign
-							)
-						)
-					)
-				);
-	}
-
 	template<>
 	static bool in_branch_of<VariableDefinationWithInitializationAnalyze>(Env& env)
 	{
-		return 
-			is_assigned_variable(env)
-			&& in_first_set_of<VariableDefinationWithInitializationAnalyze>(env);
+		return env.peek(2) == SymbolType::assign && in_first_set_of<VariableDefinationWithInitializationAnalyze>(env);
 	}
 
 	template<>
 	static bool in_branch_of<VariableDefinationNoInitializationAnalyze>(Env& env)
 	{
-		return
-			!is_assigned_variable(env)
-			&& in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
+		return env.peek(2) != SymbolType::assign && in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
 	}
 
 	/*
@@ -118,7 +95,7 @@ protected:
 	*/
 };
 
-// ³ÌĞò
+// ç¨‹åº
 struct ProgramAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set = 
@@ -129,7 +106,7 @@ protected:
 	void analyze(Env& env);
 };
 
-// ³£Á¿ËµÃ÷
+// å¸¸é‡è¯´æ˜
 struct ConstantDeclarationAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =  
@@ -140,7 +117,7 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// ³£Á¿¶¨Òå
+// å¸¸é‡å®šä¹‰
 struct ConstantDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set = 
@@ -151,7 +128,7 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// ±äÁ¿ËµÃ÷
+// å˜é‡è¯´æ˜
 struct VariableDeclarationAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set = 
@@ -162,7 +139,7 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// ±äÁ¿¶¨Òå
+// å˜é‡å®šä¹‰
 struct VariableDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set = 
@@ -174,7 +151,7 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// ±äÁ¿¶¨Òå¼°³õÊ¼»¯
+// å˜é‡å®šä¹‰åŠåˆå§‹åŒ–
 struct VariableDefinationWithInitializationAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
@@ -186,7 +163,7 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// ±äÁ¿¶¨ÒåÎŞ³õÊ¼»¯
+// å˜é‡å®šä¹‰æ— åˆå§‹åŒ–
 struct VariableDefinationNoInitializationAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
@@ -198,31 +175,43 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// ³£Á¿
-struct ConstantAnalyze : AbstractSyntacticAnalyzeTactics
+// æœ‰è¿”å›å€¼å‡½æ•°å®šä¹‰
+struct ReturnFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
-		SymbolType::character, SymbolType::plus, SymbolType::minus, SymbolType::number
+		SymbolType::key_int, SymbolType::key_char
 	};
-	bool is_type_of(BaseType type);
-	char get_char()
-	{
-		return ch;
-	}
-	int get_int()
-	{
-		return integer;
-	}
+
 protected:
 	virtual void analyze(Env& env);
-private:
-	bool is_ch;
-	char ch;
-	int integer;
 };
 
-// ÕûÊı
+// æ— è¿”å›å€¼å‡½æ•°å®šä¹‰
+struct VoidFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_void
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// ä¸»å‡½æ•°
+struct MainFunctionAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_void
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// æ•´æ•°
 struct IntegerAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
@@ -238,84 +227,6 @@ protected:
 	virtual void analyze(Env& env);
 private:
 	int value;
-};
-
-// ÎŞ·ûºÅÕûÊı
-struct UnsignedIntegerAnalyze : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		SymbolType::number
-	};
-
-	unsigned get_value()
-	{
-		return value;
-	}
-protected:
-	virtual void analyze(Env& env);
-private:
-	unsigned value;
-};
-
-// ÓĞ·µ»ØÖµº¯Êı¶¨Òå
-struct ReturnFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		SymbolType::key_int, SymbolType::key_char
-	};
-
-protected:
-	virtual void analyze(Env& env);
-};
-
-// ÎŞ·µ»ØÖµº¯Êı¶¨Òå
-struct VoidFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		SymbolType::key_void
-	};
-
-protected:
-	virtual void analyze(Env& env);
-};
-
-// Ö÷º¯Êı
-struct MainFunctionAnalyze : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		SymbolType::key_void
-	};
-
-protected:
-	virtual void analyze(Env& env);
-};
-
-//
-struct : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		//TODO 
-	};
-
-protected:
-	virtual void analyze(Env& env);
-};
-
-//
-struct : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		//TODO 
-	};
-
-protected:
-	virtual void analyze(Env& env);
 };
 
 //

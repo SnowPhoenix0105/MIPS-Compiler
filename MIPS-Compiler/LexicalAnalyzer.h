@@ -7,7 +7,9 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include "global_control.h"
 #include "SymbolType.h"
+#include "SymbolToken.h"
 
 using std::unique_ptr;
 using std::shared_ptr;
@@ -15,6 +17,7 @@ using std::make_shared;
 using std::string;
 using std::istream;
 using std::ostringstream;
+using std::dynamic_pointer_cast;
 
 class TryToGetUnexistNextException : public std::logic_error
 {
@@ -149,7 +152,7 @@ public:
 	/// 获取本次调用 next() 分析的标识符的小写版本
 	/// </summary>
 	/// <returns></returns>
-	shared_ptr<const string> get_lower_ident()
+	shared_ptr<const string> get_lower_ident() const
 	{
 		if (last_symbol != SymbolType::identifier && keyword_symbol_set.find(last_symbol) == keyword_symbol_set.end())
 		{
@@ -177,6 +180,10 @@ public:
 	{
 		return line_number;
 	}
+
+	shared_ptr<string> formated_content() const;
+
+	shared_ptr<const Token> get_token() const;
 };
 
 

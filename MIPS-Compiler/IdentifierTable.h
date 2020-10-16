@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef __IDENTIFIER_TABLE_H__
 #define __IDENTIFIER_TABLE_H__
@@ -23,11 +22,10 @@ enum class BaseType
 
 enum class ExternType : unsigned
 {
-	function = 0b00001, 
-	l_array	 = 0b00010,
-	d_array	 = 0b00100,
-	variable = 0b01000, 
-	constant = 0b10000
+	function = 0b0001, 
+	array	 = 0b0010, 
+	variable = 0b0100, 
+	constant = 0b1000
 };
 
 struct IdentifierType
@@ -49,25 +47,6 @@ struct IdentifierType
 	{
 		return (static_cast<unsigned>(extern_type) & (static_cast<unsigned>(t1) | static_cast<unsigned>(t2) | static_cast<unsigned>(t3))) != 0;
 	}
-
-	virtual ~IdentifierType() = default;
-};
-
-struct LinearArrayIdentifierType : IdentifierType
-{
-	int size;
-	virtual ~LinearArrayIdentifierType() = default;
-};
-
-struct DoubleDimensionalArrayIdentifierType : IdentifierType
-{
-	int size_1;
-	int size_2;
-	int total_size()
-	{
-		return size_1 * size_2;
-	}
-	virtual ~DoubleDimensionalArrayIdentifierType() = default;
 };
 
 struct IdentifierInfo
@@ -93,6 +72,24 @@ struct CharactorIdentifierInfo : ConstantIdentifierInfo
 	char value;
 	virtual ~CharactorIdentifierInfo() = default;
 };
+
+struct LinearArrayIdentifierInfo : IdentifierInfo
+{
+	int size;
+	virtual ~LinearArrayIdentifierInfo() = default;
+};
+
+struct DoubleDimensionalArrayIdentifierInfo : IdentifierInfo
+{
+	int size_1;
+	int size_2;
+	int total_size()
+	{
+		return size_1 * size_2;
+	}
+	virtual ~DoubleDimensionalArrayIdentifierInfo() = default;
+};
+
 
 class IdentifierTable
 {
