@@ -32,6 +32,7 @@ enum class ExternType : unsigned
 
 struct IdentifierType
 {
+	// 仅 extern_type == function 时, 可以为type_void
 	BaseType base_type;
 	ExternType extern_type;
 
@@ -53,21 +54,31 @@ struct IdentifierType
 	virtual ~IdentifierType() = default;
 };
 
+// extern_type == l_array
 struct LinearArrayIdentifierType : IdentifierType
 {
-	int size;
+	unsigned size;
 	virtual ~LinearArrayIdentifierType() = default;
 };
 
+// extern_type == d_array
 struct DoubleDimensionalArrayIdentifierType : IdentifierType
 {
-	int size_1;
-	int size_2;
+	unsigned size_1;
+	unsigned size_2;
 	int total_size()
 	{
 		return size_1 * size_2;
 	}
 	virtual ~DoubleDimensionalArrayIdentifierType() = default;
+};
+
+// extern_type == function
+struct FuctionIdentifierType : IdentifierType
+{
+	// 只能是 type_int / type_char
+	shared_ptr<const vector<BaseType>> param_list;
+	virtual ~FuctionIdentifierType() = default;
 };
 
 struct IdentifierInfo
@@ -77,17 +88,20 @@ struct IdentifierInfo
 	virtual ~IdentifierInfo() = default;
 };
 
+// extern_type == constant
 struct ConstantIdentifierInfo : IdentifierInfo
 {
 	virtual ~ConstantIdentifierInfo() = default;
 };
 
+// extern_type == constant && base_type == type_int
 struct IntegerIdentifierInfo : ConstantIdentifierInfo
 {
 	unsigned long value;
 	virtual ~IntegerIdentifierInfo() = default;
 };
 
+// extern_type == constant && base_type == type_char
 struct CharactorIdentifierInfo : ConstantIdentifierInfo
 {
 	char value;

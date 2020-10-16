@@ -141,8 +141,8 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 			}
 			id_info->id = id->id_name_content;
 			id_info->return_type = id_type;
-			env.insert_identifier(id_info);
 			new_ids.push_back(id_info);
+			env.insert_identifier(id_info);
 		}
 		env.push_message("<常量定义>");
 	}
@@ -380,8 +380,8 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 			return_type->base_type = base_type;
 			info->id = id->id_name_content;
 			info->return_type = return_type;
-			env.insert_identifier(info);
 			new_ids.push_back(info);
+			env.insert_identifier(info);
 		}
 		env.push_message("<变量定义及初始化>");
 	}
@@ -491,8 +491,8 @@ void VariableDefinationNoInitializationAnalyze::analyze(Env& env)
 			return_type->base_type = base_type;
 			info->id = id->id_name_content;
 			info->return_type = return_type;
-			env.insert_identifier(info);
 			new_ids.push_back(info);
+			env.insert_identifier(info);
 		}
 		env.push_message("<变量定义无初始化>");
 	}
@@ -568,4 +568,182 @@ void UnsignedIntegerAnalyze::analyze(Env& env)
 	auto token = env.dequeue_and_push_message();		// number
 	value = dynamic_pointer_cast<const UnsignedToken>(token)->unsigned_content;
 	env.push_message("<无符号整数>");
+}
+
+void analyze_inner_block(
+	AbstractSyntacticAnalyzeTactics::Env& env, 
+	shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list)
+{
+	env.change_to_local_table();
+
+	for (auto param : *param_list)
+	{
+		env.insert_identifier(param);
+	}
+
+	if (env.peek() != SymbolType::left_brance)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();						// left_brance
+
+	if (env.peek() != SymbolType::left_brance
+		&& !AbstractSyntacticAnalyzeTactics::in_branch_of<CompoundStatements>(env))
+	{
+		// TODO error
+	}
+	CompoundStatements()(env);							// 复合语句
+
+	env.change_to_global_table();
+
+	if (env.peek() != SymbolType::right_brance)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();						// right_brance
+}
+
+void analyze_function(
+	AbstractSyntacticAnalyzeTactics::Env& env,
+	shared_ptr<const string> function_id, 
+	BaseType return_type,
+	const char* information)
+{
+
+	if (env.peek() != SymbolType::left_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();						// left_paren
+
+	if (!AbstractSyntacticAnalyzeTactics::in_branch_of<ParameterListAnalyze>(env) 
+		&& env.peek() != SymbolType::right_paren)
+	{
+		// TODO error
+	}
+	ParameterListAnalyze parameter_list_analyze;
+	parameter_list_analyze(env);						// 参数表
+	shared_ptr<const vector<BaseType>> param_type_list = parameter_list_analyze.get_param_type_list();
+	auto param_list = parameter_list_analyze.get_param_list();
+
+	if (env.peek() != SymbolType::right_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();						// right_paren
+
+	// 插入符号表
+	shared_ptr<FuctionIdentifierType> id_type = make_shared<FuctionIdentifierType>();
+	id_type->base_type = return_type;
+	id_type->extern_type = ExternType::function;
+	id_type->param_type_list = param_type_list;
+	shared_ptr<IdentifierInfo> function_info = make_shared<IdentifierInfo>();
+	function_info->return_type = id_type;
+	function_info->id = function_id;
+
+	env.insert_identifier(function_info);
+	try
+	{
+		analyze_inner_block(env, param_list);
+		env.push_message(information);
+	}
+	catch (const syntax_exception&)
+	{
+		env.remove_identifier(function_info);
+		throw;
+	}
+}
+
+// 有返回值函数定义
+void ReturnFunctionDefinationAnalyze::analyze(Env& env)
+{
+	FunctionHeaderAnalyze function_header_analyze;
+	function_header_analyze(env);						// 声明头部
+	shared_ptr<const string> function_id = function_header_analyze.get_id();
+	BaseType return_type = function_header_analyze.get_return_type();
+
+	analyze_function(env, function_id, return_type, "<有返回值函数定义>");
+}
+
+// 无返回值函数定义
+void VoidFunctionDefinationAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();						// key_void
+
+	if (env.peek() != SymbolType::identifier)
+	{
+		// TODO error
+	}
+	auto token = env.dequeue_and_push_message();		// identifier
+	shared_ptr<const string> function_id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+
+	analyze_function(env, function_id, BaseType::type_void, "<无返回值函数定义>");
+}
+
+// 主函数
+void MainFunctionAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();					// key_void;
+	env.dequeue_and_push_message();					// key_main;
+	if (env.peek() != SymbolType::left_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();					// left_paren
+	if (env.peek() != SymbolType::right_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();					// right_paren
+	analyze_inner_block(env, make_shared<const vector<shared_ptr<IdentifierInfo>>>());
+	env.push_message("<主函数>");
+}
+
+// 声明头部
+void FunctionHeaderAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();						// key_char / key_int
+	return_type = env.peek() == SymbolType::key_char ? BaseType::type_char : BaseType::type_int;
+	if (env.peek() != SymbolType::identifier)
+	{
+		// TODO error
+	}
+	auto token = env.dequeue_and_push_message();		// identifier
+	id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+	env.push_message("<声明头部>");
+}
+
+shared_ptr<const vector<BaseType>> ParameterListAnalyze::get_param_type_list()
+{
+	shared_ptr<vector<BaseType>> ret = make_shared<vector<BaseType>>();
+	for (auto param : *param_list)
+	{
+		ret->push_back(param->return_type->base_type);
+	}
+	return ret;
+}
+
+// 参数表
+void ParameterListAnalyze::analyze(Env& env)
+{
+	param_list = make_shared<vector<shared_ptr<IdentifierInfo>>>();
+	while (in_first_set_of<ParameterListAnalyze>(env))
+	{
+		auto type_token = env.dequeue_and_push_message();			// key_char / key_int
+		if (env.peek() != SymbolType::identifier)
+		{
+			// TODO error
+		}
+		auto id_token = env.dequeue_and_push_message();				// identifier
+
+		shared_ptr<IdentifierType> id_type = make_shared<IdentifierType>();
+		id_type->base_type = type_token->type == SymbolType::key_char ? BaseType::type_char : BaseType::type_int;
+		id_type->extern_type = ExternType::variable;
+		shared_ptr<IdentifierInfo> id_info = make_shared<IdentifierInfo>();
+		id_info->id = dynamic_pointer_cast<IdentifierToken>(id_token)->id_name_content;
+		id_info->return_type = id_type;
+
+		param_list->push_back(id_info);
+	}
+	env.push_message("<参数表>");
 }

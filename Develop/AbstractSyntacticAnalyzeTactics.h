@@ -22,6 +22,15 @@ public:
 	using state_t = Env::state_t;
 	using symset_ptr = shared_ptr<const unordered_set<SymbolType>>;
 	using token_ptr = Env::token_ptr;
+	friend void analyze_function(
+		Env& env,
+		shared_ptr<const string> function_id,
+		BaseType return_type,
+		const char* information);
+	friend void analyze_inner_block(
+		AbstractSyntacticAnalyzeTactics::Env& env,
+		shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list);
+
 	virtual ~AbstractSyntacticAnalyzeTactics() = default;
 	void operator()(Env & env);
 private:
@@ -258,24 +267,24 @@ private:
 	unsigned value;
 };
 
-// 有返回值函数定义
-struct ReturnFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		SymbolType::key_int, SymbolType::key_char
-	};
-
-protected:
-	virtual void analyze(Env& env);
-};
-
 // 无返回值函数定义
 struct VoidFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
 		SymbolType::key_void
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 有返回值函数定义
+struct ReturnFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_int, SymbolType::key_char
 	};
 
 protected:
@@ -294,8 +303,49 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-//
-struct : AbstractSyntacticAnalyzeTactics
+// 声明头部
+struct FunctionHeaderAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_char, SymbolType::key_int
+	};
+	shared_ptr<const string> get_id()
+	{
+		return id;
+	}
+	// 只能是 type_int / type_char
+	BaseType get_return_type()
+	{
+		return return_type;
+	}
+protected:
+	virtual void analyze(Env& env);
+private:
+	shared_ptr<const string> id;
+	BaseType return_type;
+};
+
+// 参数表
+struct ParameterListAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_char, SymbolType::key_int
+	};
+	shared_ptr<const vector<BaseType>> get_param_type_list();
+	shared_ptr<const vector<shared_ptr<IdentifierInfo>>> get_param_list()
+	{
+		return param_list;
+	}
+protected:
+	virtual void analyze(Env& env);
+private:
+	shared_ptr<vector<shared_ptr<IdentifierInfo>>> param_list;
+};
+
+// 复合语句
+struct CompoundStatements : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
