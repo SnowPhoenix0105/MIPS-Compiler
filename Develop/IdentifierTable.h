@@ -77,7 +77,7 @@ struct DoubleDimensionalArrayIdentifierType : IdentifierType
 struct FuctionIdentifierType : IdentifierType
 {
 	// Ö»ÄÜÊÇ type_int / type_char
-	shared_ptr<const vector<BaseType>> param_list;
+	shared_ptr<const vector<BaseType>> param_type_list;
 	virtual ~FuctionIdentifierType() = default;
 };
 

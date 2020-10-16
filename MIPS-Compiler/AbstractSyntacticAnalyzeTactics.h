@@ -21,6 +21,15 @@ public:
 	using state_t = Env::state_t;
 	using symset_ptr = shared_ptr<const unordered_set<SymbolType>>;
 	using token_ptr = Env::token_ptr;
+	friend void analyze_function(
+		Env& env,
+		shared_ptr<const string> function_id,
+		BaseType return_type,
+		const char* information);
+	friend void analyze_inner_block(
+		AbstractSyntacticAnalyzeTactics::Env& env,
+		shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list);
+
 	virtual ~AbstractSyntacticAnalyzeTactics() = default;
 	void operator()(Env & env);
 private:
@@ -72,16 +81,38 @@ protected:
 		return env.peek(1) == SymbolType::key_main && in_first_set_of<MainFunctionAnalyze>(env);
 	}
 
+	static bool is_assigned_variable(Env& env)
+	{
+		return
+			(
+				env.peek(2) == SymbolType::assign
+				|| (
+					env.peek(2) == SymbolType::left_square
+					&& (
+						env.peek(5) == SymbolType::assign
+						|| (
+							env.peek(5) == SymbolType::left_square
+							&& env.peek(8) == SymbolType::assign
+							)
+						)
+					)
+				);
+	}
+
 	template<>
 	static bool in_branch_of<VariableDefinationWithInitializationAnalyze>(Env& env)
 	{
-		return env.peek(2) == SymbolType::assign && in_first_set_of<VariableDefinationWithInitializationAnalyze>(env);
+		return 
+			is_assigned_variable(env)
+			&& in_first_set_of<VariableDefinationWithInitializationAnalyze>(env);
 	}
 
 	template<>
 	static bool in_branch_of<VariableDefinationNoInitializationAnalyze>(Env& env)
 	{
-		return env.peek(2) != SymbolType::assign && in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
+		return
+			!is_assigned_variable(env)
+			&& in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
 	}
 
 	/*
@@ -175,40 +206,28 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// 有返回值函数定义
-struct ReturnFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
+// 常量
+struct ConstantAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
-		SymbolType::key_int, SymbolType::key_char
+		SymbolType::character, SymbolType::plus, SymbolType::minus, SymbolType::number
 	};
-
-protected:
-	virtual void analyze(Env& env);
-};
-
-// 无返回值函数定义
-struct VoidFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
+	bool is_type_of(BaseType type);
+	char get_char()
 	{
-		SymbolType::key_void
-	};
-
-protected:
-	virtual void analyze(Env& env);
-};
-
-// 主函数
-struct MainFunctionAnalyze : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
+		return ch;
+	}
+	int get_int()
 	{
-		SymbolType::key_void
-	};
-
+		return integer;
+	}
 protected:
 	virtual void analyze(Env& env);
+private:
+	bool is_ch;
+	char ch;
+	int integer;
 };
 
 // 整数
@@ -227,6 +246,125 @@ protected:
 	virtual void analyze(Env& env);
 private:
 	int value;
+};
+
+// 无符号整数
+struct UnsignedIntegerAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::number
+	};
+
+	unsigned get_value()
+	{
+		return value;
+	}
+protected:
+	virtual void analyze(Env& env);
+private:
+	unsigned value;
+};
+
+// 无返回值函数定义
+struct VoidFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_void
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 有返回值函数定义
+struct ReturnFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_int, SymbolType::key_char
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 主函数
+struct MainFunctionAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_void
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 声明头部
+struct FunctionHeaderAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_char, SymbolType::key_int
+	};
+	shared_ptr<const string> get_id()
+	{
+		return id;
+	}
+	// 只能是 type_int / type_char
+	BaseType get_return_type()
+	{
+		return return_type;
+	}
+protected:
+	virtual void analyze(Env& env);
+private:
+	shared_ptr<const string> id;
+	BaseType return_type;
+};
+
+// 参数表
+struct ParameterListAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_char, SymbolType::key_int
+	};
+	shared_ptr<const vector<BaseType>> get_param_type_list();
+	shared_ptr<const vector<shared_ptr<IdentifierInfo>>> get_param_list()
+	{
+		return param_list;
+	}
+protected:
+	virtual void analyze(Env& env);
+private:
+	shared_ptr<vector<shared_ptr<IdentifierInfo>>> param_list;
+};
+
+// 复合语句
+struct CompoundStatements : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		//TODO 
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+//
+struct : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		//TODO 
+	};
+
+protected:
+	virtual void analyze(Env& env);
 };
 
 //

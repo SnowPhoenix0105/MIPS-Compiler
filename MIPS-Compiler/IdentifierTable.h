@@ -22,14 +22,16 @@ enum class BaseType
 
 enum class ExternType : unsigned
 {
-	function = 0b0001, 
-	array	 = 0b0010, 
-	variable = 0b0100, 
-	constant = 0b1000
+	function = 0b00001, 
+	l_array	 = 0b00010,
+	d_array	 = 0b00100,
+	variable = 0b01000, 
+	constant = 0b10000
 };
 
 struct IdentifierType
 {
+	// 仅 extern_type == function 时, 可以为type_void
 	BaseType base_type;
 	ExternType extern_type;
 
@@ -47,6 +49,35 @@ struct IdentifierType
 	{
 		return (static_cast<unsigned>(extern_type) & (static_cast<unsigned>(t1) | static_cast<unsigned>(t2) | static_cast<unsigned>(t3))) != 0;
 	}
+
+	virtual ~IdentifierType() = default;
+};
+
+// extern_type == l_array
+struct LinearArrayIdentifierType : IdentifierType
+{
+	unsigned size;
+	virtual ~LinearArrayIdentifierType() = default;
+};
+
+// extern_type == d_array
+struct DoubleDimensionalArrayIdentifierType : IdentifierType
+{
+	unsigned size_1;
+	unsigned size_2;
+	int total_size()
+	{
+		return size_1 * size_2;
+	}
+	virtual ~DoubleDimensionalArrayIdentifierType() = default;
+};
+
+// extern_type == function
+struct FuctionIdentifierType : IdentifierType
+{
+	// 只能是 type_int / type_char
+	shared_ptr<const vector<BaseType>> param_list;
+	virtual ~FuctionIdentifierType() = default;
 };
 
 struct IdentifierInfo
@@ -56,40 +87,25 @@ struct IdentifierInfo
 	virtual ~IdentifierInfo() = default;
 };
 
+// extern_type == constant
 struct ConstantIdentifierInfo : IdentifierInfo
 {
 	virtual ~ConstantIdentifierInfo() = default;
 };
 
+// extern_type == constant && base_type == type_int
 struct IntegerIdentifierInfo : ConstantIdentifierInfo
 {
 	unsigned long value;
 	virtual ~IntegerIdentifierInfo() = default;
 };
 
+// extern_type == constant && base_type == type_char
 struct CharactorIdentifierInfo : ConstantIdentifierInfo
 {
 	char value;
 	virtual ~CharactorIdentifierInfo() = default;
 };
-
-struct LinearArrayIdentifierInfo : IdentifierInfo
-{
-	int size;
-	virtual ~LinearArrayIdentifierInfo() = default;
-};
-
-struct DoubleDimensionalArrayIdentifierInfo : IdentifierInfo
-{
-	int size_1;
-	int size_2;
-	int total_size()
-	{
-		return size_1 * size_2;
-	}
-	virtual ~DoubleDimensionalArrayIdentifierInfo() = default;
-};
-
 
 class IdentifierTable
 {
