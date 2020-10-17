@@ -595,6 +595,46 @@ protected:
 	virtual void analyze(Env& env);
 };
 
+// 情况表
+struct SwitchTableAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_case
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 情况子语句
+struct CaseStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_case
+	};
+	int get_case_value()
+	{
+		return case_value;
+	}
+protected:
+	virtual void analyze(Env& env);
+	int case_value;
+};
+
+// 缺省
+struct DefaultCaseAnalyze: AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_default
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
 // 返回语句
 struct ReturnStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {

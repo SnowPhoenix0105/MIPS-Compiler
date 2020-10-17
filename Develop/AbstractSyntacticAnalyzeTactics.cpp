@@ -1257,24 +1257,305 @@ void ParameterValueListAnalyze::analyze(Env& env)
 // 赋值语句
 void AssignmentStatementAnalyze::analyze(Env& env)
 {
-	auto token = env.dequeue_and_push_message();
+	auto token = env.dequeue_and_push_message();						// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 	auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
 
-	if (id_type->extern_type == ExternType::variable)
+
+	if (env.peek() == SymbolType::left_square)
 	{
-		// TODO
-	}
-	else if (id_type->extern_type == ExternType::l_array)
-	{
-		// TODO
-	}
-	else if (id_type->extern_type == ExternType::d_array)
-	{
-		// TODO
+		// 数组
+		env.dequeue_and_push_message();									// left_square
+		if (!in_branch_of<ExpressionAnalyze>(env))
+		{
+			// TODO error
+		}
+		ExpressionAnalyze expression_analyze_1;
+		expression_analyze_1(env);										// 表达式
+		if (env.peek() != SymbolType::right_square)
+		{
+			// TODO error
+		}
+		env.dequeue_and_push_message();									// right_square
+		if (env.peek() == SymbolType::left_square)
+		{
+			// 二维数组
+			env.dequeue_and_push_message();									// left_square
+			if (!in_branch_of<ExpressionAnalyze>(env))
+			{
+				// TODO error
+			}
+			ExpressionAnalyze expression_analyze_2;
+			expression_analyze_2(env);										// 表达式
+			if (env.peek() != SymbolType::right_square)
+			{
+				// TODO error
+			}
+			env.dequeue_and_push_message();									// right_square
+
+			if (id_type->extern_type != ExternType::d_array)
+			{
+				// TODO error
+			}
+		}
+		else
+		{
+			// 一维数组
+			if (id_type->extern_type != ExternType::l_array)
+			{
+				// TODO error
+			}
+		}
 	}
 	else
 	{
+		// 普通变量
+		if (id_type->extern_type != ExternType::variable)
+		{
+			// TODO error
+		}
+	}
+	
+	if (env.peek() != SymbolType::assign)
+	{
 		// TODO error
 	}
+	env.dequeue_and_push_message();									// assign
+
+	if (!in_branch_of<ExpressionAnalyze>(env))
+	{
+		// TODO error
+	}
+	ExpressionAnalyze left_expression_analyze;
+	left_expression_analyze(env);									// 表达式
+	
+	env.push_message("<赋值语句>");
+}
+
+// 读语句
+void ReadStatementAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();								// key_scanf
+	if (env.peek() != SymbolType::left_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();								// left_paren
+
+	if (env.peek() != SymbolType::identifier)
+	{
+		// TODO error
+	}
+	auto token = env.dequeue_and_push_message();				// identifier
+	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
+	auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
+	if (id_type->extern_type != ExternType::variable)
+	{
+		// TODO error
+	}
+	// 读取
+
+	if (env.peek() != SymbolType::right_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();								// right_paren
+	env.push_message("<读语句>");
+}
+
+// 写语句
+void WriteStatementAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();								// key_printf
+	if (env.peek() != SymbolType::left_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();								// left_paren
+
+	if (env.peek() == SymbolType::string)
+	{
+		auto tk1 = env.dequeue_and_push_message();
+		auto str_token = dynamic_pointer_cast<const StringToken>(tk1);
+		if (env.peek() == SymbolType::comma)
+		{
+			env.dequeue_and_push_message();						// comma
+			if (!in_branch_of<ExpressionAnalyze>(env))
+			{
+				// TODO error
+			}
+			ExpressionAnalyze expression_analyze;
+			expression_analyze(env);
+		}
+		else
+		{
+			// TODO 仅字符串
+		}
+	}
+	else
+	{
+		// 仅表达式
+		if (!in_branch_of<ExpressionAnalyze>(env))
+		{
+			// TODO error
+		}
+		ExpressionAnalyze expression_analyze;
+		expression_analyze(env);
+	}
+
+	if (env.peek() != SymbolType::right_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();								// right_paren
+	env.push_message("<写语句>");
+}
+
+// 情况语句
+void SwitchStatementAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();								// key_switch
+	if (env.peek() != SymbolType::left_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();								// left_paren
+
+	if (!in_branch_of<ExpressionAnalyze>(env))
+	{
+		// TODO error
+	}
+	ExpressionAnalyze expression_analyze;
+	expression_analyze(env);									// 表达式
+
+	if (env.peek() != SymbolType::right_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();								// right_paren
+
+	if (env.peek() != SymbolType::left_brance)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();								// left_brance
+
+	if (!in_branch_of<SwitchTableAnalyze>(env))
+	{
+		// TODO error
+	}
+	SwitchTableAnalyze()(env);									// 情况表
+	if (!in_branch_of<DefaultCaseAnalyze>(env))
+	{
+		// TODO error
+	}
+	DefaultCaseAnalyze()(env);									// 缺省
+
+	if (env.peek() != SymbolType::right_brance)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();								// right_brance
+	env.push_message("<情况语句>");
+}
+
+// 情况表
+void SwitchTableAnalyze::analyze(Env& env)
+{
+	unordered_set<int> used_case;
+	while (!in_branch_of<CaseStatementAnalyze>(env))
+	{
+		CaseStatementAnalyze case_statement_analyze;
+		case_statement_analyze(env);								// 情况子语句
+		if (used_case.find(case_statement_analyze.get_case_value()) != used_case.end())
+		{
+			// TODO error
+		}
+		used_case.insert(case_statement_analyze.get_case_value());
+	}
+	if (used_case.empty())
+	{
+		// TODO error
+	}
+	env.push_message("<情况表>");
+}
+
+// 情况子语句
+void CaseStatementAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();						// key_case
+	if (!in_branch_of<ConstantAnalyze>(env))
+	{
+		// TODO error
+	}
+	ConstantAnalyze constant_analyze;					// 常量
+	constant_analyze(env);
+	if (constant_analyze.is_type_of(BaseType::type_char))
+	{
+		case_value = constant_analyze.get_char();
+	}
+	else
+	{
+		case_value = constant_analyze.get_int();
+	}
+
+	if (env.peek() != SymbolType::colon)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();						// colon
+
+	if (!in_branch_of<StatementAnalyze>(env))
+	{
+		// TODO error
+	}
+	StatementAnalyze()(env);							// 语句
+	env.push_message("<情况子语句>");
+}
+
+// 缺省
+void DefaultCaseAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();				// key_default
+
+	if (env.peek() != SymbolType::colon)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();				// colon
+
+	if (!in_branch_of<StatementAnalyze>(env))
+	{
+		// TODO error
+	}
+	StatementAnalyze()(env);							// 语句
+	env.push_message("<缺省>");
+
+}
+
+// 返回语句
+void ReturnStatementAnalyze::analyze(Env& env)
+{
+	env.dequeue_and_push_message();					// key_return
+	if (env.peek() != SymbolType::left_paren)
+	{
+		env.push_message("<返回语句>");
+		return;
+	}
+	env.dequeue_and_push_message();					// left_paren
+
+	if (!in_branch_of<ExpressionAnalyze>(env))
+	{
+		// TODO error
+	}
+	ExpressionAnalyze expression_analyze;
+	expression_analyze(env);
+
+	if (env.peek() != SymbolType::right_paren)
+	{
+		// TODO error
+	}
+	env.dequeue_and_push_message();					// right_paren
+
+	env.push_message("<返回语句>");
 }
