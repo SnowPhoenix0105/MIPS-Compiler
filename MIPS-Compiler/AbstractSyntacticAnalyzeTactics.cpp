@@ -23,7 +23,7 @@ void ProgramAnalyze::analyze(Env& env)
 	{
 		ConstantDeclarationAnalyze()(env);							// 常量说明
 	}
-	if (env.peek() == SymbolType::key_int || env.peek() == SymbolType::key_char)
+	if (in_branch_of<VariableDeclarationAnalyze>(env))
 	{
 		VariableDeclarationAnalyze()(env);							// 变量说明
 	}
@@ -588,11 +588,11 @@ void analyze_inner_block(
 	env.dequeue_and_push_message();						// left_brance
 
 	if (env.peek() != SymbolType::left_brance
-		&& !AbstractSyntacticAnalyzeTactics::in_branch_of<CompoundStatements>(env))
+		&& !AbstractSyntacticAnalyzeTactics::in_branch_of<CompoundStatementsAnalyze>(env))
 	{
 		// TODO error
 	}
-	CompoundStatements()(env);							// 复合语句
+	CompoundStatementsAnalyze()(env);							// 复合语句
 
 	env.change_to_global_table();
 
@@ -609,7 +609,10 @@ void analyze_function(
 	BaseType return_type,
 	const char* information)
 {
-
+	if (env.get_identifier_info(function_id, false) != nullptr)
+	{
+		// TODO error
+	}
 	if (env.peek() != SymbolType::left_paren)
 	{
 		// TODO error
@@ -746,4 +749,192 @@ void ParameterListAnalyze::analyze(Env& env)
 		param_list->push_back(id_info);
 	}
 	env.push_message("<参数表>");
+}
+
+// 复合语句
+void CompoundStatementsAnalyze::analyze(Env& env)
+{
+	if (in_branch_of<ConstantDeclarationAnalyze>(env))
+	{
+		ConstantDeclarationAnalyze()(env);							// 常量说明
+	}
+	if (in_branch_of<VariableDeclarationAnalyze>(env))
+	{
+		VariableDeclarationAnalyze()(env);							// 变量说明
+	}
+	StatementsListAnalyze()(env);											// 语句列
+	env.push_message("<复合语句>");
+}
+
+// 语句列
+void StatementsListAnalyze::analyze(Env& env)
+{
+	while (in_branch_of<StatementAnalyze>(env))
+	{
+		StatementAnalyze()(env);									// 语句
+	}
+	env.push_message("<语句列>");
+}
+
+// 语句
+void StatementAnalyze::analyze(Env& env)
+{
+	switch (env.peek())
+	{
+	case SymbolType::key_while:
+	case SymbolType::key_for:
+		LoopStatementAnalyze()(env);									// 循环语句
+		break;
+	case SymbolType::key_if:
+		ConditionStatementAnalyze()(env);								// 条件语句
+		break;
+	case SymbolType::identifier:
+		if (in_branch_of<AssignmentStatementAnalyze>(env))
+		{
+			AssignmentStatementAnalyze()(env);							// 赋值语句
+		}
+		else if (in_branch_of<CallReturnFunctionStatementAnalyze>(env))
+		{
+			CallReturnFunctionStatementAnalyze()(env);					// 有返回值函数调用语句
+		}
+		else // if (in_branch_of<CallVoidFunctionStatementAnalyze>(env))
+		{
+			CallVoidFunctionStatementAnalyze()(env);					// 无返回值调用语句
+		}
+		if (env.peek() != SymbolType::semicolon)
+		{
+			// TODO error
+		}
+		env.dequeue_and_push_message();									// semicolon
+		break;
+	case SymbolType::key_scanf:
+		ReadStatementAnalyze()(env);									// 读语句
+		if (env.peek() != SymbolType::semicolon)
+		{
+			// TODO error
+		}
+		env.dequeue_and_push_message();									// semicolon
+		break;
+	case SymbolType::key_printf:
+		WriteStatementAnalyze()(env);									// 写语句
+		if (env.peek() != SymbolType::semicolon)
+		{
+			// TODO error
+		}
+		env.dequeue_and_push_message();									// semicolon
+		break;
+	case SymbolType::key_switch:
+		SwitchStatementAnalyze()(env);									// 情况语句
+		break;
+	case SymbolType::key_return:
+		ReturnStatementAnalyze()(env);									// 返回语句
+		if (env.peek() != SymbolType::semicolon)
+		{
+			// TODO error
+		}
+		env.dequeue_and_push_message();									// semicolon
+		break;
+	case SymbolType::left_brance:
+		env.dequeue_and_push_message();									// left_brance
+		StatementsListAnalyze()(env);										// 语句列
+		if (env.peek() != SymbolType::right_brance)
+		{
+			// TODO error
+		}
+		env.dequeue_and_push_message();									// right_brance
+		break;
+	case SymbolType::semicolon:
+		env.dequeue_and_push_message();									// semicolon
+		break;
+	default:
+		// TODO error
+	}
+
+	env.push_message("<语句>");
+
+	//if (in_branch_of<LoopStatementAnalyze>(env))
+	//{
+	//	LoopStatementAnalyze()(env);								// 循环语句
+	//}
+	//else if (in_branch_of<ConditionStatementAnalyze>(env))
+	//{
+	//	ConditionStatementAnalyze()(env);							// 条件语句
+	//}
+	//else if (in_branch_of<ReadStatementAnalyze>(env))
+	//{
+	//	ReadStatementAnalyze()(env);								// 读语句
+	//	if (env.peek() != SymbolType::semicolon)
+	//	{
+	//		// TODO error
+	//	}
+	//	env.dequeue_and_push_message();								// semicolon
+	//}
+	//else if (in_branch_of<WriteStatementAnalyze>(env))
+	//{
+	//	WriteStatementAnalyze()(env);								// 写语句
+	//	if (env.peek() != SymbolType::semicolon)
+	//	{
+	//		// TODO error
+	//	}
+	//	env.dequeue_and_push_message();								// semicolon
+	//}
+	//else if (in_branch_of<SwitchStatementAnalyze>(env))
+	//{
+	//	SwitchStatementAnalyze()(env);								// 情况语句
+	//}
+	//else if (in_branch_of<ReturnStatementAnalyze>(env))
+	//{
+	//	ReturnStatementAnalyze()(env);								// 返回语句
+	//	if (env.peek() != SymbolType::semicolon)
+	//	{
+	//		// TODO error
+	//	}
+	//	env.dequeue_and_push_message();								// semicolon
+	//}
+	//else if (in_branch_of<AssignmentStatementAnalyze>(env))
+	//{
+	//	AssignmentStatementAnalyze()(env);							// 赋值语句
+	//	if (env.peek() != SymbolType::semicolon)
+	//	{
+	//		// TODO error
+	//	}
+	//	env.dequeue_and_push_message();								// semicolon
+	//}
+	//else if (in_branch_of<CallReturnFunctionStatementAnalyze>(env))
+	//{
+	//	CallReturnFunctionStatementAnalyze()(env);					// 有返回值函数调用语句
+	//	if (env.peek() != SymbolType::semicolon)
+	//	{
+	//		// TODO error
+	//	}
+	//	env.dequeue_and_push_message();								// semicolon
+	//}
+	//else if (in_branch_of<CallVoidFunctionStatementAnalyze>(env))
+	//{
+	//	CallVoidFunctionStatementAnalyze()(env);					// 无返回值调用语句
+	//	if (env.peek() != SymbolType::semicolon)
+	//	{
+	//		// TODO error
+	//	}
+	//	env.dequeue_and_push_message();								// semicolon
+	//}
+	//else if (env.peek() == SymbolType::left_brance)
+	//{
+	//	env.dequeue_and_push_message();								// left_brance
+	//	StatementAnalyze()(env);									// 语句
+	//	if (env.peek() != SymbolType::right_brance)
+	//	{
+	//		// TODO error
+	//	}
+	//	env.dequeue_and_push_message();
+	//}
+	//else
+	//{
+	//	if (env.peek() != SymbolType::semicolon)
+	//	{
+	//		// TODO error
+	//	}
+	//	env.dequeue_and_push_message();								// semicolon
+	//}
+	//env.push_message("<语句>");
 }

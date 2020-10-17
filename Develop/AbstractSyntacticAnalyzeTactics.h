@@ -38,6 +38,7 @@ private:
 protected:
 	virtual void analyze(Env& env) = 0;
 
+	// 完成 first_1 集的判断部分
 	template<class T>
 	static bool in_first_set_of(Env& env)
 	{
@@ -51,7 +52,7 @@ protected:
 		return set.find(env.peek()) != set.end();
 	}
 
-
+	// 完成 first_n 集的判断部分, 不检查follow集
 	template<class T>
 	static bool in_branch_of(Env& env)
 	{
@@ -114,6 +115,48 @@ protected:
 		return
 			!is_assigned_variable(env)
 			&& in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
+	}
+
+	template<>
+	static bool in_branch_of<CallReturnFunctionStatementAnalyze>(Env& env)
+	{
+		if (!in_first_set_of<CallReturnFunctionStatementAnalyze>(env))
+		{
+			return false;
+		}
+		auto token = env.peek_info();
+		auto id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+		auto id_info = env.get_identifier_info(id);
+		return id_info->return_type->extern_type == ExternType::function
+			&& id_info->return_type->base_type != BaseType::type_void;
+	}
+
+	template<>
+	static bool in_branch_of<CallVoidFunctionStatementAnalyze>(Env& env)
+	{
+		if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(env))
+		{
+			return false;
+		}
+		auto token = env.peek_info();
+		auto id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+		auto id_info = env.get_identifier_info(id);
+		return id_info->return_type->extern_type == ExternType::function
+			&& id_info->return_type->base_type == BaseType::type_void;
+	}
+
+	template<>
+	static bool in_branch_of<AssignmentStatementAnalyze>(Env& env)
+	{
+		if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(env))
+		{
+			return false;
+		}
+		auto token = env.peek_info();
+		auto id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+		auto id_info = env.get_identifier_info(id);
+		return id_info->return_type->is_one_from(ExternType::variable, ExternType::l_array, ExternType::d_array)
+			&& id_info->return_type->base_type != BaseType::type_void;
 	}
 
 	/*
@@ -345,47 +388,193 @@ private:
 };
 
 // 复合语句
-struct CompoundStatements : AbstractSyntacticAnalyzeTactics
+struct CompoundStatementsAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
-		//TODO 
+		SymbolType::key_int, SymbolType::key_char,	// 常量/变量说明
+		// 语句列
+		SymbolType::key_while, SymbolType::key_for, // 循环语句
+		SymbolType::key_if,							// 条件语句
+		SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
+		SymbolType::key_scanf,						// 读语句
+		SymbolType::key_printf,						// 写语句
+		SymbolType::key_switch,						// 情况语句
+		SymbolType::semicolon,						// 空语句
+		SymbolType::key_return,						// 返回语句
+		SymbolType::left_brance						// 语句列
 	};
 
 protected:
 	virtual void analyze(Env& env);
 };
 
-//
-struct : AbstractSyntacticAnalyzeTactics
+// 语句列
+struct StatementsListAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
-		//TODO 
+		SymbolType::key_while, SymbolType::key_for, // 循环语句
+		SymbolType::key_if,							// 条件语句
+		SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
+		SymbolType::key_scanf,						// 读语句
+		SymbolType::key_printf,						// 写语句
+		SymbolType::key_switch,						// 情况语句
+		SymbolType::semicolon,						// 空语句
+		SymbolType::key_return,						// 返回语句
+		SymbolType::left_brance						// 语句列
 	};
 
 protected:
 	virtual void analyze(Env& env);
 };
 
-//
-struct : AbstractSyntacticAnalyzeTactics
+// 语句
+struct StatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
-		//TODO 
+		SymbolType::key_while, SymbolType::key_for, // 循环语句
+		SymbolType::key_if,							// 条件语句
+		SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
+		SymbolType::key_scanf,						// 读语句
+		SymbolType::key_printf,						// 写语句
+		SymbolType::key_switch,						// 情况语句
+		SymbolType::semicolon,						// 空语句
+		SymbolType::key_return,						// 返回语句
+		SymbolType::left_brance						// 语句列
 	};
 
 protected:
 	virtual void analyze(Env& env);
 };
 
-//
+// 循环语句
+struct LoopStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_while, SymbolType::key_for
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 条件语句
+struct ConditionStatementAnalyze: AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_if
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 有返回值函数调用语句
+struct CallReturnFunctionStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 无返回值函数调用语句
+struct CallVoidFunctionStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 赋值语句
+struct AssignmentStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::assign
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 读语句
+struct ReadStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_scanf
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 写语句
+struct WriteStatementAnalyze: AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_printf
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 情况语句
+struct SwitchStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_switch
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 返回语句
+struct ReturnStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_return
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 
 struct : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
-		//TODO 
+		// TODO
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 
+struct : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		// TODO
 	};
 
 protected:
