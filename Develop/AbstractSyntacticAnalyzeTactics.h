@@ -461,12 +461,44 @@ protected:
 	virtual void analyze(Env& env);
 };
 
+// 步长
+struct StepLengthAnalyze: AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::number
+	};
+	unsigned get_value()
+	{
+		return value;
+	}
+protected:
+	virtual void analyze(Env& env);
+private:
+	unsigned value;
+};
+
 // 条件语句
 struct ConditionStatementAnalyze: AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
 		SymbolType::key_if
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 条件
+struct ConditionAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
 	};
 
 protected:
@@ -497,12 +529,30 @@ protected:
 	virtual void analyze(Env& env);
 };
 
+// 值参数表
+struct ParameterValueListAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
+	};
+	ParameterValueListAnalyze(shared_ptr<const vector<BaseType>> param_type_list)
+		:param_type_list(param_type_list) { }
+protected:
+	virtual void analyze(Env& env);
+private:
+	shared_ptr<const vector<BaseType>> param_type_list;
+};
+
 // 赋值语句
 struct AssignmentStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
-		SymbolType::assign
+		SymbolType::identifier
 	};
 
 protected:
@@ -551,6 +601,63 @@ struct ReturnStatementAnalyze : AbstractSyntacticAnalyzeTactics
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
 		SymbolType::key_return
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 表达式
+struct ExpressionAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 项
+struct TermAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 因子
+struct FactorAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 
+struct : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		// TODO
 	};
 
 protected:

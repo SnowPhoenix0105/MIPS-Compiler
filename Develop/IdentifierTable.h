@@ -36,17 +36,17 @@ struct IdentifierType
 	BaseType base_type;
 	ExternType extern_type;
 
-	bool is(ExternType type) const
+	bool is_one_from(ExternType type) const
 	{
 		return (static_cast<unsigned>(extern_type) & static_cast<unsigned>(type)) != 0;
 	}
 
-	bool is(ExternType t1, ExternType t2) const
+	bool is_one_from(ExternType t1, ExternType t2) const
 	{
 		return (static_cast<unsigned>(extern_type) & (static_cast<unsigned>(t1) | static_cast<unsigned>(t2))) != 0;
 	}
 	
-	bool is(ExternType t1, ExternType t2, ExternType t3) const
+	bool is_one_from(ExternType t1, ExternType t2, ExternType t3) const
 	{
 		return (static_cast<unsigned>(extern_type) & (static_cast<unsigned>(t1) | static_cast<unsigned>(t2) | static_cast<unsigned>(t3))) != 0;
 	}
