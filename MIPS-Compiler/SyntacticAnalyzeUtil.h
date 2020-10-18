@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef __SYNTACTIC_ANALYZE_UTIL_H__
 #define __SYNTACTIC_ANALYZE_UTIL_H__

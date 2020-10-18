@@ -1,7 +1,6 @@
-#pragma once
 
-#ifndef __SYNTACTIC_ANALYZE_UTIL_H__
-#define __SYNTACTIC_ANALYZE_UTIL_H__
+#ifndef __SYNTACTIC_UTIL_H__
+#define __SYNTACTIC_UTIL_H__
 
 #include <memory>
 #include <vector>
@@ -123,7 +122,7 @@ public:
 		}
 	}
 
-	template<typename T>
+	template<class T>
 	shared_ptr<const IdentifierInfo> get_identifier_info(T id, bool all = true)
 	{
 		shared_ptr<const IdentifierInfo> ret;
@@ -231,6 +230,5 @@ public:
 	{ }
 };
 
+#endif // !__SYNTACTIC_UTIL_H__
 
-
-#endif // !__SYNTACTIC_ANALYZE_UTIL_H__

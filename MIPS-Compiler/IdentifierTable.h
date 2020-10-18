@@ -131,7 +131,12 @@ public:
 		table.insert(make_pair(*id->id, id));
 	}
 
-	shared_ptr<const IdentifierInfo> get_identifier(shared_ptr<string> id) const 
+	shared_ptr<const IdentifierInfo> get_identifier(const char* id) const
+	{
+		return table.at(string(id));
+	}
+
+	shared_ptr<const IdentifierInfo> get_identifier(shared_ptr<const string> id) const 
 	{
 		return table.at(*id);
 	}

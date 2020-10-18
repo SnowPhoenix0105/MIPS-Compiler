@@ -31,15 +31,14 @@ class SyntacticAnalyzer
 {
 private:
 	SyntacticAnalyzerEnvironment env;
-	unique_ptr<ostream> os;
 
 public:
-	SyntacticAnalyzer(unique_ptr<LexicalAnalyzer> lexical_analyzer, unique_ptr<ostream> os)
-		: env(std::move(lexical_analyzer)), os(std::move(os)) { }
+	SyntacticAnalyzer(unique_ptr<LexicalAnalyzer> lexical_analyzer)
+		: env(std::move(lexical_analyzer)) { }
 
 	void parse();
 
-	void print_all();
+	void print_all(ostream& os);
 };
 
 #endif // !__SYNTACTIC_ANALYZER_H__

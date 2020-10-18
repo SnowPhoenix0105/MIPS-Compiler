@@ -36,6 +36,7 @@ public:
 	using Env = SyntacticAnalyzerEnvironment;
 	using state_t = SyntacticAnalyzerEnvironment::state_t;
 	using token_ptr = SyntacticAnalyzerEnvironment::token_ptr;
+
 	friend void analyze_function(
 		Env& env,
 		shared_ptr<const string> function_id,
@@ -140,7 +141,7 @@ protected:
 			return false;
 		}
 		auto token = env.peek_info();
-		auto id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 		auto id_info = env.get_identifier_info(id);
 		return id_info->return_type->extern_type == ExternType::function
 			&& id_info->return_type->base_type != BaseType::type_void;
@@ -154,7 +155,7 @@ protected:
 			return false;
 		}
 		auto token = env.peek_info();
-		auto id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 		auto id_info = env.get_identifier_info(id);
 		return id_info->return_type->extern_type == ExternType::function
 			&& id_info->return_type->base_type == BaseType::type_void;
@@ -168,7 +169,7 @@ protected:
 			return false;
 		}
 		auto token = env.peek_info();
-		auto id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 		auto id_info = env.get_identifier_info(id);
 		return id_info->return_type->is_one_from(ExternType::variable, ExternType::l_array, ExternType::d_array)
 			&& id_info->return_type->base_type != BaseType::type_void;

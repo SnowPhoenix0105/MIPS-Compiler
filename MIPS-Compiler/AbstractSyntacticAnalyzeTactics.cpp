@@ -123,7 +123,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 				}
 				auto tk = env.dequeue_and_push_message();		// charactor
 				shared_ptr<CharactorIdentifierInfo> info = make_shared<CharactorIdentifierInfo>();
-				info->value = dynamic_pointer_cast<CharToken>(tk)->char_content;
+				info->value = dynamic_pointer_cast<const CharToken>(tk)->char_content;
 				id_info = info;
 			}
 			else
@@ -233,9 +233,9 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				{
 					// 二维数组
 					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size_1 = unsigned_analyze.get_value();
+					UnsignedIntegerAnalyze size_1_unsigned_analyze;			// unsigned_integer
+					size_1_unsigned_analyze(env);
+					unsigned size_1 = size_1_unsigned_analyze.get_value();
 					if (env.peek() != SymbolType::right_square)
 					{
 						//TODO error
@@ -311,9 +311,9 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				{
 					// 一维数组
 					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size = unsigned_analyze.get_value();
+					UnsignedIntegerAnalyze size_2_unsigned_analyze;			// unsigned_integer
+					size_2_unsigned_analyze(env);
+					unsigned size = size_2_unsigned_analyze.get_value();
 					if (env.peek() != SymbolType::right_square)
 					{
 						//TODO error
@@ -432,18 +432,18 @@ void VariableDefinationNoInitializationAnalyze::analyze(Env& env)
 				{
 					// 二维数组
 					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size_1 = unsigned_analyze.get_value();
+					UnsignedIntegerAnalyze size_1_unsigned_analyze;			// unsigned_integer
+					size_1_unsigned_analyze(env);
+					unsigned size_1 = size_1_unsigned_analyze.get_value();
 					if (env.peek() != SymbolType::right_square)
 					{
 						//TODO error
 					}
 					env.dequeue_and_push_message();						// right_square
 					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size_2 = unsigned_analyze.get_value();
+					UnsignedIntegerAnalyze size_2_unsigned_analyze;			// unsigned_integer
+					size_2_unsigned_analyze(env);
+					unsigned size_2 = size_2_unsigned_analyze.get_value();
 					if (env.peek() != SymbolType::right_square)
 					{
 						//TODO error
@@ -678,7 +678,7 @@ void VoidFunctionDefinationAnalyze::analyze(Env& env)
 		// TODO error
 	}
 	auto token = env.dequeue_and_push_message();		// identifier
-	shared_ptr<const string> function_id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+	shared_ptr<const string> function_id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 
 	analyze_function(env, function_id, BaseType::type_void, "<无返回值函数定义>");
 }
@@ -712,7 +712,7 @@ void FunctionHeaderAnalyze::analyze(Env& env)
 		// TODO error
 	}
 	auto token = env.dequeue_and_push_message();		// identifier
-	id = dynamic_pointer_cast<IdentifierToken>(token)->id_name_content;
+	id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 	env.push_message("<声明头部>");
 }
 
@@ -760,7 +760,7 @@ void ParameterListAnalyze::analyze(Env& env)
 		id_type->base_type = type_token->type == SymbolType::key_char ? BaseType::type_char : BaseType::type_int;
 		id_type->extern_type = ExternType::variable;
 		shared_ptr<IdentifierInfo> id_info = make_shared<IdentifierInfo>();
-		id_info->id = dynamic_pointer_cast<IdentifierToken>(id_token)->id_name_content;
+		id_info->id = dynamic_pointer_cast<const IdentifierToken>(id_token)->id_name_content;
 		id_info->return_type = id_type;
 
 		param_list->push_back(id_info);
@@ -866,6 +866,7 @@ void StatementAnalyze::analyze(Env& env)
 		break;
 	default:
 		// TODO error
+		break;
 	}
 
 	env.push_message("<语句>");
@@ -1154,6 +1155,7 @@ void ConditionAnalyze::analyze(Env& env)
 	case SymbolType::less_equal:
 	case SymbolType::greater:
 	case SymbolType::greater_equal:
+		break;
 	}
 	env.dequeue_and_push_message();								// 关系运算符
 
