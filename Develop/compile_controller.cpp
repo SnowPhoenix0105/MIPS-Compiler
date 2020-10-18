@@ -41,11 +41,13 @@ unique_ptr<std::ostream> lexical_analyze(unique_ptr<istream> input_file, unique_
 	LexicalAnalyzer analyzer(std::move(input_file));
 	while (analyzer.has_next())
 	{
-		SymbolType sym = analyzer.next();
-		*output_file << symboltype_output_dictionary.at(sym)
-			<< ' '
-			<< formated_content(analyzer)
-			<< endl;
+		//SymbolType sym = analyzer.next();
+		//*output_file << symboltype_output_dictionary.at(sym)
+		//	<< ' '
+		//	<< formated_content(analyzer)
+		//	<< endl;
+		analyzer.next();
+		*output_file << analyzer.get_token()->to_print_string() << endl;
 	}
 	return output_file;
 }

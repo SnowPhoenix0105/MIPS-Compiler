@@ -253,6 +253,9 @@ shared_ptr<const Token> LexicalAnalyzer::get_token() const
 	ret->type = last_symbol;
 	ret->print_content = formated_content();
 	ret->line_number = line_number;
+
+	DEBUG_LOG_VAL(10, "token", ret->to_print_string());
+
 	return ret;
 }
 

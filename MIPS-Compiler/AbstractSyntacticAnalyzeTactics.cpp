@@ -3,6 +3,7 @@
 
 void AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 {
+	DEBUG_LOG_VAL(5, "calling", typeid(*this).name());
 	state_t current_state = env.state();
 	try
 	{
@@ -11,8 +12,10 @@ void AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 	catch (const syntax_exception&)
 	{
 		env.state(current_state);
+		DEBUG_LOG_VAL(5, "exception", typeid(*this).name());
 		throw;
 	}
+	DEBUG_LOG_VAL(5, "finish", typeid(*this).name());
 }
 
 // 程序
@@ -46,6 +49,15 @@ void ProgramAnalyze::analyze(Env& env)
 		else
 		{
 			//TODO error
+			DEBUG_LOG_VAL(10, "env.peek()", symboltype_output_dictionary.at(env.peek()));
+			DEBUG_LOG_VAL(10, "env.peek(1)", symboltype_output_dictionary.at(env.peek(1)));
+			DEBUG_LOG_VAL(10, "env.peek(2)", symboltype_output_dictionary.at(env.peek(2)));
+			DEBUG_LOG_VAL(10, "env.peek(3)", symboltype_output_dictionary.at(env.peek(3)));
+			DEBUG_LOG_VAL(10, "env.peek(4)", symboltype_output_dictionary.at(env.peek(4)));
+			DEBUG_LOG_VAL(10, "env.peek(5)", symboltype_output_dictionary.at(env.peek(5)));
+			DEBUG_LOG_VAL(10, "env.peek(6)", symboltype_output_dictionary.at(env.peek(6)));
+			DEBUG_LOG_VAL(10, "env.peek(7)", symboltype_output_dictionary.at(env.peek(7)));
+			PANIC();
 		}
 	}
 	env.push_message("<程序>");
@@ -257,11 +269,14 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					env.dequeue_and_push_message();						// left_brance
 					for (int i = 0; i != size_1; ++i)
 					{
-						if (i != 0 && env.peek() != SymbolType::comma)
+						if (i != 0)
 						{
-							// TODO error
+							if (env.peek() != SymbolType::comma)
+							{
+								// TODO error
+							}
+							env.dequeue_and_push_message();					// comma
 						}
-						env.dequeue_and_push_message();					// comma
 						if (env.peek() != SymbolType::left_brance)
 						{
 							// TODO error
@@ -270,11 +285,14 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 
 						for (int j = 0; j != size_2; ++j)
 						{
-							if (j != 0 && env.peek() != SymbolType::comma)
+							if (j != 0)
 							{
-								// TODO error
+								if (env.peek() != SymbolType::comma)
+								{
+									// TODO error
+								}
+								env.dequeue_and_push_message();					// comma
 							}
-							env.dequeue_and_push_message();					// comma;
 							if (!in_branch_of<ConstantAnalyze>(env))
 							{
 								// TODO error
@@ -326,11 +344,14 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					env.dequeue_and_push_message();						// left_brance
 					for (int i = 0; i != size; ++i)
 					{
-						if (i != 0 && env.peek() != SymbolType::comma)
+						if (i != 0)
 						{
-							// TODO error
+							if (env.peek() != SymbolType::comma)
+							{
+								// TODO error
+							}
+							env.dequeue_and_push_message();					// comma
 						}
-						env.dequeue_and_push_message();					// comma
 						if (!in_branch_of<ConstantAnalyze>(env))
 						{
 							// TODO error
@@ -566,14 +587,7 @@ void IntegerAnalyze::analyze(Env& env)
 void UnsignedIntegerAnalyze::analyze(Env& env)
 {
 	auto token = env.dequeue_and_push_message();		// number
-	try
-	{
-		value = dynamic_pointer_cast<const UnsignedToken>(token)->unsigned_content;
-	}
-	catch (const std::exception&)
-	{
-		DEBUG_LOG_VAL(5, "unsigned_token->type", symboltype_output_dictionary.at(token->type));
-	}
+	value = dynamic_pointer_cast<const UnsignedToken>(token)->unsigned_content;
 	env.push_message("<无符号整数>");
 }
 

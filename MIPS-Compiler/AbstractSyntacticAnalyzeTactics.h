@@ -93,38 +93,51 @@ public:
 		return b1 && b2;
 	}
 
-	inline bool is_assigned_variable(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+	inline bool is_assigned_variable(SyntacticAnalyzerEnvironment& env)
 	{
-		return
-			(
-				SyntacticAnalyzerEnvironment.peek(2) == SymbolType::assign
-				|| (
-					SyntacticAnalyzerEnvironment.peek(2) == SymbolType::left_square
-					&& (
-						SyntacticAnalyzerEnvironment.peek(5) == SymbolType::assign
-						|| (
-							SyntacticAnalyzerEnvironment.peek(5) == SymbolType::left_square
-							&& SyntacticAnalyzerEnvironment.peek(8) == SymbolType::assign
-							)
-						)
-					)
-				);
+		if (env.peek(2) == SymbolType::assign)
+		{
+			return true;
+		}
+		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::assign)
+		{
+			return true;
+		}
+		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::left_square && env.peek(8) == SymbolType::assign)
+		{
+			return true;
+		}
+		return false;
+		//return
+		//	(
+		//		env.peek(2) == SymbolType::assign
+		//		|| (
+		//			env.peek(2) == SymbolType::left_square
+		//			&& (
+		//				env.peek(5) == SymbolType::assign
+		//				|| (
+		//					env.peek(5) == SymbolType::left_square
+		//					&& env.peek(8) == SymbolType::assign
+		//					)
+		//				)
+		//			)
+		//		);
 	}
 
 	template<>
-	bool in_branch_of<VariableDefinationWithInitializationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+	bool in_branch_of<VariableDefinationWithInitializationAnalyze>(SyntacticAnalyzerEnvironment& env)
 	{
 		return
-			is_assigned_variable(SyntacticAnalyzerEnvironment)
-			&& in_first_set_of<VariableDefinationWithInitializationAnalyze>(SyntacticAnalyzerEnvironment);
+			is_assigned_variable(env)
+			&& in_first_set_of<VariableDefinationWithInitializationAnalyze>(env);
 	}
 
 	template<>
-	bool in_branch_of<VariableDefinationNoInitializationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+	bool in_branch_of<VariableDefinationNoInitializationAnalyze>(SyntacticAnalyzerEnvironment& env)
 	{
 		return
-			!is_assigned_variable(SyntacticAnalyzerEnvironment)
-			&& in_first_set_of<VariableDefinationNoInitializationAnalyze>(SyntacticAnalyzerEnvironment);
+			!is_assigned_variable(env)
+			&& in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
 	}
 
 	template<>

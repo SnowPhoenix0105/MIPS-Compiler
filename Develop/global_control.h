@@ -15,7 +15,7 @@
 #define HW_2
 
 // undefine DEBUG_LEVEL before release
-#define DEBUG_LEVEL 10
+#define DEBUG_LEVEL 5
 
 
 
@@ -46,6 +46,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <windows.h>
 
 // @param required_level: if DEBUG_LEVEL < required_level, no message will be print;
 // @param operations: some statements, divided with ';'
@@ -69,6 +70,18 @@
 #define DEBUG_LOG_VAR(required_level, var) DEBUG_LOG_VAL((required_level), #var, (var))
 
 
+#define DEBUG_LOG_MSG(required, msg) DEBUG_DO((required_level),				\
+	std::cout << "[DEBUG_LOG]\t@" __FILE__ ":" << __LINE__ << '\t'			\
+	<< (msg) << std::end;													\
+		)
+
+
+#define PANIC() do {														\
+	std::cout << "[PANIC]\t@" __FILE__ ":" << __LINE__ << endl;				\
+	while (true) { Sleep(100); }											\
+} while (false)
+
+
 #else
 
 
@@ -76,6 +89,8 @@
 #define DEBUG_DO(required_level, operate) ;
 #define DEBUG_LOG_VAL(required_level, name, var) ;
 #define DEBUG_LOG_VAR(required_level, var) ;
+#define DEBUG_LOG_MSG(required, name, msg) ;
+#define PANIC() ;
 
 
 

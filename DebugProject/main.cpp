@@ -11,14 +11,20 @@ int main(int argc, char* argv[])
 #ifdef DEBUG_001
 
 	string test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\Test\\TestResource");
-	string source_file = test_resource_path + "\\sample1\\nospace_source.c";
-	unique_ptr<istream> input_stream(new std::istringstream(source_file));
+	string source_file = test_resource_path + "\\sample1\\source.c";
+	std::ifstream input_stream_0(source_file);
+	string line;
+	while (std::getline(input_stream_0, line))
+	{
+		std::cout << line << endl;
+	}
+
+
+
+	unique_ptr<istream> input_stream(new std::ifstream(source_file));
 	unique_ptr<ostringstream> output_ostream(new std::ostringstream());
-	output_ostream.reset(
-		dynamic_cast<ostringstream*>(
-			syntactic_analyze(std::move(input_stream), std::move(output_ostream)).release()
-			)
-	);
+
+	syntactic_analyze(std::move(input_stream), std::move(output_ostream));
 
 #endif // DEBUG_001
 

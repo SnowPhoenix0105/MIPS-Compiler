@@ -65,6 +65,11 @@
 #define DEBUG_LOG_VAR(required_level, var) DEBUG_LOG_VAL((required_level), #var, (var))
 
 
+#define DEBUG_LOG_MSG(required, msg) DEBUG_DO((required_level),				\
+	std::cout << "[DEBUG_LOG]\t@" __FILE__ ":" << __LINE__ << '\t'			\
+	<< (msg) << std::end;													\
+		)
+
 
 #else
 
@@ -73,7 +78,8 @@
 #define DEBUG_DO(required_level, operate) ;
 #define DEBUG_LOG_VAL(required_level, name, var) ;
 #define DEBUG_LOG_VAR(required_level, var) ;
-
+#define DEBUG_LOG_MSG(required, name, msg) ;
+#define PANIC() ;
 
 
 #endif // DEBUG_LEVEL

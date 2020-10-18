@@ -3,7 +3,7 @@
 
 void AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 {
-	DEBUG_LOG_VAL(10, "calling syntactic-analyze-tactics", typeid(*this).name());
+	DEBUG_LOG_VAL(5, "calling", typeid(*this).name());
 	state_t current_state = env.state();
 	try
 	{
@@ -12,8 +12,10 @@ void AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 	catch (const syntax_exception&)
 	{
 		env.state(current_state);
+		DEBUG_LOG_VAL(5, "exception", typeid(*this).name());
 		throw;
 	}
+	DEBUG_LOG_VAL(5, "finish", typeid(*this).name());
 }
 
 // ³ÌÐò
@@ -47,6 +49,15 @@ void ProgramAnalyze::analyze(Env& env)
 		else
 		{
 			//TODO error
+			DEBUG_LOG_VAL(10, "env.peek()", symboltype_output_dictionary.at(env.peek()));
+			DEBUG_LOG_VAL(10, "env.peek(1)", symboltype_output_dictionary.at(env.peek(1)));
+			DEBUG_LOG_VAL(10, "env.peek(2)", symboltype_output_dictionary.at(env.peek(2)));
+			DEBUG_LOG_VAL(10, "env.peek(3)", symboltype_output_dictionary.at(env.peek(3)));
+			DEBUG_LOG_VAL(10, "env.peek(4)", symboltype_output_dictionary.at(env.peek(4)));
+			DEBUG_LOG_VAL(10, "env.peek(5)", symboltype_output_dictionary.at(env.peek(5)));
+			DEBUG_LOG_VAL(10, "env.peek(6)", symboltype_output_dictionary.at(env.peek(6)));
+			DEBUG_LOG_VAL(10, "env.peek(7)", symboltype_output_dictionary.at(env.peek(7)));
+			PANIC();
 		}
 	}
 	env.push_message("<³ÌÐò>");

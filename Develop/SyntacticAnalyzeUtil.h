@@ -158,6 +158,7 @@ public:
 	template<typename T>
 	void push_message(T value)
 	{
+		DEBUG_LOG_VAL(5, "syntactic-analyzer message", value);
 		if (current_state.msg_index >= messages.size())
 		{
 			messages.emplace_back(value);

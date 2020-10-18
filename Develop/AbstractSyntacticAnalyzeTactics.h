@@ -100,11 +100,11 @@ public:
 		{
 			return true;
 		}
-		if (env.peek(2) == SymbolType::left_paren && env.peek(5) == SymbolType::assign)
+		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::assign)
 		{
 			return true;
 		}
-		if (env.peek(5) == SymbolType::left_square && env.peek(8) == SymbolType::assign)
+		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::left_square && env.peek(8) == SymbolType::assign)
 		{
 			return true;
 		}
