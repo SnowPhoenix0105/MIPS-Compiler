@@ -551,7 +551,8 @@ void IntegerAnalyze::analyze(Env& env)
 		{
 			// TODO error
 		}
-		UnsignedIntegerAnalyze unsigned_integer_analyzer;		// 无符号整数
+		UnsignedIntegerAnalyze unsigned_integer_analyzer;		
+		unsigned_integer_analyzer(env);							// 无符号整数
 		value = unsigned_integer_analyzer.get_value();
 		if (need_negative)
 		{
@@ -1465,7 +1466,7 @@ void SwitchStatementAnalyze::analyze(Env& env)
 void SwitchTableAnalyze::analyze(Env& env)
 {
 	unordered_set<int> used_case;
-	while (!in_branch_of<CaseStatementAnalyze>(env))
+	while (in_branch_of<CaseStatementAnalyze>(env))
 	{
 		CaseStatementAnalyze case_statement_analyze;
 		case_statement_analyze(env);								// 情况子语句

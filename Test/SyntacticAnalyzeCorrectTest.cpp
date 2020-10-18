@@ -35,9 +35,10 @@ namespace SyntacticAnalyzeTest
 			string answer = output_ostream->str();
 			std::istringstream is(answer);
 			auto it = expect_answer.cbegin();
+			int count = 0;
 			while (std::getline(is, answer))
 			{
-				Assert::AreEqual(*it++, answer);
+				Assert::AreEqual(*it++, answer, std::to_wstring(count++).c_str());
 			}
 			Assert::IsTrue(it == expect_answer.cend());
 		}
@@ -59,6 +60,46 @@ namespace SyntacticAnalyzeTest
 				"LPARENT (",
 				"STRCON fuck u",
 				"<字符串>",
+				"RPARENT )",
+				"<写语句>",
+				"SEMICN ;",
+				"<语句>",
+				"<语句列>",
+				"<复合语句>",
+				"RBRACE }",
+				"<主函数>",
+				"<程序>"
+			};
+			test(test_case, expect_answer);
+		}
+
+		TEST_METHOD(Simple_Test_2)
+		{
+			string test_case =
+				"void main() {"
+				"printf(12+12);"
+				"}";
+			vector<string> expect_answer =
+			{
+				"VOIDTK void",
+				"MAINTK main",
+				"LPARENT (",
+				"RPARENT )",
+				"LBRACE {",
+				"PRINTFTK printf",
+				"LPARENT (",
+				"INTCON 12",
+			"<无符号整数>",
+			"<整数>",
+			"<因子>",
+			"<项>",
+				"PLUS +",
+				"INTCON 12",
+			"<无符号整数>",
+			"<整数>",
+			"<因子>",
+			"<项>",
+			"<表达式>",
 				"RPARENT )",
 				"<写语句>",
 				"SEMICN ;",
@@ -133,7 +174,7 @@ namespace SyntacticAnalyzeTest
 				"COMMA ,",
 				"INTTK int",
 				"IDENFR var2",
-			"<参数表>"
+			"<参数表>",
 				"RPARENT )",
 				"LBRACE {",
 				"IDENFR change1",
@@ -146,9 +187,9 @@ namespace SyntacticAnalyzeTest
 			"<因子>",
 			"<项>",
 			"<表达式>",
-			"<赋值语句>"
+			"<赋值语句>",
 				"SEMICN ;",
-			"<语句>"
+			"<语句>",
 				"RETURNTK return",
 				"LPARENT (",
 				"IDENFR change1",
@@ -173,9 +214,9 @@ namespace SyntacticAnalyzeTest
 				"STRCON Hello World",
 			"<字符串>",
 				"RPARENT )",
-			"<写语句>"
+			"<写语句>",
 				"SEMICN ;",
-			"<语句>"
+			"<语句>",
 				"PRINTFTK printf",
 				"LPARENT (",
 				"IDENFR gets1",
@@ -193,9 +234,9 @@ namespace SyntacticAnalyzeTest
 			"<因子>",
 			"<项>",
 			"<表达式>",
-			"<值参数表>"
+			"<值参数表>",
 				"RPARENT )",
-			"<有返回值函数调用语句>"
+			"<有返回值函数调用语句>",
 			"<因子>",
 			"<项>",
 			"<表达式>",

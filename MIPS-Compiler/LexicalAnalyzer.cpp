@@ -235,7 +235,7 @@ shared_ptr<const Token> LexicalAnalyzer::get_token() const
 		ret = make_shared<CharToken>();
 		dynamic_pointer_cast<CharToken>(ret)->char_content = last_content->at(1);
 		break;
-	case SymbolType::key_int:
+	case SymbolType::number:
 		ret = make_shared<UnsignedToken>();
 		dynamic_pointer_cast<UnsignedToken>(ret)->unsigned_content = std::stoi(*last_content);
 		break;
