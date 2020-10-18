@@ -50,4 +50,10 @@ unique_ptr<std::ostream> lexical_analyze(unique_ptr<istream> input_file, unique_
 	return output_file;
 }
 
+std::unique_ptr<std::ostream> syntactic_analyze(std::unique_ptr<std::istream> input_file, std::unique_ptr<std::ostream> output_file)
+{
+	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
+	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer), std::move(output_file));
+}
+
 

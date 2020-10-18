@@ -3,24 +3,38 @@
 #define __ANSTRACT_SYNTACTIC_ANALYZER_TACTICS_H__
 
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include "global_control.h"
 #include "SyntacticAnalyzer.h"
 #include "IdentifierTable.h"
 
 using std::endl;
+using std::unordered_set;
 using std::unordered_map;
 using std::initializer_list;
 using std::unordered_set;
 using std::make_pair;
 
+
+struct VariableDefinationAnalyze;
+struct VoidFunctionDefinationAnalyze;
+struct ReturnFunctionDefinationAnalyze;
+struct MainFunctionAnalyze;
+struct VariableDefinationWithInitializationAnalyze;
+struct VariableDefinationNoInitializationAnalyze;
+struct CallReturnFunctionStatementAnalyze;
+struct CallVoidFunctionStatementAnalyze;
+struct AssignmentStatementAnalyze;
+
+
 class AbstractSyntacticAnalyzeTactics
 {
 public:
+	using symset_ptr = syntax_exception::symset_ptr;
 	using Env = SyntacticAnalyzerEnvironment;
-	using state_t = Env::state_t;
-	using symset_ptr = shared_ptr<const unordered_set<SymbolType>>;
-	using token_ptr = Env::token_ptr;
+	using state_t = SyntacticAnalyzerEnvironment::state_t;
+	using token_ptr = SyntacticAnalyzerEnvironment::token_ptr;
 	friend void analyze_function(
 		Env& env,
 		shared_ptr<const string> function_id,
@@ -36,12 +50,13 @@ private:
 	static unordered_map<const std::type_info&, unordered_set<SymbolType>> first_sets;
 protected:
 	virtual void analyze(Env& env) = 0;
-
+	
 	// 完成 first_1 集的判断部分
 	template<class T>
 	static bool in_first_set_of(Env& env)
 	{
-		auto it = first_sets.find(typeid(T));
+		const auto& type_id = typeid(T);
+		auto it = first_sets.find(type_id);
 		if (it == first_sets.end())
 		{
 			first_sets[type_id] = unordered_set<SymbolType>(T::first_set);
@@ -55,7 +70,7 @@ protected:
 	template<class T>
 	static bool in_branch_of(Env& env)
 	{
-		return in_first_set_of(typeid(T), env, T::first_set);
+		return in_first_set_of<T>(env);
 	}
 
 	template<>
@@ -460,12 +475,44 @@ protected:
 	virtual void analyze(Env& env);
 };
 
+// 步长
+struct StepLengthAnalyze: AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::number
+	};
+	unsigned get_value()
+	{
+		return value;
+	}
+protected:
+	virtual void analyze(Env& env);
+private:
+	unsigned value;
+};
+
 // 条件语句
 struct ConditionStatementAnalyze: AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
 		SymbolType::key_if
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 条件
+struct ConditionAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
 	};
 
 protected:
@@ -496,12 +543,30 @@ protected:
 	virtual void analyze(Env& env);
 };
 
+// 值参数表
+struct ParameterValueListAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
+	};
+	ParameterValueListAnalyze(shared_ptr<const vector<BaseType>> param_type_list)
+		:param_type_list(param_type_list) { }
+protected:
+	virtual void analyze(Env& env);
+private:
+	shared_ptr<const vector<BaseType>> param_type_list;
+};
+
 // 赋值语句
 struct AssignmentStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static constexpr std::initializer_list<SymbolType> first_set =
 	{
-		SymbolType::assign
+		SymbolType::identifier
 	};
 
 protected:
@@ -544,6 +609,46 @@ protected:
 	virtual void analyze(Env& env);
 };
 
+// 情况表
+struct SwitchTableAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_case
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 情况子语句
+struct CaseStatementAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_case
+	};
+	int get_case_value()
+	{
+		return case_value;
+	}
+protected:
+	virtual void analyze(Env& env);
+	int case_value;
+};
+
+// 缺省
+struct DefaultCaseAnalyze: AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::key_default
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
 // 返回语句
 struct ReturnStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
@@ -556,6 +661,53 @@ protected:
 	virtual void analyze(Env& env);
 };
 
+// 表达式
+struct ExpressionAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 项
+struct TermAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+// 因子
+struct FactorAnalyze : AbstractSyntacticAnalyzeTactics
+{
+	static constexpr std::initializer_list<SymbolType> first_set =
+	{
+		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+		SymbolType::left_paren,				// (表达式)
+		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+		SymbolType::character				// 字符
+	};
+
+protected:
+	virtual void analyze(Env& env);
+};
+
+/*
+
 // 
 struct : AbstractSyntacticAnalyzeTactics
 {
@@ -568,18 +720,8 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// 
-struct : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		// TODO
-	};
 
-protected:
-	virtual void analyze(Env& env);
-};
-
+*/
 
 #endif // !__ANSTRACT_SYNTACTIC_ANALYZER_TACTICS_H__
 

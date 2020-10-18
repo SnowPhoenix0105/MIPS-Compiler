@@ -4,24 +4,38 @@
 #define __ANSTRACT_SYNTACTIC_ANALYZER_TACTICS_H__
 
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include "global_control.h"
 #include "SyntacticAnalyzer.h"
 #include "IdentifierTable.h"
 
 using std::endl;
+using std::unordered_set;
 using std::unordered_map;
 using std::initializer_list;
 using std::unordered_set;
 using std::make_pair;
 
+
+struct VariableDefinationAnalyze;
+struct VoidFunctionDefinationAnalyze;
+struct ReturnFunctionDefinationAnalyze;
+struct MainFunctionAnalyze;
+struct VariableDefinationWithInitializationAnalyze;
+struct VariableDefinationNoInitializationAnalyze;
+struct CallReturnFunctionStatementAnalyze;
+struct CallVoidFunctionStatementAnalyze;
+struct AssignmentStatementAnalyze;
+
+
 class AbstractSyntacticAnalyzeTactics
 {
 public:
+	using symset_ptr = syntax_exception::symset_ptr;
 	using Env = SyntacticAnalyzerEnvironment;
-	using state_t = Env::state_t;
-	using symset_ptr = shared_ptr<const unordered_set<SymbolType>>;
-	using token_ptr = Env::token_ptr;
+	using state_t = SyntacticAnalyzerEnvironment::state_t;
+	using token_ptr = SyntacticAnalyzerEnvironment::token_ptr;
 	friend void analyze_function(
 		Env& env,
 		shared_ptr<const string> function_id,
@@ -37,12 +51,13 @@ private:
 	static unordered_map<const std::type_info&, unordered_set<SymbolType>> first_sets;
 protected:
 	virtual void analyze(Env& env) = 0;
-
+	
 	// 完成 first_1 集的判断部分
 	template<class T>
 	static bool in_first_set_of(Env& env)
 	{
-		auto it = first_sets.find(typeid(T));
+		const auto& type_id = typeid(T);
+		auto it = first_sets.find(type_id);
 		if (it == first_sets.end())
 		{
 			first_sets[type_id] = unordered_set<SymbolType>(T::first_set);
@@ -56,7 +71,7 @@ protected:
 	template<class T>
 	static bool in_branch_of(Env& env)
 	{
-		return in_first_set_of(typeid(T), env, T::first_set);
+		return in_first_set_of<T>(env);
 	}
 
 	template<>
@@ -692,17 +707,7 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// 
-struct : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		// TODO
-	};
-
-protected:
-	virtual void analyze(Env& env);
-};
+/*
 
 // 
 struct : AbstractSyntacticAnalyzeTactics
@@ -716,18 +721,8 @@ protected:
 	virtual void analyze(Env& env);
 };
 
-// 
-struct : AbstractSyntacticAnalyzeTactics
-{
-	static constexpr std::initializer_list<SymbolType> first_set =
-	{
-		// TODO
-	};
 
-protected:
-	virtual void analyze(Env& env);
-};
-
+*/
 
 #endif // !__ANSTRACT_SYNTACTIC_ANALYZER_TACTICS_H__
 

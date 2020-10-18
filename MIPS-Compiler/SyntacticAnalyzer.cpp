@@ -12,3 +12,22 @@ void SyntacticAnalyzerEnvironment::ensure_capacity(size_t size)
 		symbols.push_back(info);
 	}
 }
+
+void SyntacticAnalyzerEnvironment::print_all(ostream& os)
+{
+	for (size_t i = 0; i != current_state.msg_index; ++i)
+	{
+		os << messages[i] << std::endl;
+	}
+}
+
+void SyntacticAnalyzer::parse()
+{
+	ProgramAnalyze()(env);
+}
+
+
+void SyntacticAnalyzer::print_all()
+{
+	env.print_all(*os);
+}

@@ -4,14 +4,14 @@
 
 void AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 {
-	state_t state = env.state();
+	state_t current_state = env.state();
 	try
 	{
 		this->analyze(env);
 	}
 	catch (const syntax_exception&)
 	{
-		env.state(state);
+		env.state(current_state);
 		throw;
 	}
 }
@@ -1375,8 +1375,9 @@ void WriteStatementAnalyze::analyze(Env& env)
 
 	if (env.peek() == SymbolType::string)
 	{
-		auto tk1 = env.dequeue_and_push_message();
+		auto tk1 = env.dequeue_and_push_message();				// 字符串
 		auto str_token = dynamic_pointer_cast<const StringToken>(tk1);
+		env.push_message("<字符串>");
 		if (env.peek() == SymbolType::comma)
 		{
 			env.dequeue_and_push_message();						// comma
@@ -1558,4 +1559,156 @@ void ReturnStatementAnalyze::analyze(Env& env)
 	env.dequeue_and_push_message();					// right_paren
 
 	env.push_message("<返回语句>");
+}
+
+// 表达式
+void ExpressionAnalyze::analyze(Env& env)
+{
+	bool first_need_negative;
+	if (env.peek() == SymbolType::plus || env.peek() == SymbolType::minus)
+	{
+		auto token = env.dequeue_and_push_message();				// + / -
+		first_need_negative = token->type == SymbolType::minus;
+	}
+
+	bool flag = false;
+	while (true)
+	{
+		bool need_negative = flag ? false : first_need_negative;
+		if (flag)
+		{
+			if (env.peek() != SymbolType::plus && env.peek() != SymbolType::minus)
+			{
+				break;
+			}
+			need_negative = env.dequeue_and_push_message()->type == SymbolType::minus;	// + / -
+		}
+		if (!in_branch_of<TermAnalyze>(env))
+		{
+			// TODO error
+		}
+		TermAnalyze term_analyze;								// 项
+		term_analyze(env);
+		flag = true;
+	}
+	env.push_message("<表达式>");
+}
+
+// 项
+void TermAnalyze::analyze(Env& env)
+{
+	bool flag = false;
+	while (true)
+	{
+		bool is_mult = true;
+		if (flag)
+		{
+			if (env.peek() != SymbolType::mult && env.peek() != SymbolType::div)
+			{
+				break;
+			}
+			is_mult = env.dequeue_and_push_message()->type == SymbolType::mult;			// * / /
+		}
+		if (!in_branch_of<FactorAnalyze>(env))
+		{
+			// TODO error
+		}
+		FactorAnalyze factor_analyze;
+		factor_analyze(env);
+		flag = true;
+	}
+	env.push_message("<项>");
+}
+
+// 因子
+void FactorAnalyze::analyze(Env& env)
+{
+	if (env.peek() == SymbolType::character)
+	{
+		env.dequeue_and_push_message();							// charactor
+	}
+	else if (in_branch_of<IntegerAnalyze>(env))
+	{
+		IntegerAnalyze integer_analyze;
+		integer_analyze(env);									// 整数
+	}
+	else if (env.peek() == SymbolType::left_paren)
+	{
+		env.dequeue_and_push_message();							// left_paren
+		if (!in_branch_of<ExpressionAnalyze>(env))
+		{
+			// TODO error
+		}
+		ExpressionAnalyze expression_analyze;
+		expression_analyze(env);								// 表达式
+		if (env.peek() != SymbolType::right_paren)
+		{
+			// TODO error
+		}
+		env.dequeue_and_push_message();							// right_paren
+	}
+	else if (in_branch_of<CallReturnFunctionStatementAnalyze>(env))
+	{
+		CallReturnFunctionStatementAnalyze()(env);				// 有返回值函数调用语句
+	}
+	else
+	{
+		// assert env.peek() == SymbolType::identifier
+		auto token = env.dequeue_and_push_message();			// identifier
+		auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
+		auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
+		if (env.peek() == SymbolType::left_square)
+		{
+			env.dequeue_and_push_message();						// left_square
+			if (!in_branch_of<ExpressionAnalyze>(env))
+			{
+				// TODO error
+			}
+			ExpressionAnalyze size_1_expression_analyze;
+			size_1_expression_analyze(env);						// 表达式
+			if (env.peek() != SymbolType::right_square)
+			{
+				// TODO error
+			}
+			env.dequeue_and_push_message();						// right_square
+			if (env.peek() == SymbolType::left_square)
+			{
+				env.dequeue_and_push_message();						// left_square
+				if (!in_branch_of<ExpressionAnalyze>(env))
+				{
+					// TODO error
+				}
+				ExpressionAnalyze size_2_expression_analyze;
+				size_2_expression_analyze(env);						// 表达式
+				if (env.peek() != SymbolType::right_square)
+				{
+					// TODO error
+				}
+				env.dequeue_and_push_message();						// right_square
+
+				// 二维数组
+				if (id_type->extern_type != ExternType::d_array)
+				{
+					// TODO error
+				}
+			}
+			else
+			{
+				// 一维数组
+				if (id_type->extern_type != ExternType::l_array)
+				{
+					// TODO error
+				}
+			}
+		}
+		else
+		{
+			// 普通变量
+			if (id_type->extern_type != ExternType::variable)
+			{
+				// TODO error
+			}
+		}
+	}
+	env.push_message("<因子>");
 }
