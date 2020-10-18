@@ -233,9 +233,9 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				{
 					// 二维数组
 					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size_1 = unsigned_analyze.get_value();
+					UnsignedIntegerAnalyze size_1_unsigned_analyze;			// unsigned_integer
+					size_1_unsigned_analyze(env);
+					unsigned size_1 = size_1_unsigned_analyze.get_value();
 					if (env.peek() != SymbolType::right_square)
 					{
 						//TODO error
@@ -311,9 +311,9 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				{
 					// 一维数组
 					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size = unsigned_analyze.get_value();
+					UnsignedIntegerAnalyze size_2_unsigned_analyze;			// unsigned_integer
+					size_2_unsigned_analyze(env);
+					unsigned size = size_2_unsigned_analyze.get_value();
 					if (env.peek() != SymbolType::right_square)
 					{
 						//TODO error
@@ -432,18 +432,18 @@ void VariableDefinationNoInitializationAnalyze::analyze(Env& env)
 				{
 					// 二维数组
 					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size_1 = unsigned_analyze.get_value();
+					UnsignedIntegerAnalyze size_1_unsigned_analyze;			// unsigned_integer
+					size_1_unsigned_analyze(env);
+					unsigned size_1 = size_1_unsigned_analyze.get_value();
 					if (env.peek() != SymbolType::right_square)
 					{
 						//TODO error
 					}
 					env.dequeue_and_push_message();						// right_square
 					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size_2 = unsigned_analyze.get_value();
+					UnsignedIntegerAnalyze size_2_unsigned_analyze;			// unsigned_integer
+					size_2_unsigned_analyze(env);
+					unsigned size_2 = size_2_unsigned_analyze.get_value();
 					if (env.peek() != SymbolType::right_square)
 					{
 						//TODO error
@@ -866,6 +866,7 @@ void StatementAnalyze::analyze(Env& env)
 		break;
 	default:
 		// TODO error
+		break;
 	}
 
 	env.push_message("<语句>");
@@ -1154,6 +1155,7 @@ void ConditionAnalyze::analyze(Env& env)
 	case SymbolType::less_equal:
 	case SymbolType::greater:
 	case SymbolType::greater_equal:
+		break;
 	}
 	env.dequeue_and_push_message();								// 关系运算符
 

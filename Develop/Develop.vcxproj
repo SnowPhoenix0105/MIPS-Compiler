@@ -140,7 +140,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AbstractSyntacticAnalyzeTactics.cpp" />
-    <ClCompile Include="AbstractSyntaxTree.cpp" />
     <ClCompile Include="compile_controller.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
     <ClCompile Include="LexicalAnalyzer.cpp" />
@@ -149,7 +148,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbstractSyntacticAnalyzeTactics.h" />
-    <ClInclude Include="AbstractSyntaxTree.h" />
     <ClInclude Include="compile_controller.h" />
     <ClInclude Include="global_control.h" />
     <ClInclude Include="IdentifierTable.h" />

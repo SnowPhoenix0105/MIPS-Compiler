@@ -48,7 +48,7 @@ public:
 	virtual ~AbstractSyntacticAnalyzeTactics() = default;
 	void operator()(Env & env);
 private:
-	static unordered_map<const std::type_info&, unordered_set<SymbolType>> first_sets;
+	static unordered_map<string, unordered_set<SymbolType>> first_sets;
 protected:
 	virtual void analyze(Env& env) = 0;
 	
@@ -56,7 +56,7 @@ protected:
 	template<class T>
 	static bool in_first_set_of(Env& env)
 	{
-		const auto& type_id = typeid(T);
+		const auto& type_id = typeid(T).name;
 		auto it = first_sets.find(type_id);
 		if (it == first_sets.end())
 		{
