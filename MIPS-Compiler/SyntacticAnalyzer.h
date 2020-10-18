@@ -22,10 +22,6 @@ using std::unique_ptr;
 using std::unordered_set;
 using std::ostream;
 
-class SyntacticAnalyzerEnvironment;
-
-
-
 class SyntacticAnalyzer
 {
 private:
@@ -34,9 +30,7 @@ private:
 public:
 	SyntacticAnalyzer(unique_ptr<LexicalAnalyzer> lexical_analyzer)
 		: env(std::move(lexical_analyzer)) { }
-
 	void parse();
-
 	void print_all(ostream& os);
 };
 

@@ -1,6 +1,6 @@
 #include "AbstractSyntacticAnalyzeTactics.h"
 
-
+unordered_map<string, unordered_set<SymbolType>> first_sets;
 
 void AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 {
@@ -588,7 +588,7 @@ void analyze_inner_block(
 	env.dequeue_and_push_message();						// left_brance
 
 	if (env.peek() != SymbolType::left_brance
-		&& !AbstractSyntacticAnalyzeTactics::in_branch_of<CompoundStatementsAnalyze>(env))
+		&& !in_branch_of<CompoundStatementsAnalyze>(env))
 	{
 		// TODO error
 	}
@@ -619,7 +619,7 @@ void analyze_function(
 	}
 	env.dequeue_and_push_message();						// left_paren
 
-	if (!AbstractSyntacticAnalyzeTactics::in_branch_of<ParameterListAnalyze>(env) 
+	if (!in_branch_of<ParameterListAnalyze>(env) 
 		&& env.peek() != SymbolType::right_paren)
 	{
 		// TODO error
@@ -1566,7 +1566,7 @@ void ReturnStatementAnalyze::analyze(Env& env)
 // 表达式
 void ExpressionAnalyze::analyze(Env& env)
 {
-	bool first_need_negative;
+	bool first_need_negative = false;
 	if (env.peek() == SymbolType::plus || env.peek() == SymbolType::minus)
 	{
 		auto token = env.dequeue_and_push_message();				// + / -

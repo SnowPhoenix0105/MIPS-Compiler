@@ -28,6 +28,139 @@ struct CallReturnFunctionStatementAnalyze;
 struct CallVoidFunctionStatementAnalyze;
 struct AssignmentStatementAnalyze;
 
+extern unordered_map<string, unordered_set<SymbolType>> first_sets;
+
+// 完成 first_1 集的判断部分
+template<class T>
+bool in_first_set_of(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	const auto& type_id = typeid(T).name();
+	auto it = first_sets.find(type_id);
+	if (it == first_sets.end())
+	{
+		first_sets[type_id] = unordered_set<SymbolType>(T::first_set);
+		it = first_sets.find(type_id);
+	}
+	const auto& set = it->second;
+	return set.find(SyntacticAnalyzerEnvironment.peek()) != set.end();
+}
+
+// 完成 first_n 集的判断部分, 不检查follow集
+template<class T>
+bool in_branch_of(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	return in_first_set_of<T>(SyntacticAnalyzerEnvironment);
+}
+
+template<>
+bool in_branch_of<VariableDefinationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	return SyntacticAnalyzerEnvironment.peek(2) != SymbolType::left_paren && in_first_set_of<VariableDefinationAnalyze>(SyntacticAnalyzerEnvironment);
+}
+
+template<>
+bool in_branch_of<ReturnFunctionDefinationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	return SyntacticAnalyzerEnvironment.peek(2) == SymbolType::left_paren && in_first_set_of<ReturnFunctionDefinationAnalyze>(SyntacticAnalyzerEnvironment);
+}
+
+template<>
+bool in_branch_of<VoidFunctionDefinationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	return SyntacticAnalyzerEnvironment.peek(1) != SymbolType::key_main && in_first_set_of<VoidFunctionDefinationAnalyze>(SyntacticAnalyzerEnvironment);
+}
+
+template<>
+bool in_branch_of<MainFunctionAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	return SyntacticAnalyzerEnvironment.peek(1) == SymbolType::key_main && in_first_set_of<MainFunctionAnalyze>(SyntacticAnalyzerEnvironment);
+}
+
+inline bool is_assigned_variable(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	return
+		(
+			SyntacticAnalyzerEnvironment.peek(2) == SymbolType::assign
+			|| (
+				SyntacticAnalyzerEnvironment.peek(2) == SymbolType::left_square
+				&& (
+					SyntacticAnalyzerEnvironment.peek(5) == SymbolType::assign
+					|| (
+						SyntacticAnalyzerEnvironment.peek(5) == SymbolType::left_square
+						&& SyntacticAnalyzerEnvironment.peek(8) == SymbolType::assign
+						)
+					)
+				)
+			);
+}
+
+template<>
+bool in_branch_of<VariableDefinationWithInitializationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	return 
+		is_assigned_variable(SyntacticAnalyzerEnvironment)
+		&& in_first_set_of<VariableDefinationWithInitializationAnalyze>(SyntacticAnalyzerEnvironment);
+}
+
+template<>
+bool in_branch_of<VariableDefinationNoInitializationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	return
+		!is_assigned_variable(SyntacticAnalyzerEnvironment)
+		&& in_first_set_of<VariableDefinationNoInitializationAnalyze>(SyntacticAnalyzerEnvironment);
+}
+
+template<>
+bool in_branch_of<CallReturnFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	if (!in_first_set_of<CallReturnFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment))
+	{
+		return false;
+	}
+	auto token = SyntacticAnalyzerEnvironment.peek_info();
+	auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
+	auto id_info = SyntacticAnalyzerEnvironment.get_identifier_info(id);
+	return id_info->return_type->extern_type == ExternType::function
+		&& id_info->return_type->base_type != BaseType::type_void;
+}
+
+template<>
+bool in_branch_of<CallVoidFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment))
+	{
+		return false;
+	}
+	auto token = SyntacticAnalyzerEnvironment.peek_info();
+	auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
+	auto id_info = SyntacticAnalyzerEnvironment.get_identifier_info(id);
+	return id_info->return_type->extern_type == ExternType::function
+		&& id_info->return_type->base_type == BaseType::type_void;
+}
+
+template<>
+bool in_branch_of<AssignmentStatementAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+{
+	if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment))
+	{
+		return false;
+	}
+	auto token = SyntacticAnalyzerEnvironment.peek_info();
+	auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
+	auto id_info = SyntacticAnalyzerEnvironment.get_identifier_info(id);
+	return id_info->return_type->is_one_from(ExternType::variable, ExternType::l_array, ExternType::d_array)
+		&& id_info->return_type->base_type != BaseType::type_void;
+}
+
+/*
+
+template<>
+bool in_branch_of<>(Env& env)
+{
+	return  && in_first_set_of<>(env);
+}
+	
+*/
 
 class AbstractSyntacticAnalyzeTactics
 {
@@ -47,143 +180,9 @@ public:
 		shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list);
 
 	virtual ~AbstractSyntacticAnalyzeTactics() = default;
-	void operator()(Env & env);
-private:
-	static unordered_map<string, unordered_set<SymbolType>> first_sets;
+	void operator()(Env& env);
 protected:
 	virtual void analyze(Env& env) = 0;
-	
-	// 完成 first_1 集的判断部分
-	template<class T>
-	static bool in_first_set_of(Env& env)
-	{
-		const auto& type_id = typeid(T).name();
-		auto it = first_sets.find(type_id);
-		if (it == first_sets.end())
-		{
-			first_sets[type_id] = unordered_set<SymbolType>(T::first_set);
-			it = first_sets.find(type_id);
-		}
-		const auto& set = it->second;
-		return set.find(env.peek()) != set.end();
-	}
-
-	// 完成 first_n 集的判断部分, 不检查follow集
-	template<class T>
-	static bool in_branch_of(Env& env)
-	{
-		return in_first_set_of<T>(env);
-	}
-
-	template<>
-	static bool in_branch_of<VariableDefinationAnalyze>(Env& env)
-	{
-		return env.peek(2) != SymbolType::left_paren && in_first_set_of<VariableDefinationAnalyze>(env);
-	}
-
-	template<>
-	static bool in_branch_of<ReturnFunctionDefinationAnalyze>(Env& env)
-	{
-		return env.peek(2) == SymbolType::left_paren && in_first_set_of<ReturnFunctionDefinationAnalyze>(env);
-	}
-
-	template<>
-	static bool in_branch_of<VoidFunctionDefinationAnalyze>(Env& env)
-	{
-		return env.peek(1) != SymbolType::key_main && in_first_set_of<VoidFunctionDefinationAnalyze>(env);
-	}
-
-	template<>
-	static bool in_branch_of<MainFunctionAnalyze>(Env& env)
-	{
-		return env.peek(1) == SymbolType::key_main && in_first_set_of<MainFunctionAnalyze>(env);
-	}
-
-	static bool is_assigned_variable(Env& env)
-	{
-		return
-			(
-				env.peek(2) == SymbolType::assign
-				|| (
-					env.peek(2) == SymbolType::left_square
-					&& (
-						env.peek(5) == SymbolType::assign
-						|| (
-							env.peek(5) == SymbolType::left_square
-							&& env.peek(8) == SymbolType::assign
-							)
-						)
-					)
-				);
-	}
-
-	template<>
-	static bool in_branch_of<VariableDefinationWithInitializationAnalyze>(Env& env)
-	{
-		return 
-			is_assigned_variable(env)
-			&& in_first_set_of<VariableDefinationWithInitializationAnalyze>(env);
-	}
-
-	template<>
-	static bool in_branch_of<VariableDefinationNoInitializationAnalyze>(Env& env)
-	{
-		return
-			!is_assigned_variable(env)
-			&& in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
-	}
-
-	template<>
-	static bool in_branch_of<CallReturnFunctionStatementAnalyze>(Env& env)
-	{
-		if (!in_first_set_of<CallReturnFunctionStatementAnalyze>(env))
-		{
-			return false;
-		}
-		auto token = env.peek_info();
-		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
-		auto id_info = env.get_identifier_info(id);
-		return id_info->return_type->extern_type == ExternType::function
-			&& id_info->return_type->base_type != BaseType::type_void;
-	}
-
-	template<>
-	static bool in_branch_of<CallVoidFunctionStatementAnalyze>(Env& env)
-	{
-		if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(env))
-		{
-			return false;
-		}
-		auto token = env.peek_info();
-		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
-		auto id_info = env.get_identifier_info(id);
-		return id_info->return_type->extern_type == ExternType::function
-			&& id_info->return_type->base_type == BaseType::type_void;
-	}
-
-	template<>
-	static bool in_branch_of<AssignmentStatementAnalyze>(Env& env)
-	{
-		if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(env))
-		{
-			return false;
-		}
-		auto token = env.peek_info();
-		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
-		auto id_info = env.get_identifier_info(id);
-		return id_info->return_type->is_one_from(ExternType::variable, ExternType::l_array, ExternType::d_array)
-			&& id_info->return_type->base_type != BaseType::type_void;
-	}
-
-	/*
-
-	template<>
-	static bool in_branch_of<>(Env& env)
-	{
-		return  && in_first_set_of<>(env);
-	}
-	
-	*/
 };
 
 // 因子

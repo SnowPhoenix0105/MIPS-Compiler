@@ -139,16 +139,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AbstractSyntacticAnalyzeTactics.cpp" />
     <ClCompile Include="compile_controller.cpp" />
     <ClCompile Include="global_control.h" />
+    <ClCompile Include="IdentifierTable.cpp" />
     <ClCompile Include="LexicalAnalyzer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SymbolType.cpp" />
+    <ClCompile Include="SyntacticAnalyzer.cpp" />
+    <ClCompile Include="SyntacticAnalyzeUtil.cpp" />
+    <ClCompile Include="SyntacticUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbstractSyntacticAnalyzeTactics.h" />
     <ClInclude Include="compile_controller.h" />
+    <ClInclude Include="IdentifierTable.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
+    <ClInclude Include="SymbolToken.h" />
     <ClInclude Include="SymbolType.h" />
+    <ClInclude Include="SyntacticAnalyzer.h" />
+    <ClInclude Include="SyntacticAnalyzeUtil.h" />
+    <ClInclude Include="SyntacticUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
