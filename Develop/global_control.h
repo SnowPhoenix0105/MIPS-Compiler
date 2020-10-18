@@ -45,6 +45,7 @@
 
 
 #include <iostream>
+#include <sstream>
 
 // @param required_level: if DEBUG_LEVEL < required_level, no message will be print;
 // @param operations: some statements, divided with ';'
@@ -66,7 +67,6 @@
 // @param required_level:if DEBUG_LEVEL < required_level, no message will be print;
 // @param var: a named variable that need to be print
 #define DEBUG_LOG_VAR(required_level, var) DEBUG_LOG_VAL((required_level), #var, (var))
-
 
 
 #else

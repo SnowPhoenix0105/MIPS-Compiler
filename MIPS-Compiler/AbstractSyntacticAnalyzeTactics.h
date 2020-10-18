@@ -17,6 +17,7 @@ using std::unordered_set;
 using std::make_pair;
 
 
+struct VariableDeclarationAnalyze;
 struct VariableDefinationAnalyze;
 struct VoidFunctionDefinationAnalyze;
 struct ReturnFunctionDefinationAnalyze;
@@ -56,6 +57,12 @@ public:
 	bool in_branch_of(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
 	{
 		return in_first_set_of<T>(SyntacticAnalyzerEnvironment);
+	}
+
+	template<>
+	bool in_branch_of<VariableDeclarationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+	{
+		return SyntacticAnalyzerEnvironment.peek(2) != SymbolType::left_paren && in_first_set_of<VariableDeclarationAnalyze>(SyntacticAnalyzerEnvironment);
 	}
 
 	template<>

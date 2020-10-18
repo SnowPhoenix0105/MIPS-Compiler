@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -23,13 +24,19 @@ namespace SyntacticAnalyzeTest
 	TEST_CLASS(SyntacticAnalyzeCorrectTest)
 	{
 	public:
+		static const string test_resource_path;
 		void test(const string& test_case, const vector<string>& expect_answer)
 		{
-			unique_ptr<istream> input_istream(new std::istringstream(test_case));
+			unique_ptr<istream> input_stream(new std::istringstream(test_case));
+			test(unique_ptr<istream>(new std::istringstream(test_case)), expect_answer);
+		}
+
+		void test(unique_ptr<istream> input_stream, const vector<string>& expect_answer)
+		{
 			unique_ptr<ostringstream> output_ostream(new std::ostringstream());
 			output_ostream.reset(
 				dynamic_cast<ostringstream*>(
-					syntactic_analyze(std::move(input_istream), std::move(output_ostream)).release()
+					syntactic_analyze(std::move(input_stream), std::move(output_ostream)).release()
 					)
 			);
 			string answer = output_ostream->str();
@@ -252,5 +259,13 @@ namespace SyntacticAnalyzeTest
 			};
 			test(test_case, expect_answer);
 		}
+
+		TEST_METHOD(File_Test_1)
+		{
+			string source_file = test_resource_path + "\\sample1\\nospace_source.c";
+			test(unique_ptr<istream>(new std::ifstream(source_file)), vector<string>());
+		}
 	};
+
+	const string SyntacticAnalyzeCorrectTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\Test\\TestResource");
 }

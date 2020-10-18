@@ -566,7 +566,14 @@ void IntegerAnalyze::analyze(Env& env)
 void UnsignedIntegerAnalyze::analyze(Env& env)
 {
 	auto token = env.dequeue_and_push_message();		// number
-	value = dynamic_pointer_cast<const UnsignedToken>(token)->unsigned_content;
+	try
+	{
+		value = dynamic_pointer_cast<const UnsignedToken>(token)->unsigned_content;
+	}
+	catch (const std::exception&)
+	{
+		DEBUG_LOG_VAL(5, "unsigned_token->type", symboltype_output_dictionary.at(token->type));
+	}
 	env.push_message("<无符号整数>");
 }
 
@@ -1165,6 +1172,7 @@ void ConditionAnalyze::analyze(Env& env)
 	}
 	ExpressionAnalyze right_expression_analyze;
 	right_expression_analyze(env);								// 表达式
+	env.push_message("<条件>");
 }
 
 // 有返回值函数调用语句

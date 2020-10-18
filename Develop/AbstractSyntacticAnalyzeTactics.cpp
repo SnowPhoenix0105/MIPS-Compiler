@@ -3,6 +3,7 @@
 
 void AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 {
+	DEBUG_LOG_VAL(10, "calling syntactic-analyze-tactics", typeid(*this).name());
 	state_t current_state = env.state();
 	try
 	{
@@ -257,11 +258,14 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					env.dequeue_and_push_message();						// left_brance
 					for (int i = 0; i != size_1; ++i)
 					{
-						if (i != 0 && env.peek() != SymbolType::comma)
+						if (i != 0)
 						{
-							// TODO error
+							if (env.peek() != SymbolType::comma)
+							{
+								// TODO error
+							}
+							env.dequeue_and_push_message();					// comma
 						}
-						env.dequeue_and_push_message();					// comma
 						if (env.peek() != SymbolType::left_brance)
 						{
 							// TODO error
@@ -270,11 +274,14 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 
 						for (int j = 0; j != size_2; ++j)
 						{
-							if (j != 0 && env.peek() != SymbolType::comma)
+							if (j != 0)
 							{
-								// TODO error
+								if (env.peek() != SymbolType::comma)
+								{
+									// TODO error
+								}
+								env.dequeue_and_push_message();					// comma
 							}
-							env.dequeue_and_push_message();					// comma;
 							if (!in_branch_of<ConstantAnalyze>(env))
 							{
 								// TODO error
@@ -326,11 +333,14 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					env.dequeue_and_push_message();						// left_brance
 					for (int i = 0; i != size; ++i)
 					{
-						if (i != 0 && env.peek() != SymbolType::comma)
+						if (i != 0)
 						{
-							// TODO error
+							if (env.peek() != SymbolType::comma)
+							{
+								// TODO error
+							}
+							env.dequeue_and_push_message();					// comma
 						}
-						env.dequeue_and_push_message();					// comma
 						if (!in_branch_of<ConstantAnalyze>(env))
 						{
 							// TODO error
@@ -1165,6 +1175,7 @@ void ConditionAnalyze::analyze(Env& env)
 	}
 	ExpressionAnalyze right_expression_analyze;
 	right_expression_analyze(env);								// 表达式
+	env.push_message("<条件>");
 }
 
 // 有返回值函数调用语句
