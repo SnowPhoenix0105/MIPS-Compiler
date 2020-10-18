@@ -154,7 +154,7 @@ const std::unordered_map<SymbolType, string> symboltype_output_dictionary =
 	{	SymbolType::number			,		"INTCON"		},
 	{	SymbolType::identifier		,		"IDENFR"		},
 
-	{	SymbolType::end				,		"END"			}
+	{	SymbolType::end				,		"END"			},
 	{	SymbolType::wrong			,		"WRONG"			}
 };
 
