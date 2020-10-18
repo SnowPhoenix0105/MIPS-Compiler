@@ -161,6 +161,7 @@ public:
 		{
 			messages.emplace_back(value);
 			++current_state.msg_index;
+			return;
 		}
 		messages[current_state.msg_index++] = value;
 	}

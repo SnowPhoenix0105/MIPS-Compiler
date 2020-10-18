@@ -4,7 +4,7 @@ const shared_ptr<Token> SyntacticAnalyzerEnvironment::NIL = make_shared<Token>()
 
 void SyntacticAnalyzerEnvironment::ensure_capacity(size_t size)
 {
-	while (size > symbols.size()) {
+	while (size >= symbols.size()) {
 		if (!lexical_analyzer->has_next())
 		{
 			symbols.push_back(NIL);

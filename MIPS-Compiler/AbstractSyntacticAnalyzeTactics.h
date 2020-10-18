@@ -29,21 +29,26 @@ struct AssignmentStatementAnalyze;
 
 struct FirstSetJudgement
 {
+private:
 	unordered_map<string, unordered_set<SymbolType>> first_sets;
 
+public:
 	// 完成 first_1 集的判断部分
 	template<class T>
-	bool in_first_set_of(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+	bool in_first_set_of(SyntacticAnalyzerEnvironment& env)
 	{
-		const auto& type_id = typeid(T).name();
+		string type_id(typeid(T).name());
 		auto it = first_sets.find(type_id);
 		if (it == first_sets.end())
 		{
-			first_sets[type_id] = unordered_set<SymbolType>(T::first_set);
+			auto s = T::first_set();
+			first_sets.insert(make_pair(type_id, s));
 			it = first_sets.find(type_id);
 		}
 		const auto& set = it->second;
-		return set.find(SyntacticAnalyzerEnvironment.peek()) != set.end();
+		SymbolType type = env.peek();
+		auto find = set.count(type);
+		return find != 0;
 	}
 
 	// 完成 first_n 集的判断部分, 不检查follow集
@@ -68,13 +73,17 @@ struct FirstSetJudgement
 	template<>
 	bool in_branch_of<VoidFunctionDefinationAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
 	{
-		return SyntacticAnalyzerEnvironment.peek(1) != SymbolType::key_main && in_first_set_of<VoidFunctionDefinationAnalyze>(SyntacticAnalyzerEnvironment);
+		bool b1 = SyntacticAnalyzerEnvironment.peek(1) != SymbolType::key_main;
+		bool b2 = in_first_set_of<VoidFunctionDefinationAnalyze>(SyntacticAnalyzerEnvironment);
+		return b1 && b2;
 	}
 
 	template<>
 	bool in_branch_of<MainFunctionAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
 	{
-		return SyntacticAnalyzerEnvironment.peek(1) == SymbolType::key_main && in_first_set_of<MainFunctionAnalyze>(SyntacticAnalyzerEnvironment);
+		bool b1 = SyntacticAnalyzerEnvironment.peek(1) == SymbolType::key_main;
+		bool b2 = in_first_set_of<MainFunctionAnalyze>(SyntacticAnalyzerEnvironment);
+		return b1 && b2;
 	}
 
 	inline bool is_assigned_variable(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
@@ -195,7 +204,7 @@ protected:
 	{
 		return judgment.in_first_set_of<T>(env);
 	}
-	
+
 	template<class T>
 	bool in_branch_of(Env& env)
 	{
@@ -206,12 +215,15 @@ protected:
 // 因子
 struct FactorAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
-		SymbolType::left_paren,				// (表达式)
-		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
-		SymbolType::character				// 字符
+		return
+		{
+			SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+			SymbolType::left_paren,				// (表达式)
+			SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+			SymbolType::character				// 字符
+		};
 	};
 
 protected:
@@ -221,12 +233,15 @@ protected:
 // 项
 struct TermAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
-		SymbolType::left_paren,				// (表达式)
-		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
-		SymbolType::character				// 字符
+		return
+		{
+			SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+			SymbolType::left_paren,				// (表达式)
+			SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+			SymbolType::character				// 字符
+		};
 	};
 
 protected:
@@ -236,12 +251,15 @@ protected:
 // 表达式
 struct ExpressionAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
-		SymbolType::left_paren,				// (表达式)
-		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
-		SymbolType::character				// 字符
+		return
+		{
+			SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+			SymbolType::left_paren,				// (表达式)
+			SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+			SymbolType::character				// 字符
+		};
 	};
 
 protected:
@@ -251,9 +269,12 @@ protected:
 // 返回语句
 struct ReturnStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_return
+		return
+		{
+			SymbolType::key_return
+		};
 	};
 
 protected:
@@ -263,9 +284,12 @@ protected:
 // 缺省
 struct DefaultCaseAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_default
+		return
+		{
+			SymbolType::key_default
+		};
 	};
 
 protected:
@@ -275,9 +299,12 @@ protected:
 // 情况子语句
 struct CaseStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_case
+		return
+		{
+			SymbolType::key_case
+		};
 	};
 	int get_case_value()
 	{
@@ -291,9 +318,12 @@ protected:
 // 情况表
 struct SwitchTableAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_case
+		return
+		{
+			SymbolType::key_case
+		};
 	};
 
 protected:
@@ -303,9 +333,12 @@ protected:
 // 情况语句
 struct SwitchStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_switch
+		return
+		{
+			SymbolType::key_switch
+		};
 	};
 
 protected:
@@ -315,9 +348,12 @@ protected:
 // 写语句
 struct WriteStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_printf
+		return
+		{
+			SymbolType::key_printf
+		};
 	};
 
 protected:
@@ -327,9 +363,12 @@ protected:
 // 读语句
 struct ReadStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_scanf
+		return
+		{
+			SymbolType::key_scanf
+		};
 	};
 
 protected:
@@ -339,9 +378,12 @@ protected:
 // 赋值语句
 struct AssignmentStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::identifier
+		return
+		{
+			SymbolType::identifier
+		};
 	};
 
 protected:
@@ -351,12 +393,15 @@ protected:
 // 值参数表
 struct ParameterValueListAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
-		SymbolType::left_paren,				// (表达式)
-		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
-		SymbolType::character				// 字符
+		return
+		{
+			SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+			SymbolType::left_paren,				// (表达式)
+			SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+			SymbolType::character				// 字符
+		};
 	};
 	ParameterValueListAnalyze(shared_ptr<const vector<BaseType>> param_type_list)
 		:param_type_list(param_type_list) { }
@@ -369,9 +414,12 @@ private:
 // 无返回值函数调用语句
 struct CallVoidFunctionStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::identifier
+		return
+		{
+			SymbolType::identifier
+		};
 	};
 
 protected:
@@ -381,9 +429,12 @@ protected:
 // 有返回值函数调用语句
 struct CallReturnFunctionStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::identifier
+		return
+		{
+			SymbolType::identifier
+		};
 	};
 
 protected:
@@ -393,12 +444,15 @@ protected:
 // 条件
 struct ConditionAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
-		SymbolType::left_paren,				// (表达式)
-		SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
-		SymbolType::character				// 字符
+		return
+		{
+			SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
+			SymbolType::left_paren,				// (表达式)
+			SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
+			SymbolType::character				// 字符
+		};
 	};
 
 protected:
@@ -408,9 +462,12 @@ protected:
 // 条件语句
 struct ConditionStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_if
+		return
+		{
+			SymbolType::key_if
+		};
 	};
 
 protected:
@@ -420,9 +477,12 @@ protected:
 // 步长
 struct StepLengthAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::number
+		return
+		{
+			SymbolType::number
+		};
 	};
 	unsigned get_value()
 	{
@@ -437,9 +497,12 @@ private:
 // 循环语句
 struct LoopStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_while, SymbolType::key_for
+		return
+		{
+			SymbolType::key_while, SymbolType::key_for
+		};
 	};
 
 protected:
@@ -449,17 +512,20 @@ protected:
 // 语句
 struct StatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_while, SymbolType::key_for, // 循环语句
-		SymbolType::key_if,							// 条件语句
-		SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
-		SymbolType::key_scanf,						// 读语句
-		SymbolType::key_printf,						// 写语句
-		SymbolType::key_switch,						// 情况语句
-		SymbolType::semicolon,						// 空语句
-		SymbolType::key_return,						// 返回语句
-		SymbolType::left_brance						// 语句列
+		return
+		{
+			SymbolType::key_while, SymbolType::key_for, // 循环语句
+			SymbolType::key_if,							// 条件语句
+			SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
+			SymbolType::key_scanf,						// 读语句
+			SymbolType::key_printf,						// 写语句
+			SymbolType::key_switch,						// 情况语句
+			SymbolType::semicolon,						// 空语句
+			SymbolType::key_return,						// 返回语句
+			SymbolType::left_brance						// 语句列
+		};
 	};
 
 protected:
@@ -469,17 +535,20 @@ protected:
 // 语句列
 struct StatementsListAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_while, SymbolType::key_for, // 循环语句
-		SymbolType::key_if,							// 条件语句
-		SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
-		SymbolType::key_scanf,						// 读语句
-		SymbolType::key_printf,						// 写语句
-		SymbolType::key_switch,						// 情况语句
-		SymbolType::semicolon,						// 空语句
-		SymbolType::key_return,						// 返回语句
-		SymbolType::left_brance						// 语句列
+		return
+		{
+			SymbolType::key_while, SymbolType::key_for, // 循环语句
+			SymbolType::key_if,							// 条件语句
+			SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
+			SymbolType::key_scanf,						// 读语句
+			SymbolType::key_printf,						// 写语句
+			SymbolType::key_switch,						// 情况语句
+			SymbolType::semicolon,						// 空语句
+			SymbolType::key_return,						// 返回语句
+			SymbolType::left_brance						// 语句列
+		};
 	};
 
 protected:
@@ -489,19 +558,22 @@ protected:
 // 复合语句
 struct CompoundStatementsAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_int, SymbolType::key_char,	// 常量/变量说明
-		// 语句列
-		SymbolType::key_while, SymbolType::key_for, // 循环语句
-		SymbolType::key_if,							// 条件语句
-		SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
-		SymbolType::key_scanf,						// 读语句
-		SymbolType::key_printf,						// 写语句
-		SymbolType::key_switch,						// 情况语句
-		SymbolType::semicolon,						// 空语句
-		SymbolType::key_return,						// 返回语句
-		SymbolType::left_brance						// 语句列
+		return
+		{
+			SymbolType::key_int, SymbolType::key_char,	// 常量/变量说明
+			// 语句列
+			SymbolType::key_while, SymbolType::key_for, // 循环语句
+			SymbolType::key_if,							// 条件语句
+			SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
+			SymbolType::key_scanf,						// 读语句
+			SymbolType::key_printf,						// 写语句
+			SymbolType::key_switch,						// 情况语句
+			SymbolType::semicolon,						// 空语句
+			SymbolType::key_return,						// 返回语句
+			SymbolType::left_brance						// 语句列
+		};
 	};
 
 protected:
@@ -511,9 +583,12 @@ protected:
 // 参数表
 struct ParameterListAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_char, SymbolType::key_int
+		return
+		{
+			SymbolType::key_char, SymbolType::key_int
+		};
 	};
 	shared_ptr<const vector<BaseType>> get_param_type_list();
 	shared_ptr<const vector<shared_ptr<IdentifierInfo>>> get_param_list()
@@ -529,9 +604,12 @@ private:
 // 声明头部
 struct FunctionHeaderAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_char, SymbolType::key_int
+		return
+		{
+			SymbolType::key_char, SymbolType::key_int
+		};
 	};
 	shared_ptr<const string> get_id()
 	{
@@ -552,11 +630,13 @@ private:
 // 主函数
 struct MainFunctionAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_void
+		return
+		{
+			SymbolType::key_void
+		};
 	};
-
 protected:
 	virtual void analyze(Env& env);
 };
@@ -564,9 +644,12 @@ protected:
 // 有返回值函数定义
 struct ReturnFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_int, SymbolType::key_char
+		return
+		{
+			SymbolType::key_int, SymbolType::key_char
+		};
 	};
 
 protected:
@@ -576,9 +659,12 @@ protected:
 // 无返回值函数定义
 struct VoidFunctionDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_void
+		return
+		{
+			SymbolType::key_void
+		};
 	};
 
 protected:
@@ -588,9 +674,12 @@ protected:
 // 无符号整数
 struct UnsignedIntegerAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::number
+		return
+		{
+			SymbolType::number
+		};
 	};
 
 	unsigned get_value()
@@ -606,9 +695,12 @@ private:
 // 整数
 struct IntegerAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::plus, SymbolType::minus, SymbolType::number
+		return
+		{
+			SymbolType::plus, SymbolType::minus, SymbolType::number
+		};
 	};
 
 	int get_value()
@@ -624,9 +716,12 @@ private:
 // 常量
 struct ConstantAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::character, SymbolType::plus, SymbolType::minus, SymbolType::number
+		return
+		{
+			SymbolType::character, SymbolType::plus, SymbolType::minus, SymbolType::number
+		};
 	};
 	bool is_type_of(BaseType type);
 	char get_char()
@@ -648,9 +743,12 @@ private:
 // 变量定义无初始化
 struct VariableDefinationNoInitializationAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_int, SymbolType::key_char
+		return
+		{
+			SymbolType::key_int, SymbolType::key_char
+		};
 	};
 
 protected:
@@ -660,9 +758,12 @@ protected:
 // 变量定义及初始化
 struct VariableDefinationWithInitializationAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_int, SymbolType::key_char
+		return
+		{
+			SymbolType::key_int, SymbolType::key_char
+		};
 	};
 
 protected:
@@ -672,9 +773,12 @@ protected:
 // 变量定义
 struct VariableDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_int, SymbolType::key_char
+		return
+		{
+			SymbolType::key_int, SymbolType::key_char
+		};
 	};
 
 protected:
@@ -684,9 +788,12 @@ protected:
 // 变量说明
 struct VariableDeclarationAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_int, SymbolType::key_char
+		return
+		{
+			SymbolType::key_int, SymbolType::key_char
+		};
 	};
 protected:
 	virtual void analyze(Env& env);
@@ -695,9 +802,12 @@ protected:
 // 常量定义
 struct ConstantDefinationAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_int, SymbolType::key_char
+		return
+		{
+			SymbolType::key_int, SymbolType::key_char
+		};
 	};
 protected:
 	virtual void analyze(Env& env);
@@ -706,9 +816,12 @@ protected:
 // 常量说明
 struct ConstantDeclarationAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		SymbolType::key_const
+		return
+		{
+			SymbolType::key_const
+		};
 	};
 protected:
 	virtual void analyze(Env& env);
@@ -717,9 +830,12 @@ protected:
 // 程序
 struct ProgramAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set = 
-	{ 
-		SymbolType::key_const, SymbolType::key_int, SymbolType::key_char, SymbolType::key_void
+	static unordered_set<SymbolType> first_set()
+	{
+		return
+		{
+			SymbolType::key_const, SymbolType::key_int, SymbolType::key_char, SymbolType::key_void
+		};
 	};
 protected:
 	void analyze(Env& env);
@@ -727,12 +843,15 @@ protected:
 
 /*
 
-// 
+//
 struct : AbstractSyntacticAnalyzeTactics
 {
-	static constexpr std::initializer_list<SymbolType> first_set =
+	static unordered_set<SymbolType> first_set()
 	{
-		// TODO
+		return
+		{
+			// TODO
+		};
 	};
 
 protected:
