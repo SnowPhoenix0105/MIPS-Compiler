@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <utility>
 #include "global_control.h"
-#include "SyntacticAnalyzer.h"
+#include "SyntacticAnalyzeUtil.h"
 #include "IdentifierTable.h"
 
 using std::endl;
@@ -56,7 +56,7 @@ protected:
 	template<class T>
 	static bool in_first_set_of(Env& env)
 	{
-		const auto& type_id = typeid(T).name;
+		const auto& type_id = typeid(T).name();
 		auto it = first_sets.find(type_id);
 		if (it == first_sets.end())
 		{
