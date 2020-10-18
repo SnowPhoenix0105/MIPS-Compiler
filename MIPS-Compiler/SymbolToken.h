@@ -12,7 +12,7 @@ using std::shared_ptr;
 
 struct Token
 {
-	SymbolType type;
+	SymbolType type = SymbolType::end;
 	shared_ptr<const string> print_content;
 	int line_number;
 

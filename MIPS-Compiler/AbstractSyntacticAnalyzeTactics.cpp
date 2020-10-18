@@ -1,6 +1,5 @@
 #include "AbstractSyntacticAnalyzeTactics.h"
 
-unordered_map<string, unordered_set<SymbolType>> first_sets;
 
 void AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 {
@@ -588,7 +587,7 @@ void analyze_inner_block(
 	env.dequeue_and_push_message();						// left_brance
 
 	if (env.peek() != SymbolType::left_brance
-		&& !in_branch_of<CompoundStatementsAnalyze>(env))
+		&& !FirstSetJudgement().in_branch_of<CompoundStatementsAnalyze>(env))
 	{
 		// TODO error
 	}
@@ -619,7 +618,7 @@ void analyze_function(
 	}
 	env.dequeue_and_push_message();						// left_paren
 
-	if (!in_branch_of<ParameterListAnalyze>(env) 
+	if (!FirstSetJudgement().in_branch_of<ParameterListAnalyze>(env)
 		&& env.peek() != SymbolType::right_paren)
 	{
 		// TODO error

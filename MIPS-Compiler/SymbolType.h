@@ -69,7 +69,7 @@ enum class SymbolType
 	identifier,		// 其它合法标识符
 
 
-
+	end,			// 程序结束
 	wrong			// 错误
 };
 

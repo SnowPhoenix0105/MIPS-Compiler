@@ -103,6 +103,7 @@ const std::unordered_map<SymbolType, wstring> symboltype_translate_dictionary =
 	{	SymbolType::number			,		L"数字"				},
 	{	SymbolType::identifier		,		L"其它合法标识符"		},
 
+	{	SymbolType::end				,		L"程序结束"			},
 	{	SymbolType::wrong			,		L"错误"				}
 };
 #endif // DEBUG_LEVEL
@@ -153,6 +154,7 @@ const std::unordered_map<SymbolType, string> symboltype_output_dictionary =
 	{	SymbolType::number			,		"INTCON"		},
 	{	SymbolType::identifier		,		"IDENFR"		},
 
+	{	SymbolType::end				,		"END"			}
 	{	SymbolType::wrong			,		"WRONG"			}
 };
 

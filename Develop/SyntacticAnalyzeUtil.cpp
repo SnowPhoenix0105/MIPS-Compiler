@@ -1,5 +1,7 @@
 #include "SyntacticAnalyzeUtil.h"
 
+const shared_ptr<Token> SyntacticAnalyzerEnvironment::NIL = make_shared<Token>();
+
 void SyntacticAnalyzerEnvironment::ensure_capacity(size_t size)
 {
 	while (size > symbols.size()) {
@@ -7,7 +9,7 @@ void SyntacticAnalyzerEnvironment::ensure_capacity(size_t size)
 		{
 			symbols.push_back(NIL);
 		}
-		SymbolType type = lexical_analyzer->next();
+		SymbolType next_type = lexical_analyzer->next();
 		shared_ptr<const Token> info = lexical_analyzer->get_token();
 		symbols.push_back(info);
 	}
