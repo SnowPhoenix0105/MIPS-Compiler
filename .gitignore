@@ -12,6 +12,7 @@
 *.zip
 [Zz]ips/
 *.jar
+*.pdf
 
 # Prerequisites
 *.d
