@@ -57,7 +57,7 @@ std::unique_ptr<std::ostream> syntactic_analyze(std::unique_ptr<std::istream> in
 	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
 	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
 	syntactic_analyzer.parse();
-	syntactic_analyzer.print_all(*output_file);
+	syntactic_analyzer.print_all_message(*output_file);
 	return output_file;
 }
 

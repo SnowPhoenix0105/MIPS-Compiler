@@ -44,6 +44,7 @@ private:
 	shared_ptr<string> lower_ident;
 	int line_number = 1;
 	char last_ch = ' ';
+	bool wrong;
 
 	/// <summary>
 	/// 不断进行读取, 直到 last_ch 不为 ' ', '\n', '\t', '\r', '\v' 中的任何一个.
@@ -179,6 +180,11 @@ public:
 	int get_line_number() const
 	{
 		return line_number;
+	}
+
+	bool is_wrong() const
+	{
+		return wrong;
 	}
 
 	shared_ptr<string> formated_content() const;

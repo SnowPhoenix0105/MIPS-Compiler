@@ -31,7 +31,8 @@ public:
 	SyntacticAnalyzer(unique_ptr<LexicalAnalyzer> lexical_analyzer)
 		: env(std::move(lexical_analyzer)) { }
 	void parse();
-	void print_all(ostream& os);
+	void print_all_message(ostream& os);
+	void print_all_error(ostream& os);
 };
 
 #endif // !__SYNTACTIC_ANALYZER_H__

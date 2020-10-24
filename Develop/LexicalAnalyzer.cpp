@@ -80,6 +80,7 @@ void LexicalAnalyzer::check_compare_symbol(SymbolType long_type, SymbolType shor
 void LexicalAnalyzer::check_character_symbol()
 {
 	*input_stream >> last_ch;
+	last_symbol = SymbolType::character;
 	if (std::isdigit(last_ch) || is_legal_alpha(last_ch) || last_ch == '*' || last_ch == '+' || last_ch == '-' || last_ch == '/')
 	{
 		last_content->push_back(last_ch);
@@ -87,16 +88,16 @@ void LexicalAnalyzer::check_character_symbol()
 		if (last_ch == '\'')
 		{
 			last_content->push_back('\'');
-			last_symbol = SymbolType::character;
 			*input_stream >> last_ch;
 			return;
 		}
 	}
-	last_symbol = SymbolType::wrong;
+	wrong = true;
 }
 
 void LexicalAnalyzer::check_string_symbol()
 {
+	last_symbol = SymbolType::string;
 	while (*input_stream >> last_ch)
 	{
 		if (last_ch >= ' ' && last_ch <= '~')
@@ -104,18 +105,17 @@ void LexicalAnalyzer::check_string_symbol()
 			last_content->push_back(last_ch);
 			if (last_ch == '\"')
 			{
-				last_symbol = SymbolType::string;
 				*input_stream >> last_ch;
 				return;
 			}
 		}
 		else
 		{
-			last_symbol = SymbolType::wrong;
+			wrong = true;
 			return;
 		}
 	}
-	last_symbol = SymbolType::wrong;
+	wrong = true;
 }
 
 void LexicalAnalyzer::check_number_symbol()

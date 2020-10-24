@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="AbstractSyntacticAnalyzeTactics.cpp" />
     <ClCompile Include="compile_controller.cpp" />
+    <ClCompile Include="ErrorType.cpp" />
     <ClCompile Include="global_control.h" />
     <ClCompile Include="IdentifierTable.cpp" />
     <ClCompile Include="LexicalAnalyzer.cpp" />
@@ -153,6 +154,7 @@
   <ItemGroup>
     <ClInclude Include="AbstractSyntacticAnalyzeTactics.h" />
     <ClInclude Include="compile_controller.h" />
+    <ClInclude Include="ErrorType.h" />
     <ClInclude Include="IdentifierTable.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
     <ClInclude Include="SymbolToken.h" />

@@ -7,8 +7,10 @@
 #include <unordered_set>
 #include <utility>
 #include "global_control.h"
+#include "ErrorType.h"
 #include "SyntacticAnalyzeUtil.h"
 #include "IdentifierTable.h"
+#include "SymbolType.h"
 
 using std::endl;
 using std::unordered_set;
@@ -109,20 +111,6 @@ public:
 			return true;
 		}
 		return false;
-		//return
-		//	(
-		//		env.peek(2) == SymbolType::assign
-		//		|| (
-		//			env.peek(2) == SymbolType::left_square
-		//			&& (
-		//				env.peek(5) == SymbolType::assign
-		//				|| (
-		//					env.peek(5) == SymbolType::left_square
-		//					&& env.peek(8) == SymbolType::assign
-		//					)
-		//				)
-		//			)
-		//		);
 	}
 
 	template<>
@@ -194,6 +182,63 @@ public:
 	*/
 };
 
+class ErrorJudgment
+{
+public:
+	using Env = SyntacticAnalyzerEnvironment;
+	using token_ptr = SyntacticAnalyzerEnvironment::token_ptr;
+
+	void fail(Env& env, ErrorType error_type, token_ptr token, initializer_list<SymbolType> expect_symbols)
+	{
+		env.error_back(token->line_number, error_type);
+		throw syntax_exception(env.state(), token, expect_symbols);
+	}
+
+	template<SymbolType T>
+	void symbol_assert(Env& env)
+	{
+		if (env.peek() != T)
+		{
+			token_ptr token = env.dequeue();
+			env.error_back(token->line_number, ErrorType::unknown_error);
+			throw syntax_exception(env.state(), token, { T });
+		}
+	}
+
+	template<>
+	void symbol_assert<SymbolType::semicolon>(Env& env)
+	{
+		if (env.peek() != SymbolType::semicolon)
+		{
+			token_ptr token = env.dequeue();
+			env.error_back(token->line_number, ErrorType::need_semicolon);
+			throw syntax_exception(env.state(), token, { SymbolType::semicolon });
+		}
+	}
+
+	template<>
+	void symbol_assert<SymbolType::right_paren>(Env& env)
+	{
+		if (env.peek() != SymbolType::right_paren)
+		{
+			token_ptr token = env.dequeue();
+			env.error_back(token->line_number, ErrorType::need_right_paren);
+			throw syntax_exception(env.state(), token, { SymbolType::right_paren });
+		}
+	}
+
+	template<>
+	void symbol_assert<SymbolType::right_square>(Env& env)
+	{
+		if (env.peek() != SymbolType::right_square)
+		{
+			token_ptr token = env.dequeue();
+			env.error_back(token->line_number, ErrorType::need_right_square);
+			throw syntax_exception(env.state(), token, { SymbolType::right_square });
+		}
+	}
+};
+
 
 
 class AbstractSyntacticAnalyzeTactics
@@ -214,22 +259,40 @@ public:
 		shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list);
 
 	virtual ~AbstractSyntacticAnalyzeTactics() = default;
-	void operator()(Env& env);
+	bool operator()(Env& env);
+	void operator()(Env& env, int sign);
 private:
-	FirstSetJudgement judgment;
+	static FirstSetJudgement first_set_judgment;
+	static ErrorJudgment error_judgment;
 protected:
 	virtual void analyze(Env& env) = 0;
 
 	template<class T>
 	bool in_first_set_of(Env& env)
 	{
-		return judgment.in_first_set_of<T>(env);
+		return first_set_judgment.in_first_set_of<T>(env);
 	}
 
 	template<class T>
 	bool in_branch_of(Env& env)
 	{
-		return judgment.in_branch_of<T>(env);
+		return first_set_judgment.in_branch_of<T>(env);
+	}
+
+	template<SymbolType T>
+	void symbol_assert(Env& env)
+	{
+		return error_judgment.symbol_assert<T>(env);
+	}
+
+	void fail(Env& env, ErrorType error_type, token_ptr token, initializer_list<SymbolType> expect_symbols)
+	{
+		error_judgment.fail(env, error_type, token, expect_symbols);
+	}
+
+	void fail(Env& env, ErrorType error_type, token_ptr token)
+	{
+		error_judgment.fail(env, error_type, token, {});
 	}
 };
 
@@ -246,9 +309,14 @@ struct FactorAnalyze : AbstractSyntacticAnalyzeTactics
 			SymbolType::character				// 字符
 		};
 	};
-
+	BaseType get_type()
+	{
+		return type;
+	}
 protected:
 	virtual void analyze(Env& env);
+private:
+	BaseType type;
 };
 
 // 项
@@ -264,9 +332,14 @@ struct TermAnalyze : AbstractSyntacticAnalyzeTactics
 			SymbolType::character				// 字符
 		};
 	};
-
+	BaseType get_type()
+	{
+		return type;
+	}
 protected:
 	virtual void analyze(Env& env);
+private:
+	BaseType type;
 };
 
 // 表达式
@@ -282,9 +355,14 @@ struct ExpressionAnalyze : AbstractSyntacticAnalyzeTactics
 			SymbolType::character				// 字符
 		};
 	};
-
+	BaseType get_type()
+	{
+		return type;
+	}
 protected:
 	virtual void analyze(Env& env);
+private:
+	BaseType type;
 };
 
 // 返回语句
@@ -457,9 +535,14 @@ struct CallReturnFunctionStatementAnalyze : AbstractSyntacticAnalyzeTactics
 			SymbolType::identifier
 		};
 	};
-
+	BaseType get_type()
+	{
+		return type;
+	}
 protected:
 	virtual void analyze(Env& env);
+private:
+	BaseType type;
 };
 
 // 条件

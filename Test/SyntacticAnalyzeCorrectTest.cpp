@@ -260,11 +260,11 @@ namespace SyntacticAnalyzeTest
 			test(test_case, expect_answer);
 		}
 
-		TEST_METHOD(File_Test_1)
-		{
-			string source_file = test_resource_path + "\\sample1\\nospace_source.c";
-			test(unique_ptr<istream>(new std::ifstream(source_file)), vector<string>());
-		}
+		//TEST_METHOD(File_Test_1)
+		//{
+		//	string source_file = test_resource_path + "\\sample1\\nospace_source.c";
+		//	test(unique_ptr<istream>(new std::ifstream(source_file)), vector<string>());
+		//}
 	};
 
 	const string SyntacticAnalyzeCorrectTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\Test\\TestResource");

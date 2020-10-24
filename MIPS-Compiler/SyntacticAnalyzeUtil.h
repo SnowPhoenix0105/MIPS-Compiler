@@ -6,12 +6,14 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <map>
 #include <unordered_set>
 #include "global_control.h"
 #include "SymbolType.h"
 #include "LexicalAnalyzer.h"
 #include "SymbolToken.h"
 #include "IdentifierTable.h"
+#include "ErrorType.h"
 
 using std::string;
 using std::vector;
@@ -19,6 +21,8 @@ using std::shared_ptr;
 using std::unique_ptr;
 using std::unordered_set;
 using std::ostream;
+using std::multimap;
+using std::pair;
 
 class SyntacticAnalyzerEnvironment;
 
@@ -29,39 +33,84 @@ public:
 private:
 	size_t sym_index = 0;
 	size_t msg_index = 0;
+	Enviromentstate(size_t sym_index, size_t msg_index)
+		: sym_index(sym_index), msg_index(msg_index)
+	{ }
 };
 
-class SyntacticAnalyzerEnvironment
+
+class MessageEnvironment
+{
+protected:
+	size_t msg_index = 0;
+	vector<string> messages;
+
+public:
+	virtual ~MessageEnvironment() = default;
+	template<typename T>
+	void message_back(T value)
+	{
+		DEBUG_LOG_VAL(5, "syntactic-analyzer message", value);
+		if (msg_index >= messages.size())
+		{
+			messages.emplace_back(value);
+			++msg_index;
+			return;
+		}
+		messages[msg_index++] = value;
+	}
+	void print_all_message(ostream& os);
+};
+
+
+class ErrorEnvironment
+{
+protected:
+	multimap<int, string> errors;
+public:
+	virtual ~ErrorEnvironment() = default;
+
+
+	void error_back(int line_number, char type)
+	{
+		string str;
+		str.push_back(type);
+		error_back(line_number, str);
+	}
+
+	void error_back(int line_number, ErrorType type)
+	{
+		error_back(line_number, error_code_dictionary.at(type));
+	}
+
+	template<typename T>
+	void error_back(int line_number, T type)
+	{
+		DEBUG_LOG_VAL(5, "syntactic-analyzer error", type);
+		errors.insert(pair<int, string>(line_number, type));
+	}
+
+	void print_all_error(ostream& os);
+};
+
+
+class TokenEnvironment : public ErrorEnvironment, public MessageEnvironment
 {
 public:
-	using state_t = Enviromentstate;
 	using token_ptr = shared_ptr<const Token>;
-	friend class SyntacticAnalyzer;
-private:
 	static const shared_ptr<Token> NIL;
-
+protected:
 	unique_ptr<LexicalAnalyzer> lexical_analyzer;
-	state_t current_state;
 	vector<shared_ptr<const Token>> symbols;
-	vector<string> messages;
-	IdentifierTable global_table;
-	IdentifierTable local_table;
-	bool using_global_table = true;
+	size_t sym_index = 0;
 
-	void ensure_capacity(size_t size);
-public:
-	SyntacticAnalyzerEnvironment(unique_ptr<LexicalAnalyzer> lexical_analyzer)
+	TokenEnvironment(unique_ptr<LexicalAnalyzer> lexical_analyzer)
 		: lexical_analyzer(std::move(lexical_analyzer))
 	{ }
 
-	state_t state() { return current_state; }
-
-	state_t state(const state_t& state)
-	{
-		state_t old = this->current_state;
-		this->current_state = state;
-		return old;
-	}
+	void ensure_capacity(size_t size);
+public:
+	virtual ~TokenEnvironment() = default;
 
 	SymbolType peek(size_t offset = 0)
 	{
@@ -70,23 +119,33 @@ public:
 
 	token_ptr peek_info(size_t offset = 0)
 	{
-		ensure_capacity(current_state.sym_index + offset);
-		return symbols[current_state.sym_index + offset];
+		ensure_capacity(sym_index + offset);
+		return symbols[sym_index + offset];
 	}
 
 	token_ptr dequeue()
 	{
-		ensure_capacity(current_state.sym_index);
-		return symbols[current_state.sym_index++];
+		ensure_capacity(sym_index);
+		return symbols[sym_index++];
 	}
 
 	token_ptr dequeue_and_push_message()
 	{
-		ensure_capacity(current_state.sym_index);
-		push_message(symbols[current_state.sym_index]->to_print_string());
-		return symbols[current_state.sym_index++];
+		ensure_capacity(sym_index);
+		message_back(symbols[sym_index]->to_print_string());
+		return symbols[sym_index++];
 	}
+};
 
+
+class SymbolTableEnvironment
+{
+private:
+	IdentifierTable global_table;
+	IdentifierTable local_table;
+	bool using_global_table = true;
+public:
+	virtual ~SymbolTableEnvironment() = default;
 	void change_to_local_table()
 	{
 		using_global_table = false;
@@ -151,20 +210,31 @@ public:
 		}
 		return ret;
 	}
+};
 
-	void print_all(ostream& os);
 
-	template<typename T>
-	void push_message(T value)
+class SyntacticAnalyzerEnvironment : public TokenEnvironment, public SymbolTableEnvironment
+{
+public:
+	using state_t = Enviromentstate;
+	friend class SyntacticAnalyzer;
+private:
+
+public:
+	virtual ~SyntacticAnalyzerEnvironment() = default;
+
+	SyntacticAnalyzerEnvironment(unique_ptr<LexicalAnalyzer> lexical_analyzer)
+		: TokenEnvironment(std::move(lexical_analyzer))
+	{ }
+
+	state_t state() { return state_t(sym_index, msg_index); }
+
+	state_t state(const state_t& state)
 	{
-		DEBUG_LOG_VAL(5, "syntactic-analyzer message", value);
-		if (current_state.msg_index >= messages.size())
-		{
-			messages.emplace_back(value);
-			++current_state.msg_index;
-			return;
-		}
-		messages[current_state.msg_index++] = value;
+		state_t ret(sym_index, msg_index);
+		sym_index = state.sym_index;
+		msg_index = state.msg_index;
+		return ret;
 	}
 };
 
