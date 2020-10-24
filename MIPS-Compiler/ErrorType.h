@@ -44,8 +44,8 @@ namespace std
 	};
 }
 
-extern unordered_map<ErrorType, char> error_code_dictionary;
+extern unordered_map<ErrorType, const char> error_code_dictionary;
 
-extern unordered_map<ErrorType, string> error_message;
+extern unordered_map<ErrorType, const string> error_message;
 
 #endif // !__ERROR_TYPE_H__

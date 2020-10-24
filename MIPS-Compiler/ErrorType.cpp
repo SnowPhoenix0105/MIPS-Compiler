@@ -1,6 +1,6 @@
 #include "ErrorType.h"
 
-unordered_map<ErrorType, char> error_code_dictionary =
+unordered_map<ErrorType, const char> error_code_dictionary =
 {
 	{ErrorType::lexical_error						, 'a'},
 	{ErrorType::duplicated_identifier				, 'b'},
@@ -22,7 +22,7 @@ unordered_map<ErrorType, char> error_code_dictionary =
 };
 
 
-unordered_map<ErrorType, string> error_message =
+unordered_map<ErrorType, const string> error_message =
 {
 	{ErrorType::lexical_error						, "非法符号或不符合词法"							},
 	{ErrorType::duplicated_identifier				, "名字重定义"									},

@@ -37,3 +37,36 @@ void TokenEnvironment::ensure_capacity(size_t size)
 		symbols.push_back(info);
 	}
 }
+
+bool TokenEnvironment::ensure(
+	const function<bool(TokenEnvironment&)>& success_condition, 
+	const function<bool(TokenEnvironment&)>& next_condition, 
+	ErrorType error_type, 
+	unsigned max_turn
+) 
+{
+	if (success_condition(*this))
+	{
+		return true;
+	}
+	error_back(symbols[sym_index]->line_number, error_type);
+	size_t protec_index = sym_index++;
+	for (unsigned i = 1; i < max_turn; ++i)
+	{
+		if (success_condition(*this))
+		{
+			return true;
+		}
+		if (next_condition(*this))
+		{
+			return false;
+		}
+		if (peek() == SymbolType::end)
+		{
+			break;
+		}
+		dequeue_and_message_back();
+	}
+	sym_index = protec_index;
+	throw syntax_exception();
+}

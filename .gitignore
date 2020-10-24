@@ -13,6 +13,7 @@
 [Zz]ips/
 *.jar
 *.pdf
+*.log
 
 # Prerequisites
 *.d

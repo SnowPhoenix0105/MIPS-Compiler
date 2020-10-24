@@ -89,17 +89,13 @@ void ConstantDeclarationAnalyze::analyze(Env& env)
 	bool flag = true;
 	while (env.peek() == SymbolType::key_const)
 	{
-		env.dequeue_and_push_message();							// key_const
+		env.dequeue_and_message_back();							// key_const
 		if (!in_branch_of<ConstantDefinationAnalyze>(env))
 		{
 			// TODO error
 		}
 		ConstantDefinationAnalyze()(env);						// 常量定义
-		if (env.peek() != SymbolType::semicolon)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();							// semicolon
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);		// semicolon
 		flag = false;
 	}
 	if (flag)
@@ -116,7 +112,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 	try
 	{
 		SymbolType type = env.peek();
-		env.dequeue_and_push_message();							// key_int / key_char
+		env.dequeue_and_message_back();							// key_int / key_char
 		while (true)
 		{
 			if (!new_ids.empty())
@@ -125,13 +121,13 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 				{
 					break;
 				}
-				env.dequeue_and_push_message();					// comma
+				env.dequeue_and_message_back();					// comma
 			}
 			if (env.peek() != SymbolType::identifier)
 			{
 				// TODO error
 			}
-			auto token = env.dequeue_and_push_message();		// identifier
+			auto token = env.dequeue_and_message_back();		// identifier
 			shared_ptr<const IdentifierToken> id = dynamic_pointer_cast<const IdentifierToken>(token);
 			if (env.get_identifier_info(id->id_name_content, false) != nullptr)
 			{
@@ -141,7 +137,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 			{
 				//TODO error
 			}
-			env.dequeue_and_push_message();						// assign
+			env.dequeue_and_message_back();						// assign
 			shared_ptr<IdentifierInfo> id_info;
 			shared_ptr<IdentifierType> id_type = make_shared<IdentifierType>();
 			id_type->extern_type = ExternType::constant;
@@ -152,7 +148,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 				{
 					// TODO error
 				}
-				auto tk = env.dequeue_and_push_message();		// charactor
+				auto tk = env.dequeue_and_message_back();		// charactor
 				shared_ptr<CharactorIdentifierInfo> info = make_shared<CharactorIdentifierInfo>();
 				info->value = dynamic_pointer_cast<const CharToken>(tk)->char_content;
 				id_info = info;
@@ -194,11 +190,7 @@ void VariableDeclarationAnalyze::analyze(Env& env)
 	while (in_branch_of<VariableDefinationAnalyze>(env))
 	{
 		VariableDefinationAnalyze()(env);			// 变量定义
-		if (env.peek() != SymbolType::semicolon)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();				// semicolon
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 		flag = false;
 	}
 	if (flag)
@@ -234,7 +226,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 	{
 		SymbolType type = env.peek();
 		BaseType base_type = type == SymbolType::key_int ? BaseType::type_int : BaseType::type_char;
-		env.dequeue_and_push_message();									// key_int / key_char
+		env.dequeue_and_message_back();									// key_int / key_char
 		while (true)
 		{
 			if (!new_ids.empty())
@@ -243,13 +235,13 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				{
 					break;
 				}
-				env.dequeue_and_push_message();							// comma
+				env.dequeue_and_message_back();							// comma
 			}
 			if (env.peek() != SymbolType::identifier)
 			{
 				// TODO error
 			}
-			auto token = env.dequeue_and_push_message();				// identifier
+			auto token = env.dequeue_and_message_back();				// identifier
 			shared_ptr<const IdentifierToken> id = dynamic_pointer_cast<const IdentifierToken>(token);
 			if (env.get_identifier_info(id->id_name_content, false) != nullptr)
 			{
@@ -259,34 +251,26 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 			ConstantAnalyze constant_analyze;
 			if (env.peek() == SymbolType::left_square)
 			{
+				env.dequeue_and_message_back();						// left_square
+				UnsignedIntegerAnalyze size_1_unsigned_analyze;			// unsigned_integer
+				size_1_unsigned_analyze(env);
+				unsigned size_1 = size_1_unsigned_analyze.get_value();
+				env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 				// 数组
-				if (env.peek(3) == SymbolType::left_square)
+				if (env.peek() == SymbolType::left_square)
 				{
 					// 二维数组
-					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze size_1_unsigned_analyze;			// unsigned_integer
-					size_1_unsigned_analyze(env);
-					unsigned size_1 = size_1_unsigned_analyze.get_value();
-					if (env.peek() != SymbolType::right_square)
-					{
-						//TODO error
-					}
-					env.dequeue_and_push_message();						// right_square
-					env.dequeue_and_push_message();						// left_square
+					env.dequeue_and_message_back();						// left_square
 					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
 					unsigned_analyze(env);
 					unsigned size_2 = unsigned_analyze.get_value();
-					if (env.peek() != SymbolType::right_square)
-					{
-						//TODO error
-					}
-					env.dequeue_and_push_message();						// right_square
-					env.dequeue_and_push_message();						// assigin
+					env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
+					env.dequeue_and_message_back();						// assigin
 					if (env.peek() != SymbolType::left_brance)
 					{
 						// TODO error
 					}
-					env.dequeue_and_push_message();						// left_brance
+					env.dequeue_and_message_back();						// left_brance
 					for (int i = 0; i != size_1; ++i)
 					{
 						if (i != 0)
@@ -295,13 +279,13 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 							{
 								// TODO error
 							}
-							env.dequeue_and_push_message();					// comma
+							env.dequeue_and_message_back();					// comma
 						}
 						if (env.peek() != SymbolType::left_brance)
 						{
 							// TODO error
 						}
-						env.dequeue_and_push_message();						// left_brance
+						env.dequeue_and_message_back();						// left_brance
 
 						for (int j = 0; j != size_2; ++j)
 						{
@@ -311,7 +295,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 								{
 									// TODO error
 								}
-								env.dequeue_and_push_message();					// comma
+								env.dequeue_and_message_back();					// comma
 							}
 							if (!in_branch_of<ConstantAnalyze>(env))
 							{
@@ -329,13 +313,13 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 						{
 							// TODO error
 						}
-						env.dequeue_and_push_message();						// right_brance
+						env.dequeue_and_message_back();						// right_brance
 					}
 					if (env.peek() != SymbolType::right_brance)
 					{
 						// TODO error
 					}
-					env.dequeue_and_push_message();						// right_brance
+					env.dequeue_and_message_back();						// right_brance
 
 					// 插入符号表
 					shared_ptr<DoubleDimensionalArrayIdentifierType> id_type = make_shared<DoubleDimensionalArrayIdentifierType>();
@@ -347,22 +331,13 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				else
 				{
 					// 一维数组
-					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze size_2_unsigned_analyze;			// unsigned_integer
-					size_2_unsigned_analyze(env);
-					unsigned size = size_2_unsigned_analyze.get_value();
-					if (env.peek() != SymbolType::right_square)
-					{
-						//TODO error
-					}
-					env.dequeue_and_push_message();						// right_square
-					env.dequeue_and_push_message();						// assigin
+					env.dequeue_and_message_back();						// assigin
 					if (env.peek() != SymbolType::left_brance)
 					{
 						// TODO error
 					}
-					env.dequeue_and_push_message();						// left_brance
-					for (int i = 0; i != size; ++i)
+					env.dequeue_and_message_back();						// left_brance
+					for (int i = 0; i != size_1; ++i)
 					{
 						if (i != 0)
 						{
@@ -370,7 +345,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 							{
 								// TODO error
 							}
-							env.dequeue_and_push_message();					// comma
+							env.dequeue_and_message_back();					// comma
 						}
 						if (!in_branch_of<ConstantAnalyze>(env))
 						{
@@ -387,19 +362,19 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					{
 						// TODO error
 					}
-					env.dequeue_and_push_message();						// right_brance
+					env.dequeue_and_message_back();						// right_brance
 
 					// 插入符号表
 					shared_ptr<LinearArrayIdentifierType> id_type = make_shared<LinearArrayIdentifierType>();
 					id_type->extern_type = ExternType::l_array;
-					id_type->size = size;
+					id_type->size = size_1;
 					return_type = id_type;
 				}
 			}
 			else
 			{
 				// 普通变量
-				env.dequeue_and_push_message();								// assign
+				env.dequeue_and_message_back();								// assign
 				if (!in_branch_of<ConstantAnalyze>(env))
 				{
 					// TODO error
@@ -443,7 +418,7 @@ void VariableDefinationNoInitializationAnalyze::analyze(Env& env)
 	{
 		SymbolType type = env.peek();
 		BaseType base_type = type == SymbolType::key_int ? BaseType::type_int : BaseType::type_char;
-		env.dequeue_and_push_message();									// key_int / key_char
+		env.dequeue_and_message_back();									// key_int / key_char
 		while (true)
 		{
 			if (!new_ids.empty())
@@ -452,13 +427,13 @@ void VariableDefinationNoInitializationAnalyze::analyze(Env& env)
 				{
 					break;
 				}
-				env.dequeue_and_push_message();							// comma
+				env.dequeue_and_message_back();							// comma
 			}
 			if (env.peek() != SymbolType::identifier)
 			{
 				// TODO error
 			}
-			auto token = env.dequeue_and_push_message();				// identifier
+			auto token = env.dequeue_and_message_back();				// identifier
 			shared_ptr<const IdentifierToken> id = dynamic_pointer_cast<const IdentifierToken>(token);
 			if (env.get_identifier_info(id->id_name_content, false) != nullptr)
 			{
@@ -467,28 +442,20 @@ void VariableDefinationNoInitializationAnalyze::analyze(Env& env)
 			shared_ptr<IdentifierType> return_type;
 			if (env.peek() == SymbolType::left_square)
 			{
+				env.dequeue_and_message_back();							// left_square
+				UnsignedIntegerAnalyze size_1_unsigned_analyze;			// unsigned_integer
+				size_1_unsigned_analyze(env);
+				unsigned size_1 = size_1_unsigned_analyze.get_value();
+				env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 				// 数组
-				if (env.peek(3) == SymbolType::left_square)
+				if (env.peek() == SymbolType::left_square)
 				{
 					// 二维数组
-					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze size_1_unsigned_analyze;			// unsigned_integer
-					size_1_unsigned_analyze(env);
-					unsigned size_1 = size_1_unsigned_analyze.get_value();
-					if (env.peek() != SymbolType::right_square)
-					{
-						//TODO error
-					}
-					env.dequeue_and_push_message();						// right_square
-					env.dequeue_and_push_message();						// left_square
+					env.dequeue_and_message_back();							// left_square
 					UnsignedIntegerAnalyze size_2_unsigned_analyze;			// unsigned_integer
 					size_2_unsigned_analyze(env);
 					unsigned size_2 = size_2_unsigned_analyze.get_value();
-					if (env.peek() != SymbolType::right_square)
-					{
-						//TODO error
-					}
-					env.dequeue_and_push_message();						// right_square
+					env.dequeue_certain_and_message_back(SymbolType::right_square);	// right_square
 
 					// 插入符号表
 					shared_ptr<DoubleDimensionalArrayIdentifierType> id_type = make_shared<DoubleDimensionalArrayIdentifierType>();
@@ -500,20 +467,10 @@ void VariableDefinationNoInitializationAnalyze::analyze(Env& env)
 				else
 				{
 					// 一维数组
-					env.dequeue_and_push_message();						// left_square
-					UnsignedIntegerAnalyze unsigned_analyze;			// unsigned_integer
-					unsigned_analyze(env);
-					unsigned size = unsigned_analyze.get_value();
-					if (env.peek() != SymbolType::right_square)
-					{
-						//TODO error
-					}
-					env.dequeue_and_push_message();						// right_square
-
 					// 插入符号表
 					shared_ptr<LinearArrayIdentifierType> id_type = make_shared<LinearArrayIdentifierType>();
 					id_type->extern_type = ExternType::l_array;
-					id_type->size = size;
+					id_type->size = size_1;
 					return_type = id_type;
 				}
 			}
@@ -564,7 +521,7 @@ void ConstantAnalyze::analyze(Env& env)
 	if (env.peek() == SymbolType::character)
 	{
 		is_ch = true;
-		auto token = env.dequeue_and_push_message();	// charactor
+		auto token = env.dequeue_and_message_back();	// charactor
 		ch = dynamic_pointer_cast<const CharToken>(token)->char_content;
 	}
 	else
@@ -586,7 +543,7 @@ void IntegerAnalyze::analyze(Env& env)
 	case SymbolType::minus:
 		need_negative = true;
 	case SymbolType::plus:
-		env.dequeue_and_push_message();							// +/-
+		env.dequeue_and_message_back();							// +/-
 	default:					
 		if (!in_branch_of<UnsignedIntegerAnalyze>(env))
 		{
@@ -606,7 +563,7 @@ void IntegerAnalyze::analyze(Env& env)
 // 无符号整数
 void UnsignedIntegerAnalyze::analyze(Env& env)
 {
-	auto token = env.dequeue_and_push_message();		// number
+	auto token = env.dequeue_and_message_back();		// number
 	value = dynamic_pointer_cast<const UnsignedToken>(token)->unsigned_content;
 	env.message_back("<无符号整数>");
 }
@@ -626,7 +583,7 @@ void analyze_inner_block(
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();						// left_brance
+	env.dequeue_and_message_back();						// left_brance
 
 	if (env.peek() != SymbolType::left_brance
 		&& !FirstSetJudgement().in_branch_of<CompoundStatementsAnalyze>(env))
@@ -641,7 +598,7 @@ void analyze_inner_block(
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();						// right_brance
+	env.dequeue_and_message_back();						// right_brance
 }
 
 void analyze_function(
@@ -658,7 +615,7 @@ void analyze_function(
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();						// left_paren
+	env.dequeue_and_message_back();						// left_paren
 
 	if (!FirstSetJudgement().in_branch_of<ParameterListAnalyze>(env)
 		&& env.peek() != SymbolType::right_paren)
@@ -670,11 +627,7 @@ void analyze_function(
 	shared_ptr<const vector<BaseType>> param_type_list = parameter_list_analyze.get_param_type_list();
 	auto param_list = parameter_list_analyze.get_param_list();
 
-	if (env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_push_message();						// right_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	// 插入符号表
 	shared_ptr<FuctionIdentifierType> id_type = make_shared<FuctionIdentifierType>();
@@ -712,13 +665,13 @@ void ReturnFunctionDefinationAnalyze::analyze(Env& env)
 // 无返回值函数定义
 void VoidFunctionDefinationAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();						// key_void
+	env.dequeue_and_message_back();						// key_void
 
 	if (env.peek() != SymbolType::identifier)
 	{
 		// TODO error
 	}
-	auto token = env.dequeue_and_push_message();		// identifier
+	auto token = env.dequeue_and_message_back();		// identifier
 	shared_ptr<const string> function_id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 
 	analyze_function(env, function_id, BaseType::type_void, "<无返回值函数定义>");
@@ -727,18 +680,14 @@ void VoidFunctionDefinationAnalyze::analyze(Env& env)
 // 主函数
 void MainFunctionAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();					// key_void;
-	env.dequeue_and_push_message();					// key_main;
+	env.dequeue_and_message_back();					// key_void;
+	env.dequeue_and_message_back();					// key_main;
 	if (env.peek() != SymbolType::left_paren)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();					// left_paren
-	if (env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_push_message();					// right_paren
+	env.dequeue_and_message_back();					// left_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 	analyze_inner_block(env, make_shared<const vector<shared_ptr<IdentifierInfo>>>());
 	env.message_back("<主函数>");
 }
@@ -746,13 +695,13 @@ void MainFunctionAnalyze::analyze(Env& env)
 // 声明头部
 void FunctionHeaderAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();						// key_char / key_int
+	env.dequeue_and_message_back();						// key_char / key_int
 	return_type = env.peek() == SymbolType::key_char ? BaseType::type_char : BaseType::type_int;
 	if (env.peek() != SymbolType::identifier)
 	{
 		// TODO error
 	}
-	auto token = env.dequeue_and_push_message();		// identifier
+	auto token = env.dequeue_and_message_back();		// identifier
 	id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 	env.message_back("<声明头部>");
 }
@@ -780,7 +729,7 @@ void ParameterListAnalyze::analyze(Env& env)
 			{
 				break;
 			}
-			env.dequeue_and_push_message();							// comma
+			env.dequeue_and_message_back();							// comma
 		}
 		if (env.peek() != SymbolType::key_int && env.peek() != SymbolType::key_char)
 		{
@@ -790,12 +739,12 @@ void ParameterListAnalyze::analyze(Env& env)
 			}
 			// TODO error
 		}
-		auto type_token = env.dequeue_and_push_message();			// key_char / key_int
+		auto type_token = env.dequeue_and_message_back();			// key_char / key_int
 		if (env.peek() != SymbolType::identifier)
 		{
 			// TODO error
 		}
-		auto id_token = env.dequeue_and_push_message();				// identifier
+		auto id_token = env.dequeue_and_message_back();				// identifier
 
 		shared_ptr<IdentifierType> id_type = make_shared<IdentifierType>();
 		id_type->base_type = type_token->type == SymbolType::key_char ? BaseType::type_char : BaseType::type_int;
@@ -860,50 +809,32 @@ void StatementAnalyze::analyze(Env& env)
 		{
 			CallVoidFunctionStatementAnalyze()(env);					// 无返回值调用语句
 		}
-		if (env.peek() != SymbolType::semicolon)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();									// semicolon
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 		break;
 	case SymbolType::key_scanf:
 		ReadStatementAnalyze()(env);									// 读语句
-		if (env.peek() != SymbolType::semicolon)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();									// semicolon
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 		break;
 	case SymbolType::key_printf:
 		WriteStatementAnalyze()(env);									// 写语句
-		if (env.peek() != SymbolType::semicolon)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();									// semicolon
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 		break;
 	case SymbolType::key_switch:
 		SwitchStatementAnalyze()(env);									// 情况语句
 		break;
 	case SymbolType::key_return:
 		ReturnStatementAnalyze()(env);									// 返回语句
-		if (env.peek() != SymbolType::semicolon)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();									// semicolon
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 		break;
 	case SymbolType::left_brance:
-		env.dequeue_and_push_message();									// left_brance
+		env.dequeue_and_message_back();									// left_brance
 		StatementsListAnalyze()(env);										// 语句列
 		if (env.peek() != SymbolType::right_brance)
 		{
 			// TODO error
 		}
-		env.dequeue_and_push_message();									// right_brance
-		break;
-	case SymbolType::semicolon:
-		env.dequeue_and_push_message();									// semicolon
+		env.dequeue_and_message_back();									// right_brance
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 		break;
 	default:
 		// TODO error
@@ -927,7 +858,7 @@ void StatementAnalyze::analyze(Env& env)
 	//	{
 	//		// TODO error
 	//	}
-	//	env.dequeue_and_push_message();								// semicolon
+	//	env.dequeue_and_message_back();								// semicolon
 	//}
 	//else if (in_branch_of<WriteStatementAnalyze>(env))
 	//{
@@ -936,7 +867,7 @@ void StatementAnalyze::analyze(Env& env)
 	//	{
 	//		// TODO error
 	//	}
-	//	env.dequeue_and_push_message();								// semicolon
+	//	env.dequeue_and_message_back();								// semicolon
 	//}
 	//else if (in_branch_of<SwitchStatementAnalyze>(env))
 	//{
@@ -949,7 +880,7 @@ void StatementAnalyze::analyze(Env& env)
 	//	{
 	//		// TODO error
 	//	}
-	//	env.dequeue_and_push_message();								// semicolon
+	//	env.dequeue_and_message_back();								// semicolon
 	//}
 	//else if (in_branch_of<AssignmentStatementAnalyze>(env))
 	//{
@@ -958,7 +889,7 @@ void StatementAnalyze::analyze(Env& env)
 	//	{
 	//		// TODO error
 	//	}
-	//	env.dequeue_and_push_message();								// semicolon
+	//	env.dequeue_and_message_back();								// semicolon
 	//}
 	//else if (in_branch_of<CallReturnFunctionStatementAnalyze>(env))
 	//{
@@ -967,7 +898,7 @@ void StatementAnalyze::analyze(Env& env)
 	//	{
 	//		// TODO error
 	//	}
-	//	env.dequeue_and_push_message();								// semicolon
+	//	env.dequeue_and_message_back();								// semicolon
 	//}
 	//else if (in_branch_of<CallVoidFunctionStatementAnalyze>(env))
 	//{
@@ -976,17 +907,17 @@ void StatementAnalyze::analyze(Env& env)
 	//	{
 	//		// TODO error
 	//	}
-	//	env.dequeue_and_push_message();								// semicolon
+	//	env.dequeue_and_message_back();								// semicolon
 	//}
 	//else if (env.peek() == SymbolType::left_brance)
 	//{
-	//	env.dequeue_and_push_message();								// left_brance
+	//	env.dequeue_and_message_back();								// left_brance
 	//	StatementAnalyze()(env);									// 语句
 	//	if (env.peek() != SymbolType::right_brance)
 	//	{
 	//		// TODO error
 	//	}
-	//	env.dequeue_and_push_message();
+	//	env.dequeue_and_message_back();
 	//}
 	//else
 	//{
@@ -994,7 +925,7 @@ void StatementAnalyze::analyze(Env& env)
 	//	{
 	//		// TODO error
 	//	}
-	//	env.dequeue_and_push_message();								// semicolon
+	//	env.dequeue_and_message_back();								// semicolon
 	//}
 	//env.message_back("<语句>");
 }
@@ -1004,12 +935,12 @@ void LoopStatementAnalyze::analyze(Env& env)
 {
 	if (env.peek() == SymbolType::key_while)
 	{
-		env.dequeue_and_push_message();							// key_while
+		env.dequeue_and_message_back();							// key_while
 		if (env.peek() != SymbolType::left_paren)
 		{
 			// TODO error
 		}
-		env.dequeue_and_push_message();							// left_paren
+		env.dequeue_and_message_back();							// left_paren
 
 		if (!in_branch_of<ConditionAnalyze>(env))
 		{
@@ -1017,11 +948,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		}
 		ConditionAnalyze()(env);								// 条件
 
-		if (env.peek() != SymbolType::right_paren)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();							// right_paren
+		env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 		if (!in_branch_of<StatementAnalyze>(env))
 		{
 			// TODO error
@@ -1030,18 +957,18 @@ void LoopStatementAnalyze::analyze(Env& env)
 	}
 	else
 	{
-		env.dequeue_and_push_message();							// key_for
+		env.dequeue_and_message_back();							// key_for
 		if (env.peek() != SymbolType::left_paren)
 		{
 			// TODO error
 		}
-		env.dequeue_and_push_message();							// left_paren
+		env.dequeue_and_message_back();							// left_paren
 
 		if (env.peek() != SymbolType::identifier)
 		{
 			// TODO error
 		}
-		auto init_token = env.dequeue_and_push_message();			// identifier
+		auto init_token = env.dequeue_and_message_back();			// identifier
 		auto init_id_token = dynamic_pointer_cast<const IdentifierToken>(init_token);
 		auto init_id_info = env.get_identifier_info(init_id_token->id_name_content);
 		if (init_id_info == nullptr)
@@ -1052,34 +979,26 @@ void LoopStatementAnalyze::analyze(Env& env)
 		{
 			// TODO error
 		}
-		env.dequeue_and_push_message();							// assign
+		env.dequeue_and_message_back();							// assign
 		if (!in_branch_of<ExpressionAnalyze>(env))
 		{
 			// TODO error
 		}
 		ExpressionAnalyze()(env);								// 表达式
-		if (env.peek() != SymbolType::semicolon)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();							// semicolon
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 
 		if (!in_branch_of<ConditionAnalyze>(env))
 		{
 			// TODO error
 		}
 		ConditionAnalyze()(env);								// 条件
-		if (env.peek() != SymbolType::semicolon)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();							// semicolon
+		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 
 		if (env.peek() != SymbolType::identifier)
 		{
 			// TODO error
 		}
-		auto delta_left_token = env.dequeue_and_push_message();		// identifier
+		auto delta_left_token = env.dequeue_and_message_back();		// identifier
 		auto delta_left_id_token = dynamic_pointer_cast<const IdentifierToken>(delta_left_token);
 		auto delta_left_id_info = env.get_identifier_info(delta_left_id_token->id_name_content);
 		if (delta_left_id_info == nullptr)
@@ -1090,12 +1009,12 @@ void LoopStatementAnalyze::analyze(Env& env)
 		{
 			// TODO error
 		}
-		env.dequeue_and_push_message();							// assign
+		env.dequeue_and_message_back();							// assign
 		if (env.peek() != SymbolType::identifier)
 		{
 			// TODO error
 		}
-		auto delta_right_token = env.dequeue_and_push_message();	// identifier
+		auto delta_right_token = env.dequeue_and_message_back();	// identifier
 		auto delta_right_id_token = dynamic_pointer_cast<const IdentifierToken>(delta_right_token);
 		auto delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content);
 		if (delta_right_id_info == nullptr)
@@ -1107,7 +1026,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		{
 			// TODO error
 		}
-		env.dequeue_and_push_message();							// +/-
+		env.dequeue_and_message_back();							// +/-
 		if (!in_branch_of<StepLengthAnalyze>(env))
 		{
 			// TODO error
@@ -1116,11 +1035,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		step_length_analyze(env);								// 步长
 		unsigned step_length = step_length_analyze.get_value();
 
-		if (env.peek() != SymbolType::right_paren)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();							// right_paren
+		env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 		if (!in_branch_of<StatementAnalyze>(env))
 		{
 			// TODO error
@@ -1143,22 +1058,18 @@ void StepLengthAnalyze::analyze(Env& env)
 // 条件语句
 void ConditionStatementAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();								// key_if
+	env.dequeue_and_message_back();								// key_if
 	if (env.peek() != SymbolType::left_paren)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();								// left_paren
+	env.dequeue_and_message_back();								// left_paren
 	if (!in_branch_of<ConditionAnalyze>(env))
 	{
 		// TODO error
 	}
 	ConditionAnalyze()(env);									// 条件
-	if (env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_push_message();								// right_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	if (!in_branch_of<StatementAnalyze>(env))
 	{
@@ -1168,7 +1079,7 @@ void ConditionStatementAnalyze::analyze(Env& env)
 
 	if (env.peek() == SymbolType::key_else)
 	{
-		env.dequeue_and_push_message();							// else
+		env.dequeue_and_message_back();							// else
 		if (!in_branch_of<StatementAnalyze>(env))
 		{
 			// TODO error
@@ -1198,7 +1109,7 @@ void ConditionAnalyze::analyze(Env& env)
 	case SymbolType::greater_equal:
 		break;
 	}
-	env.dequeue_and_push_message();								// 关系运算符
+	env.dequeue_and_message_back();								// 关系运算符
 
 	if (!in_branch_of<ExpressionAnalyze>(env))
 	{
@@ -1212,7 +1123,7 @@ void ConditionAnalyze::analyze(Env& env)
 // 有返回值函数调用语句
 void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 {
-	auto token = env.dequeue_and_push_message();				// identifier
+	auto token = env.dequeue_and_message_back();				// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 	auto id_info = env.get_identifier_info(id_token->id_name_content);
 	auto function_type = dynamic_pointer_cast<const FuctionIdentifierType>(id_info->return_type);
@@ -1222,7 +1133,7 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();								// left_paren
+	env.dequeue_and_message_back();								// left_paren
 	if (!in_branch_of<ParameterValueListAnalyze>(env) && env.peek() != SymbolType::right_paren)
 	{
 		// TODO error
@@ -1230,8 +1141,7 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 	ParameterValueListAnalyze parameter_value_list_analyze(function_type->param_type_list);
 	parameter_value_list_analyze(env);							// 值参数表
 
-	symbol_assert<SymbolType::right_paren>(env);
-	env.dequeue_and_push_message();								// right_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	env.message_back("<有返回值函数调用语句>");
 }
@@ -1239,12 +1149,12 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 // 无返回值函数调用语句
 void CallVoidFunctionStatementAnalyze::analyze(Env& env)
 {
-	auto token = env.dequeue_and_push_message();				// identifier
+	auto token = env.dequeue_and_message_back();				// identifier
 	if (env.peek() != SymbolType::left_paren)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();								// left_paren
+	env.dequeue_and_message_back();								// left_paren
 
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 	auto id_info = env.get_identifier_info(id_token->id_name_content);
@@ -1255,12 +1165,7 @@ void CallVoidFunctionStatementAnalyze::analyze(Env& env)
 	}
 	ParameterValueListAnalyze parameter_value_list_analyze(function_type->param_type_list);
 	parameter_value_list_analyze(env);							// 值参数表
-
-	if (env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_push_message();								// right_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	env.message_back("<无返回值函数调用语句>");
 }
@@ -1278,7 +1183,7 @@ void ParameterValueListAnalyze::analyze(Env& env)
 			{
 				break;
 			}
-			env.dequeue_and_push_message();							// comma
+			env.dequeue_and_message_back();							// comma
 		}
 		if (!in_branch_of<ExpressionAnalyze>(env))
 		{
@@ -1299,7 +1204,7 @@ void ParameterValueListAnalyze::analyze(Env& env)
 // 赋值语句
 void AssignmentStatementAnalyze::analyze(Env& env)
 {
-	auto token = env.dequeue_and_push_message();						// identifier
+	auto token = env.dequeue_and_message_back();						// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 	auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
 	if (id_type->extern_type == ExternType::constant)
@@ -1310,33 +1215,25 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 	if (env.peek() == SymbolType::left_square)
 	{
 		// 数组
-		env.dequeue_and_push_message();									// left_square
+		env.dequeue_and_message_back();									// left_square
 		if (!in_branch_of<ExpressionAnalyze>(env))
 		{
 			// TODO error
 		}
 		ExpressionAnalyze expression_analyze_1;
 		expression_analyze_1(env);										// 表达式
-		if (env.peek() != SymbolType::right_square)
-		{
-			// TODO error
-		}
-		env.dequeue_and_push_message();									// right_square
+		env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 		if (env.peek() == SymbolType::left_square)
 		{
 			// 二维数组
-			env.dequeue_and_push_message();									// left_square
+			env.dequeue_and_message_back();									// left_square
 			if (!in_branch_of<ExpressionAnalyze>(env))
 			{
 				// TODO error
 			}
 			ExpressionAnalyze expression_analyze_2;
 			expression_analyze_2(env);										// 表达式
-			if (env.peek() != SymbolType::right_square)
-			{
-				// TODO error
-			}
-			env.dequeue_and_push_message();									// right_square
+			env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 
 			if (id_type->extern_type != ExternType::d_array)
 			{
@@ -1365,7 +1262,7 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();									// assign
+	env.dequeue_and_message_back();									// assign
 
 	if (!in_branch_of<ExpressionAnalyze>(env))
 	{
@@ -1380,18 +1277,18 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 // 读语句
 void ReadStatementAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();								// key_scanf
+	env.dequeue_and_message_back();								// key_scanf
 	if (env.peek() != SymbolType::left_paren)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();								// left_paren
+	env.dequeue_and_message_back();								// left_paren
 
 	if (env.peek() != SymbolType::identifier)
 	{
 		// TODO error
 	}
-	auto token = env.dequeue_and_push_message();				// identifier
+	auto token = env.dequeue_and_message_back();				// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 	auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
 	if (id_type->extern_type != ExternType::variable)
@@ -1400,32 +1297,28 @@ void ReadStatementAnalyze::analyze(Env& env)
 	}
 	// 读取
 
-	if (env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_push_message();								// right_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 	env.message_back("<读语句>");
 }
 
 // 写语句
 void WriteStatementAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();								// key_printf
+	env.dequeue_and_message_back();								// key_printf
 	if (env.peek() != SymbolType::left_paren)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();								// left_paren
+	env.dequeue_and_message_back();								// left_paren
 
 	if (env.peek() == SymbolType::string)
 	{
-		auto tk1 = env.dequeue_and_push_message();				// 字符串
+		auto tk1 = env.dequeue_and_message_back();				// 字符串
 		auto str_token = dynamic_pointer_cast<const StringToken>(tk1);
 		env.message_back("<字符串>");
 		if (env.peek() == SymbolType::comma)
 		{
-			env.dequeue_and_push_message();						// comma
+			env.dequeue_and_message_back();						// comma
 			if (!in_branch_of<ExpressionAnalyze>(env))
 			{
 				// TODO error
@@ -1449,23 +1342,19 @@ void WriteStatementAnalyze::analyze(Env& env)
 		expression_analyze(env);
 	}
 
-	if (env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_push_message();								// right_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 	env.message_back("<写语句>");
 }
 
 // 情况语句
 void SwitchStatementAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();								// key_switch
+	env.dequeue_and_message_back();								// key_switch
 	if (env.peek() != SymbolType::left_paren)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();								// left_paren
+	env.dequeue_and_message_back();								// left_paren
 
 	if (!in_branch_of<ExpressionAnalyze>(env))
 	{
@@ -1474,17 +1363,13 @@ void SwitchStatementAnalyze::analyze(Env& env)
 	ExpressionAnalyze expression_analyze;
 	expression_analyze(env);									// 表达式
 
-	if (env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_push_message();								// right_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	if (env.peek() != SymbolType::left_brance)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();								// left_brance
+	env.dequeue_and_message_back();								// left_brance
 
 	if (!in_branch_of<SwitchTableAnalyze>(env))
 	{
@@ -1501,7 +1386,7 @@ void SwitchStatementAnalyze::analyze(Env& env)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();								// right_brance
+	env.dequeue_and_message_back();								// right_brance
 	env.message_back("<情况语句>");
 }
 
@@ -1529,7 +1414,7 @@ void SwitchTableAnalyze::analyze(Env& env)
 // 情况子语句
 void CaseStatementAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();						// key_case
+	env.dequeue_and_message_back();						// key_case
 	if (!in_branch_of<ConstantAnalyze>(env))
 	{
 		// TODO error
@@ -1549,7 +1434,7 @@ void CaseStatementAnalyze::analyze(Env& env)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();						// colon
+	env.dequeue_and_message_back();						// colon
 
 	if (!in_branch_of<StatementAnalyze>(env))
 	{
@@ -1562,13 +1447,13 @@ void CaseStatementAnalyze::analyze(Env& env)
 // 缺省
 void DefaultCaseAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();				// key_default
+	env.dequeue_and_message_back();				// key_default
 
 	if (env.peek() != SymbolType::colon)
 	{
 		// TODO error
 	}
-	env.dequeue_and_push_message();				// colon
+	env.dequeue_and_message_back();				// colon
 
 	if (!in_branch_of<StatementAnalyze>(env))
 	{
@@ -1582,13 +1467,13 @@ void DefaultCaseAnalyze::analyze(Env& env)
 // 返回语句
 void ReturnStatementAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_push_message();					// key_return
+	env.dequeue_and_message_back();					// key_return
 	if (env.peek() != SymbolType::left_paren)
 	{
 		env.message_back("<返回语句>");
 		return;
 	}
-	env.dequeue_and_push_message();					// left_paren
+	env.dequeue_and_message_back();					// left_paren
 
 	if (!in_branch_of<ExpressionAnalyze>(env))
 	{
@@ -1597,11 +1482,7 @@ void ReturnStatementAnalyze::analyze(Env& env)
 	ExpressionAnalyze expression_analyze;
 	expression_analyze(env);
 
-	if (env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_push_message();					// right_paren
+	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	env.message_back("<返回语句>");
 }
@@ -1612,7 +1493,7 @@ void ExpressionAnalyze::analyze(Env& env)
 	bool first_need_negative = false;
 	if (env.peek() == SymbolType::plus || env.peek() == SymbolType::minus)
 	{
-		auto token = env.dequeue_and_push_message();				// + / -
+		auto token = env.dequeue_and_message_back();				// + / -
 		first_need_negative = token->type == SymbolType::minus;
 	}
 	type = BaseType::type_char;
@@ -1626,7 +1507,7 @@ void ExpressionAnalyze::analyze(Env& env)
 			{
 				break;
 			}
-			need_negative = env.dequeue_and_push_message()->type == SymbolType::minus;	// + / -
+			need_negative = env.dequeue_and_message_back()->type == SymbolType::minus;	// + / -
 		}
 		if (!in_branch_of<TermAnalyze>(env))
 		{
@@ -1657,7 +1538,7 @@ void TermAnalyze::analyze(Env& env)
 			{
 				break;
 			}
-			is_mult = env.dequeue_and_push_message()->type == SymbolType::mult;			// * / /
+			is_mult = env.dequeue_and_message_back()->type == SymbolType::mult;			// * / /
 		}
 		if (!in_branch_of<FactorAnalyze>(env))
 		{
@@ -1679,7 +1560,7 @@ void FactorAnalyze::analyze(Env& env)
 {
 	if (env.peek() == SymbolType::character)
 	{
-		env.dequeue_and_push_message();							// charactor
+		env.dequeue_and_message_back();							// charactor
 		type = BaseType::type_char;
 	}
 	else if (in_branch_of<IntegerAnalyze>(env))
@@ -1690,7 +1571,7 @@ void FactorAnalyze::analyze(Env& env)
 	}
 	else if (env.peek() == SymbolType::left_paren)
 	{
-		env.dequeue_and_push_message();							// left_paren
+		env.dequeue_and_message_back();							// left_paren
 		if (!in_branch_of<ExpressionAnalyze>(env))
 		{
 			// TODO error
@@ -1698,8 +1579,7 @@ void FactorAnalyze::analyze(Env& env)
 		ExpressionAnalyze expression_analyze;
 		expression_analyze(env);								// 表达式
 		type = expression_analyze.get_type();
-		symbol_assert<SymbolType::right_paren>(env);
-		env.dequeue_and_push_message();							// right_paren
+		env.dequeue_certain_and_message_back(SymbolType::right_paren);// right_paren
 	}
 	else if (in_branch_of<CallReturnFunctionStatementAnalyze>(env))
 	{
@@ -1710,38 +1590,30 @@ void FactorAnalyze::analyze(Env& env)
 	else
 	{
 		// assert env.peek() == SymbolType::identifier
-		auto token = env.dequeue_and_push_message();			// identifier
+		auto token = env.dequeue_and_message_back();			// identifier
 		auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 		auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
 		type = id_type->base_type;
 		if (env.peek() == SymbolType::left_square)
 		{
-			env.dequeue_and_push_message();						// left_square
+			env.dequeue_and_message_back();						// left_square
 			if (!in_branch_of<ExpressionAnalyze>(env))
 			{
 				// TODO error
 			}
 			ExpressionAnalyze size_1_expression_analyze;
 			size_1_expression_analyze(env);						// 表达式
-			if (env.peek() != SymbolType::right_square)
-			{
-				// TODO error
-			}
-			env.dequeue_and_push_message();						// right_square
+			env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 			if (env.peek() == SymbolType::left_square)
 			{
-				env.dequeue_and_push_message();						// left_square
+				env.dequeue_and_message_back();						// left_square
 				if (!in_branch_of<ExpressionAnalyze>(env))
 				{
 					// TODO error
 				}
 				ExpressionAnalyze size_2_expression_analyze;
 				size_2_expression_analyze(env);						// 表达式
-				if (env.peek() != SymbolType::right_square)
-				{
-					// TODO error
-				}
-				env.dequeue_and_push_message();						// right_square
+				env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 
 				// 二维数组
 				if (id_type->extern_type != ExternType::d_array)

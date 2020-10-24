@@ -9,6 +9,7 @@
 #include <iostream>
 #include <map>
 #include <unordered_set>
+#include <functional>
 #include "global_control.h"
 #include "SymbolType.h"
 #include "LexicalAnalyzer.h"
@@ -24,6 +25,8 @@ using std::unordered_set;
 using std::ostream;
 using std::multimap;
 using std::pair;
+using std::function;
+using std::initializer_list;
 
 class SyntacticAnalyzerEnvironment;
 
@@ -72,6 +75,8 @@ public:
 	virtual ~ErrorEnvironment() = default;
 
 
+	void print_all_error(ostream& os);
+
 	void error_back(int line_number, char type)
 	{
 		string str;
@@ -91,8 +96,80 @@ public:
 		errors.insert(pair<int, string>(line_number, type));
 	}
 
-	void print_all_error(ostream& os);
+	void error_require(int line_number, SymbolType type)
+	{
+		switch (type)
+		{
+		case SymbolType::semicolon:
+			error_back(line_number, ErrorType::need_semicolon);
+			break;
+		case SymbolType::right_paren:
+			error_back(line_number, ErrorType::need_right_paren);
+			break;
+		case SymbolType::right_square:
+			error_back(line_number, ErrorType::need_right_square);
+			break;
+		default:
+			error_back(line_number, ErrorType::unknown_error);
+		}
+	}
 };
+
+class TokenEnvironment;
+
+struct IsType
+{
+	IsType(SymbolType type) : type(type) { }
+	bool operator()(TokenEnvironment& env) const
+	{
+		return env.peek() == type;
+	}
+private:
+	SymbolType type;
+};
+
+struct TypeInsideSet
+{
+	template<typename T>
+	TypeInsideSet(T&& set) : type_set(std::forward(set)) { }
+	bool operator()(TokenEnvironment& env) const
+	{
+		return type_set.count(env.peek()) != 0;
+	}
+private:
+	unordered_set<SymbolType> type_set;
+};
+
+struct OrCondition
+{
+	OrCondition(const function<bool(TokenEnvironment&)>& c1, const function<bool(TokenEnvironment&)>& c2)
+		: c1(c1), c2(c2)
+	{ }
+	bool operator()(TokenEnvironment& env) const
+	{
+		return c1(env) || c2(env);
+	}
+private:
+	function<bool(TokenEnvironment&)> c1;
+	function<bool(TokenEnvironment&)> c2;
+};
+
+
+inline function<bool(TokenEnvironment&)> wrap_condition(function<bool(TokenEnvironment&)> func)
+{
+	return func;
+}
+
+inline IsType wrap_condition(SymbolType type)
+{
+	return IsType(type);
+}
+
+inline TypeInsideSet wrap_condition(std::initializer_list<SymbolType> type_set)
+{
+	return TypeInsideSet(type_set);
+}
+
 
 
 class TokenEnvironment : public ErrorEnvironment, public MessageEnvironment
@@ -130,12 +207,39 @@ public:
 		return symbols[sym_index++];
 	}
 
-	token_ptr dequeue_and_push_message()
+	token_ptr dequeue_certain(SymbolType type)
+	{
+		ensure_capacity(sym_index);
+		if (symbols[sym_index]->type == type)
+		{
+			return dequeue();
+		}
+		error_require(symbols[sym_index]->line_number, type);
+	}
+
+	token_ptr dequeue_certain_and_message_back(SymbolType type)
+	{
+		ensure_capacity(sym_index);
+		if (symbols[sym_index]->type == type)
+		{
+			return dequeue_and_message_back();
+		}
+		error_require(symbols[sym_index]->line_number, type);
+	}
+
+	token_ptr dequeue_and_message_back()
 	{
 		ensure_capacity(sym_index);
 		message_back(symbols[sym_index]->to_print_string());
 		return symbols[sym_index++];
 	}
+
+	bool ensure(
+		const function<bool(TokenEnvironment&)>& success_condition,
+		const function<bool(TokenEnvironment&)>& next_condition,
+		ErrorType error_type = ErrorType::unknown_error,
+		unsigned max_turn = MAXINT
+	);
 };
 
 
@@ -247,6 +351,8 @@ public:
 	const shared_ptr<const Token> token;
 	const symset_ptr expect_symbols;
 	const shared_ptr<syntax_exception> inner_exception;
+
+	using exception::exception;
 
 	syntax_exception(const syntax_exception& cpy)
 		: exception(cpy),
