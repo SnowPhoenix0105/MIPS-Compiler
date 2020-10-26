@@ -14,7 +14,7 @@ struct Token
 {
 	SymbolType type = SymbolType::end;
 	shared_ptr<const string> print_content;
-	int line_number;
+	int line_number = 0;
 
 	virtual ~Token() = default;
 	virtual string to_print_string() const
