@@ -32,6 +32,14 @@ using std::initializer_list;
 using std::numeric_limits;
 
 class SyntacticAnalyzerEnvironment;
+struct IsType;
+struct TypeInsideSet;
+struct SatisfyCondition;
+
+SatisfyCondition wrap_condition(function<bool(SyntacticAnalyzerEnvironment&)> func);
+IsType wrap_condition(SymbolType type);
+TypeInsideSet wrap_condition(std::initializer_list<SymbolType> type_set);
+
 
 class Enviromentstate
 {
@@ -156,27 +164,9 @@ public:
 		return symbols[sym_index++];
 	}
 
-	token_ptr dequeue_certain(SymbolType type)
-	{
-		ensure_capacity(sym_index);
-		if (symbols[sym_index]->type == type)
-		{
-			return dequeue();
-		}
-		error_require(symbols[sym_index]->line_number, type);
-		return nullptr;
-	}
+	token_ptr dequeue_certain(SymbolType type);
 
-	token_ptr dequeue_certain_and_message_back(SymbolType type)
-	{
-		ensure_capacity(sym_index);
-		if (symbols[sym_index]->type == type)
-		{
-			return dequeue_and_message_back();
-		}
-		error_require(symbols[sym_index]->line_number, type);
-		return nullptr;
-	}
+	token_ptr dequeue_certain_and_message_back(SymbolType type);
 
 	token_ptr dequeue_and_message_back()
 	{
@@ -203,62 +193,6 @@ public:
 		return ensure(wrap_condition(success_condition), wrap_condition(next_condition), error_type, max_turn);
 	}
 };
-
-
-struct IsType
-{
-	IsType(SymbolType type) : type(type) { }
-	bool operator()(TokenEnvironment& env) const
-	{
-		return env.peek() == type;
-	}
-private:
-	SymbolType type;
-};
-
-struct TypeInsideSet
-{
-	template<typename T>
-	TypeInsideSet(T&& set) : type_set(std::forward<T>(set)) { }
-	bool operator()(TokenEnvironment& env) const
-	{
-		return type_set.count(env.peek()) != 0;
-	}
-private:
-	unordered_set<SymbolType> type_set;
-};
-
-struct OrCondition
-{
-	OrCondition(const function<bool(TokenEnvironment&)>& c1, const function<bool(TokenEnvironment&)>& c2)
-		: c1(c1), c2(c2)
-	{ }
-	bool operator()(TokenEnvironment& env) const
-	{
-		return c1(env) || c2(env);
-	}
-private:
-	function<bool(TokenEnvironment&)> c1;
-	function<bool(TokenEnvironment&)> c2;
-};
-
-
-
-inline function<bool(TokenEnvironment&)> wrap_condition(function<bool(TokenEnvironment&)> func)
-{
-	return func;
-}
-
-inline IsType wrap_condition(SymbolType type)
-{
-	return IsType(type);
-}
-
-inline TypeInsideSet wrap_condition(std::initializer_list<SymbolType> type_set)
-{
-	return TypeInsideSet(type_set);
-}
-
 
 
 class SymbolTableEnvironment
@@ -336,6 +270,7 @@ public:
 };
 
 
+
 class SyntacticAnalyzerEnvironment : public TokenEnvironment, public SymbolTableEnvironment
 {
 public:
@@ -359,6 +294,81 @@ public:
 		msg_index = state.msg_index;
 		return ret;
 	}
+};
+
+struct OrCondition
+{
+	OrCondition(const function<bool(SyntacticAnalyzerEnvironment&)>& c1, const function<bool(SyntacticAnalyzerEnvironment&)>& c2)
+		: c1(c1), c2(c2)
+	{ }
+	bool operator()(SyntacticAnalyzerEnvironment& env) const
+	{
+		return c1(env) || c2(env);
+	}
+
+	template<typename T>
+	OrCondition operator||(T&& other)
+	{
+		return OrCondition(*this, std::forward<T>(other));
+	}
+private:
+	function<bool(SyntacticAnalyzerEnvironment&)> c1;
+	function<bool(SyntacticAnalyzerEnvironment&)> c2;
+};
+
+struct IsType
+{
+	IsType(SymbolType type) : type(type) { }
+	bool operator()(SyntacticAnalyzerEnvironment& env) const
+	{
+		return env.peek() == type;
+	}
+
+	template<typename T>
+	OrCondition operator||(T&& other)
+	{
+		return OrCondition(*this, std::forward<T>(other));
+	}
+private:
+	SymbolType type;
+};
+
+struct TypeInsideSet
+{
+	template<typename T>
+	TypeInsideSet(T&& set) : type_set(std::forward<T>(set)) { }
+	bool operator()(SyntacticAnalyzerEnvironment& env) const
+	{
+		return type_set.count(env.peek()) != 0;
+	}
+
+	template<typename T>
+	OrCondition operator||(T&& other)
+	{
+		return OrCondition(*this, std::forward<T>(other));
+	}
+private:
+	unordered_set<SymbolType> type_set;
+};
+
+struct SatisfyCondition
+{
+	SatisfyCondition(const function<bool(SyntacticAnalyzerEnvironment&)>& c1)
+		: c(c)
+	{ }
+
+	bool operator()(SyntacticAnalyzerEnvironment& env) const
+	{
+		return c(env);
+	}
+
+	template<typename T>
+	OrCondition operator||(T&& other)
+	{
+		return OrCondition(*this, std::forward<T>(other));
+	}
+private:
+	function<bool(SyntacticAnalyzerEnvironment&)> c;
 };
 
 class syntax_exception : public exception

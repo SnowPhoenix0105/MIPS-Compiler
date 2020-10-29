@@ -16,7 +16,7 @@ unordered_map<ErrorType, const char> error_code_dictionary =
 	{ErrorType::need_right_paren					, 'l'},
 	{ErrorType::need_right_square					, 'm'},
 	{ErrorType::array_initialize_mismatching		, 'n'},
-	{ErrorType::switch_type_mismatching 			, 'o'},
+	{ErrorType::constant_type_mismatching 			, 'o'},
 	{ErrorType::switch_no_defaule					, 'p'},
 	{ErrorType::unknown_error						, 'z'},
 };
@@ -38,7 +38,7 @@ unordered_map<ErrorType, const string> error_message =
 	{ErrorType::need_right_paren					, "需要右小括号"									},
 	{ErrorType::need_right_square					, "需要右中括号"									},
 	{ErrorType::array_initialize_mismatching		, "数组初始化个数不匹配"							},
-	{ErrorType::switch_type_mismatching 			, "switch语句中case类型不正确"					},
+	{ErrorType::constant_type_mismatching 			, "switch语句中case类型不正确"					},
 	{ErrorType::switch_no_defaule					, "缺少缺省语句"									},
 	{ErrorType::unknown_error						, "未知错误"										}
 };

@@ -20,11 +20,12 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{C56CCE79-7AB3-454A-B164-7AEC3DBA09A0}</ProjectGuid>
+    <ProjectGuid>{F84A28A2-4AF5-4715-9E86-A5DE08522F2E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Test</RootNamespace>
+    <RootNamespace>UnitTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
+    <ProjectName>UnitTest</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -157,6 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlackboxTest.cpp" />
+    <ClCompile Include="ErrorTest.cpp" />
     <ClCompile Include="LexicalAnalyzerCorrectTest.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -166,10 +168,10 @@
     </ClCompile>
     <ClCompile Include="SyntacticAnalyzeCorrectTest.cpp" />
     <ClCompile Include="Test.cpp" />
+    <ClCompile Include="UnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="TestResource\sample1\lexical_expect.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Develop\Develop.vcxproj">

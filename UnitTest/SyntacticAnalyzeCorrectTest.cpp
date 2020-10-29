@@ -267,5 +267,5 @@ namespace SyntacticAnalyzeTest
 		//}
 	};
 
-	const string SyntacticAnalyzeCorrectTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\Test\\TestResource");
+	const string SyntacticAnalyzeCorrectTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource");
 }

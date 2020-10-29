@@ -187,55 +187,55 @@ public:
 	using Env = SyntacticAnalyzerEnvironment;
 	using token_ptr = SyntacticAnalyzerEnvironment::token_ptr;
 
-	void fail(Env& env, ErrorType error_type, token_ptr token, initializer_list<SymbolType> expect_symbols)
-	{
-		env.error_back(token->line_number, error_type);
-		throw syntax_exception(env.state(), token, expect_symbols);
-	}
+	//void fail(Env& env, ErrorType error_type, token_ptr token, initializer_list<SymbolType> expect_symbols)
+	//{
+	//	env.error_back(token->line_number, error_type);
+	//	throw syntax_exception(env.state(), token, expect_symbols);
+	//}
 
-	template<SymbolType T>
-	void symbol_assert(Env& env)
-	{
-		if (env.peek() != T)
-		{
-			token_ptr token = env.dequeue();
-			env.error_back(token->line_number, ErrorType::unknown_error);
-			throw syntax_exception(env.state(), token, { T });
-		}
-	}
+	//template<SymbolType T>
+	//void symbol_assert(Env& env)
+	//{
+	//	if (env.peek() != T)
+	//	{
+	//		token_ptr token = env.dequeue();
+	//		env.error_back(token->line_number, ErrorType::unknown_error);
+	//		throw syntax_exception(env.state(), token, { T });
+	//	}
+	//}
 
-	template<>
-	void symbol_assert<SymbolType::semicolon>(Env& env)
-	{
-		if (env.peek() != SymbolType::semicolon)
-		{
-			token_ptr token = env.dequeue();
-			env.error_back(token->line_number, ErrorType::need_semicolon);
-			throw syntax_exception(env.state(), token, { SymbolType::semicolon });
-		}
-	}
+	//template<>
+	//void symbol_assert<SymbolType::semicolon>(Env& env)
+	//{
+	//	if (env.peek() != SymbolType::semicolon)
+	//	{
+	//		token_ptr token = env.dequeue();
+	//		env.error_back(token->line_number, ErrorType::need_semicolon);
+	//		throw syntax_exception(env.state(), token, { SymbolType::semicolon });
+	//	}
+	//}
 
-	template<>
-	void symbol_assert<SymbolType::right_paren>(Env& env)
-	{
-		if (env.peek() != SymbolType::right_paren)
-		{
-			token_ptr token = env.dequeue();
-			env.error_back(token->line_number, ErrorType::need_right_paren);
-			throw syntax_exception(env.state(), token, { SymbolType::right_paren });
-		}
-	}
+	//template<>
+	//void symbol_assert<SymbolType::right_paren>(Env& env)
+	//{
+	//	if (env.peek() != SymbolType::right_paren)
+	//	{
+	//		token_ptr token = env.dequeue();
+	//		env.error_back(token->line_number, ErrorType::need_right_paren);
+	//		throw syntax_exception(env.state(), token, { SymbolType::right_paren });
+	//	}
+	//}
 
-	template<>
-	void symbol_assert<SymbolType::right_square>(Env& env)
-	{
-		if (env.peek() != SymbolType::right_square)
-		{
-			token_ptr token = env.dequeue();
-			env.error_back(token->line_number, ErrorType::need_right_square);
-			throw syntax_exception(env.state(), token, { SymbolType::right_square });
-		}
-	}
+	//template<>
+	//void symbol_assert<SymbolType::right_square>(Env& env)
+	//{
+	//	if (env.peek() != SymbolType::right_square)
+	//	{
+	//		token_ptr token = env.dequeue();
+	//		env.error_back(token->line_number, ErrorType::need_right_square);
+	//		throw syntax_exception(env.state(), token, { SymbolType::right_square });
+	//	}
+	//}
 };
 
 
@@ -267,32 +267,32 @@ protected:
 	virtual void analyze(Env& env) = 0;
 
 	template<class T>
-	bool in_first_set_of(Env& env)
+	static bool in_first_set_of(SyntacticAnalyzerEnvironment& env)
 	{
 		return first_set_judgment.in_first_set_of<T>(env);
 	}
 
 	template<class T>
-	bool in_branch_of(Env& env)
+	static bool in_branch_of(SyntacticAnalyzerEnvironment& env)
 	{
 		return first_set_judgment.in_branch_of<T>(env);
 	}
 
-	template<SymbolType T>
-	void symbol_assert(Env& env)
-	{
-		return error_judgment.symbol_assert<T>(env);
-	}
+	//template<SymbolType T>
+	//static void symbol_assert(Env& env)
+	//{
+	//	return error_judgment.symbol_assert<T>(env);
+	//}
 
-	void fail(Env& env, ErrorType error_type, token_ptr token, initializer_list<SymbolType> expect_symbols)
-	{
-		error_judgment.fail(env, error_type, token, expect_symbols);
-	}
+	//static void fail(Env& env, ErrorType error_type, token_ptr token, initializer_list<SymbolType> expect_symbols)
+	//{
+	//	error_judgment.fail(env, error_type, token, expect_symbols);
+	//}
 
-	void fail(Env& env, ErrorType error_type, token_ptr token)
-	{
-		error_judgment.fail(env, error_type, token, {});
-	}
+	//static void fail(Env& env, ErrorType error_type, token_ptr token)
+	//{
+	//	error_judgment.fail(env, error_type, token, {});
+	//}
 };
 
 // 因子
@@ -640,18 +640,7 @@ struct StatementsListAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static unordered_set<SymbolType> first_set()
 	{
-		return
-		{
-			SymbolType::key_while, SymbolType::key_for, // 循环语句
-			SymbolType::key_if,							// 条件语句
-			SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
-			SymbolType::key_scanf,						// 读语句
-			SymbolType::key_printf,						// 写语句
-			SymbolType::key_switch,						// 情况语句
-			SymbolType::semicolon,						// 空语句
-			SymbolType::key_return,						// 返回语句
-			SymbolType::left_brance						// 语句列
-		};
+		return StatementAnalyze::first_set();
 	};
 
 protected:
@@ -663,20 +652,15 @@ struct CompoundStatementsAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static unordered_set<SymbolType> first_set()
 	{
-		return
+		unordered_set<SymbolType> ret =
 		{
 			SymbolType::key_int, SymbolType::key_char,	// 常量/变量说明
-			// 语句列
-			SymbolType::key_while, SymbolType::key_for, // 循环语句
-			SymbolType::key_if,							// 条件语句
-			SymbolType::identifier,						// 有/无返回值函数调用/赋值语句
-			SymbolType::key_scanf,						// 读语句
-			SymbolType::key_printf,						// 写语句
-			SymbolType::key_switch,						// 情况语句
-			SymbolType::semicolon,						// 空语句
-			SymbolType::key_return,						// 返回语句
-			SymbolType::left_brance						// 语句列
 		};
+		for (SymbolType t : StatementsListAnalyze::first_set())
+		{
+			ret.insert(t);
+		}
+		return ret;
 	};
 
 protected:
@@ -800,10 +784,15 @@ struct IntegerAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static unordered_set<SymbolType> first_set()
 	{
-		return
+		unordered_set<SymbolType> ret=
 		{
 			SymbolType::plus, SymbolType::minus, SymbolType::number
 		};
+		for (auto t : UnsignedIntegerAnalyze::first_set())
+		{
+			ret.insert(t);
+		}
+		return ret;
 	};
 
 	int get_value()

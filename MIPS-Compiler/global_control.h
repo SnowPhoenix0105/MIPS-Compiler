@@ -9,7 +9,7 @@
 #ifndef __DELETE_ALL_GLOBAL_MACROS__
 
 
-#define HW_2
+#define HW_3
 
 // undefine DEBUG_LEVEL before release
 // #define DEBUG_LEVEL 10

@@ -25,7 +25,7 @@ enum class ErrorType : size_t
 	need_right_paren,					// l	需要右小括号
 	need_right_square,					// m	需要右中括号
 	array_initialize_mismatching,		// n	数组初始化个数不匹配
-	switch_type_mismatching,			// o	switch语句中case类型不正确
+	constant_type_mismatching,			// o	常量类型不匹配
 	switch_no_defaule,					// p	缺少缺省语句
 
 	unknown_error,						// z	未知错误

@@ -299,7 +299,7 @@ namespace LexicalAnalyzerTest
 		}
 	};
 
-	const string CorrectInputTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\Test\\TestResource");
+	const string CorrectInputTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource");
 
 	void file_test(const string& source_file_name, const vector<SymbolType>& expect_answer)
 	{

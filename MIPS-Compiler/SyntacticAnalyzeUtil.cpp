@@ -38,6 +38,42 @@ void TokenEnvironment::ensure_capacity(size_t size)
 	}
 }
 
+TokenEnvironment::token_ptr TokenEnvironment::dequeue_certain(SymbolType type)
+{
+	ensure_capacity(sym_index);
+	if (symbols[sym_index]->type == type)
+	{
+		return dequeue();
+	}
+	if (type == SymbolType::semicolon)
+	{
+		error_require(symbols[sym_index - 1]->line_number, type);
+	}
+	else
+	{
+		error_require(symbols[sym_index]->line_number, type);
+	}
+	return nullptr;
+}
+
+TokenEnvironment::token_ptr TokenEnvironment::dequeue_certain_and_message_back(SymbolType type)
+{
+	ensure_capacity(sym_index);
+	if (symbols[sym_index]->type == type)
+	{
+		return dequeue_and_message_back();
+	}
+	if (type == SymbolType::semicolon)
+	{
+		error_require(symbols[sym_index - 1]->line_number, type);
+	}
+	else
+	{
+		error_require(symbols[sym_index]->line_number, type);
+	}
+	return nullptr;
+}
+
 bool TokenEnvironment::ensure(
 	const function<bool(TokenEnvironment&)>& success_condition, 
 	const function<bool(TokenEnvironment&)>& next_condition, 
@@ -51,7 +87,7 @@ bool TokenEnvironment::ensure(
 	}
 	error_back(symbols[sym_index]->line_number, error_type);
 	size_t protec_index = sym_index++;
-	for (unsigned i = 1; i < max_turn; ++i)
+	for (unsigned i = 0; i < max_turn; ++i)
 	{
 		if (success_condition(*this))
 		{
@@ -69,4 +105,22 @@ bool TokenEnvironment::ensure(
 	}
 	sym_index = protec_index;
 	throw syntax_exception();
+}
+
+
+
+
+SatisfyCondition wrap_condition(function<bool(SyntacticAnalyzerEnvironment&)> func)
+{
+	return SatisfyCondition(func);
+}
+
+IsType wrap_condition(SymbolType type)
+{
+	return IsType(type);
+}
+
+TypeInsideSet wrap_condition(std::initializer_list<SymbolType> type_set)
+{
+	return TypeInsideSet(type_set);
 }

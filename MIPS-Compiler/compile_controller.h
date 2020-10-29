@@ -18,6 +18,8 @@ std::unique_ptr<std::ostream> lexical_analyze(std::unique_ptr<std::istream> inpu
 
 std::unique_ptr<std::ostream> syntactic_analyze(std::unique_ptr<std::istream> input_file, std::unique_ptr<std::ostream> output_file);
 
+std::unique_ptr<std::ostream> error_analyze(std::unique_ptr<std::istream> input_file, std::unique_ptr<std::ostream> output_file);
+
 #endif // !__COMPILE_CONTROLLER_H__
 
 
