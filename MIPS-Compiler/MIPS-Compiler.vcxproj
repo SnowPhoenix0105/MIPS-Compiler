@@ -149,7 +149,6 @@
     <ClCompile Include="SymbolType.cpp" />
     <ClCompile Include="SyntacticAnalyzer.cpp" />
     <ClCompile Include="SyntacticAnalyzeUtil.cpp" />
-    <ClCompile Include="SyntacticUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbstractSyntacticAnalyzeTactics.h" />
@@ -161,7 +160,6 @@
     <ClInclude Include="SymbolType.h" />
     <ClInclude Include="SyntacticAnalyzer.h" />
     <ClInclude Include="SyntacticAnalyzeUtil.h" />
-    <ClInclude Include="SyntacticUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

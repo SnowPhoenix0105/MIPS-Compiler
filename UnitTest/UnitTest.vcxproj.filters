@@ -24,9 +24,6 @@
     <ClCompile Include="BlackboxTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ErrorTest.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="LexicalAnalyzerCorrectTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -34,6 +31,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorDealingTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

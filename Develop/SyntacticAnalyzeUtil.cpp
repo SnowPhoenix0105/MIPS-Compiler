@@ -74,9 +74,9 @@ TokenEnvironment::token_ptr TokenEnvironment::dequeue_certain_and_message_back(S
 	return nullptr;
 }
 
-bool TokenEnvironment::ensure(
-	const function<bool(TokenEnvironment&)>& success_condition, 
-	const function<bool(TokenEnvironment&)>& next_condition, 
+bool TokenEnvironment::ensure_func(
+	function<bool(TokenEnvironment&)> success_condition, 
+	function<bool(TokenEnvironment&)> next_condition, 
 	ErrorType error_type, 
 	unsigned max_turn
 ) 
@@ -110,7 +110,7 @@ bool TokenEnvironment::ensure(
 
 
 
-SatisfyCondition wrap_condition(function<bool(SyntacticAnalyzerEnvironment&)> func)
+SatisfyCondition wrap_condition(function<bool(TokenEnvironment&)> func)
 {
 	return SatisfyCondition(func);
 }

@@ -1,12 +1,14 @@
 #include "pch.h"
 #include "CppUnitTest.h"
-#include <iostream>
+#include "../Develop/global_control.h"
+#include "../Develop/SyntacticAnalyzer.h"
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <memory>
-#include "../Develop/global_control.h"
-#include "../Develop/SyntacticAnalyzer.h"
+
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 using std::shared_ptr;
 using std::unique_ptr;
@@ -15,16 +17,14 @@ using std::vector;
 using std::istream;
 using std::ostream;
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-namespace ErrorTest
+namespace ErrorDealingTest
 {
 	TEST_CLASS(NoErrorTest)
 	{
 	public:
 		static const string test_resource_path;
 
-		void test_file(const string& file_name)
+		void test_file_no_error(const string& file_name)
 		{
 			unique_ptr<istream> input_file(new std::ifstream(test_resource_path + '\\' + file_name));
 			assert_no_error(std::move(input_file));
@@ -42,32 +42,32 @@ namespace ErrorTest
 
 		TEST_METHOD(MySample1)
 		{
-			test_file("testfile1.txt");
+			test_file_no_error("testfile1.txt");
 		}
 
 		TEST_METHOD(MySample2)
 		{
-			test_file("testfile2.txt");
+			test_file_no_error("testfile2.txt");
 		}
 
 		TEST_METHOD(MySample3)
 		{
-			test_file("testfile3.txt");
+			test_file_no_error("testfile3.txt");
 		}
 
 		TEST_METHOD(MySample4)
 		{
-			test_file("testfile4.txt");
+			test_file_no_error("testfile4.txt");
 		}
 
 		TEST_METHOD(MySample5)
 		{
-			test_file("testfile5.txt");
+			test_file_no_error("testfile5.txt");
 		}
 
 		TEST_METHOD(MySample6)
 		{
-			test_file("testfile6.txt");
+			test_file_no_error("testfile6.txt");
 		}
 	};
 

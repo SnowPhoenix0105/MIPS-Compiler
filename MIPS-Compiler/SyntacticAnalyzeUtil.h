@@ -32,11 +32,12 @@ using std::initializer_list;
 using std::numeric_limits;
 
 class SyntacticAnalyzerEnvironment;
+class TokenEnvironment;
 struct IsType;
 struct TypeInsideSet;
 struct SatisfyCondition;
 
-SatisfyCondition wrap_condition(function<bool(SyntacticAnalyzerEnvironment&)> func);
+SatisfyCondition wrap_condition(function<bool(TokenEnvironment&)> func);
 IsType wrap_condition(SymbolType type);
 TypeInsideSet wrap_condition(std::initializer_list<SymbolType> type_set);
 
@@ -85,7 +86,6 @@ protected:
 	multimap<int, string> errors;
 public:
 	virtual ~ErrorEnvironment() = default;
-
 
 	void print_all_error(ostream& os);
 
@@ -175,7 +175,12 @@ public:
 		return symbols[sym_index++];
 	}
 
-	bool ensure(
+	static bool always_true(TokenEnvironment& env)
+	{
+		return true;
+	}
+
+	bool ensure_func(
 		const function<bool(TokenEnvironment&)>& success_condition,
 		const function<bool(TokenEnvironment&)>& next_condition,
 		ErrorType error_type = ErrorType::unknown_error,
@@ -184,13 +189,13 @@ public:
 
 	template<typename T1, typename T2>
 	bool ensure(
-		T1 success_condition,
-		T2 next_condition,
+		T1&& success_condition,
+		T2&& next_condition,
 		ErrorType error_type = ErrorType::unknown_error,
 		unsigned max_turn = numeric_limits<unsigned>::max()
 	)
 	{
-		return ensure(wrap_condition(success_condition), wrap_condition(next_condition), error_type, max_turn);
+		return ensure_func(wrap_condition(std::forward<T1>(success_condition)), wrap_condition(std::forward<T2>(next_condition)), error_type, max_turn);
 	}
 };
 
@@ -202,7 +207,10 @@ private:
 	IdentifierTable local_table;
 	bool using_global_table = true;
 public:
+	BaseType current_return_type;
+	int return_count = 0;
 	virtual ~SymbolTableEnvironment() = default;
+
 	void change_to_local_table()
 	{
 		using_global_table = false;
@@ -298,10 +306,10 @@ public:
 
 struct OrCondition
 {
-	OrCondition(const function<bool(SyntacticAnalyzerEnvironment&)>& c1, const function<bool(SyntacticAnalyzerEnvironment&)>& c2)
+	OrCondition(const function<bool(TokenEnvironment&)>& c1, const function<bool(TokenEnvironment&)>& c2)
 		: c1(c1), c2(c2)
 	{ }
-	bool operator()(SyntacticAnalyzerEnvironment& env) const
+	bool operator()(TokenEnvironment& env) const
 	{
 		return c1(env) || c2(env);
 	}
@@ -312,14 +320,14 @@ struct OrCondition
 		return OrCondition(*this, std::forward<T>(other));
 	}
 private:
-	function<bool(SyntacticAnalyzerEnvironment&)> c1;
-	function<bool(SyntacticAnalyzerEnvironment&)> c2;
+	function<bool(TokenEnvironment&)> c1;
+	function<bool(TokenEnvironment&)> c2;
 };
 
 struct IsType
 {
 	IsType(SymbolType type) : type(type) { }
-	bool operator()(SyntacticAnalyzerEnvironment& env) const
+	bool operator()(TokenEnvironment& env) const
 	{
 		return env.peek() == type;
 	}
@@ -337,7 +345,7 @@ struct TypeInsideSet
 {
 	template<typename T>
 	TypeInsideSet(T&& set) : type_set(std::forward<T>(set)) { }
-	bool operator()(SyntacticAnalyzerEnvironment& env) const
+	bool operator()(TokenEnvironment& env) const
 	{
 		return type_set.count(env.peek()) != 0;
 	}
@@ -353,11 +361,11 @@ private:
 
 struct SatisfyCondition
 {
-	SatisfyCondition(const function<bool(SyntacticAnalyzerEnvironment&)>& c1)
+	SatisfyCondition(const function<bool(TokenEnvironment&)>& c)
 		: c(c)
 	{ }
 
-	bool operator()(SyntacticAnalyzerEnvironment& env) const
+	bool operator()(TokenEnvironment& env) const
 	{
 		return c(env);
 	}
@@ -368,7 +376,7 @@ struct SatisfyCondition
 		return OrCondition(*this, std::forward<T>(other));
 	}
 private:
-	function<bool(SyntacticAnalyzerEnvironment&)> c;
+	function<bool(TokenEnvironment&)> c;
 };
 
 class syntax_exception : public exception

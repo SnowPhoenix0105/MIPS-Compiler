@@ -30,9 +30,6 @@
     <ClCompile Include="SymbolType.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="SyntacticUtil.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="SyntacticAnalyzeUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -57,9 +54,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="SymbolType.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="SyntacticUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="SyntacticAnalyzeUtil.h">

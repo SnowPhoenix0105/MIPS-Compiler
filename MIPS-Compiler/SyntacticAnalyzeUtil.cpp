@@ -28,7 +28,7 @@ void TokenEnvironment::ensure_capacity(size_t size)
 			symbols.push_back(NIL);
 			continue;
 		}
-		SymbolType next_type = lexical_analyzer->next();
+		// SymbolType next_type = lexical_analyzer->next();
 		if (lexical_analyzer->is_wrong())
 		{
 			error_back(lexical_analyzer->get_line_number(), ErrorType::lexical_error);
@@ -74,7 +74,7 @@ TokenEnvironment::token_ptr TokenEnvironment::dequeue_certain_and_message_back(S
 	return nullptr;
 }
 
-bool TokenEnvironment::ensure(
+bool TokenEnvironment::ensure_func(
 	const function<bool(TokenEnvironment&)>& success_condition, 
 	const function<bool(TokenEnvironment&)>& next_condition, 
 	ErrorType error_type, 
@@ -110,7 +110,7 @@ bool TokenEnvironment::ensure(
 
 
 
-SatisfyCondition wrap_condition(function<bool(SyntacticAnalyzerEnvironment&)> func)
+SatisfyCondition wrap_condition(function<bool(TokenEnvironment&)> func)
 {
 	return SatisfyCondition(func);
 }

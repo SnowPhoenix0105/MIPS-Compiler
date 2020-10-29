@@ -397,6 +397,7 @@ protected:
 // 情况子语句
 struct CaseStatementAnalyze : AbstractSyntacticAnalyzeTactics
 {
+	CaseStatementAnalyze(BaseType type) : switch_type(type) { }
 	static unordered_set<SymbolType> first_set()
 	{
 		return
@@ -410,12 +411,15 @@ struct CaseStatementAnalyze : AbstractSyntacticAnalyzeTactics
 	}
 protected:
 	virtual void analyze(Env& env);
-	int case_value;
+	int case_value = 0;
+private:
+	BaseType switch_type;
 };
 
 // 情况表
 struct SwitchTableAnalyze : AbstractSyntacticAnalyzeTactics
 {
+	SwitchTableAnalyze(BaseType type) : switch_type(type) { }
 	static unordered_set<SymbolType> first_set()
 	{
 		return
@@ -423,9 +427,10 @@ struct SwitchTableAnalyze : AbstractSyntacticAnalyzeTactics
 			SymbolType::key_case
 		};
 	};
-
 protected:
 	virtual void analyze(Env& env);
+private:
+	BaseType switch_type;
 };
 
 // 情况语句
@@ -698,9 +703,9 @@ struct FunctionHeaderAnalyze : AbstractSyntacticAnalyzeTactics
 			SymbolType::key_char, SymbolType::key_int
 		};
 	};
-	shared_ptr<const string> get_id()
+	shared_ptr<const IdentifierToken> get_token()
 	{
-		return id;
+		return token;
 	}
 	// 只能是 type_int / type_char
 	BaseType get_return_type()
@@ -710,7 +715,7 @@ struct FunctionHeaderAnalyze : AbstractSyntacticAnalyzeTactics
 protected:
 	virtual void analyze(Env& env);
 private:
-	shared_ptr<const string> id;
+	shared_ptr<const IdentifierToken> token;
 	BaseType return_type;
 };
 
