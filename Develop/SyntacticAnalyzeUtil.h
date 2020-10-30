@@ -38,7 +38,7 @@ struct IsType;
 struct TypeInsideSet;
 struct SatisfyCondition;
 
-SatisfyCondition wrap_condition(function<bool(TokenEnvironment&)> func);
+SatisfyCondition wrap_condition(const function<bool(SyntacticAnalyzerEnvironment&)>& func);
 IsType wrap_condition(SymbolType type);
 TypeInsideSet wrap_condition(std::initializer_list<SymbolType> type_set);
 
@@ -180,24 +180,6 @@ public:
 	{
 		return true;
 	}
-
-	bool ensure_func(
-		function<bool(TokenEnvironment&)> success_condition,
-		function<bool(TokenEnvironment&)> next_condition,
-		ErrorType error_type = ErrorType::unknown_error,
-		unsigned max_turn = numeric_limits<unsigned>::max()
-	);
-
-	template<typename T1, typename T2>
-	bool ensure(
-		T1 success_condition,
-		T2 next_condition,
-		ErrorType error_type = ErrorType::unknown_error,
-		unsigned max_turn = numeric_limits<unsigned>::max()
-	)
-	{
-		return ensure_func(wrap_condition(success_condition), wrap_condition(next_condition), error_type, max_turn);
-	}
 };
 
 
@@ -303,14 +285,33 @@ public:
 		msg_index = state.msg_index;
 		return ret;
 	}
+
+	bool ensure_func(
+		function<bool(SyntacticAnalyzerEnvironment&)> success_condition,
+		function<bool(SyntacticAnalyzerEnvironment&)> next_condition,
+		ErrorType error_type = ErrorType::unknown_error,
+		unsigned max_turn = numeric_limits<unsigned>::max()
+	);
+
+	template<typename T1, typename T2>
+	bool ensure(
+		T1 success_condition,
+		T2 next_condition,
+		ErrorType error_type = ErrorType::unknown_error,
+		unsigned max_turn = numeric_limits<unsigned>::max()
+	)
+	{
+		return ensure_func(wrap_condition(success_condition), wrap_condition(next_condition), error_type, max_turn);
+	}
 };
 
 struct OrCondition
 {
-	OrCondition(const function<bool(TokenEnvironment&)>& c1, const function<bool(TokenEnvironment&)>& c2)
+	OrCondition(const function<bool(SyntacticAnalyzerEnvironment&)>& c1, const function<bool(SyntacticAnalyzerEnvironment&)>& c2)
 		: c1(c1), c2(c2)
 	{ }
-	bool operator()(TokenEnvironment& env) const
+
+	bool operator()(SyntacticAnalyzerEnvironment& env) const
 	{
 		return c1(env) || c2(env);
 	}
@@ -321,23 +322,23 @@ struct OrCondition
 		return OrCondition(*this, std::forward<T>(other));
 	}
 private:
-	function<bool(TokenEnvironment&)> c1;
-	function<bool(TokenEnvironment&)> c2;
+	function<bool(SyntacticAnalyzerEnvironment&)> c1;
+	function<bool(SyntacticAnalyzerEnvironment&)> c2;
 };
 
 struct IsType
 {
 	IsType(SymbolType type) : type(type) { }
-	bool operator()(TokenEnvironment& env) const
+	bool operator()(SyntacticAnalyzerEnvironment& env) const
 	{
 		return env.peek() == type;
 	}
 
-	template<typename T>
-	OrCondition operator||(T&& other)
-	{
-		return OrCondition(*this, std::forward<T>(other));
-	}
+	//template<typename T>
+	//OrCondition operator||(T&& other)
+	//{
+	//	return OrCondition(*this, std::forward<T>(other));
+	//}
 private:
 	SymbolType type;
 };
@@ -346,7 +347,7 @@ struct TypeInsideSet
 {
 	template<typename T>
 	TypeInsideSet(T&& set) : type_set(std::forward<T>(set)) { }
-	bool operator()(TokenEnvironment& env) const
+	bool operator()(SyntacticAnalyzerEnvironment& env) const
 	{
 		return type_set.count(env.peek()) != 0;
 	}
@@ -362,11 +363,11 @@ private:
 
 struct SatisfyCondition
 {
-	SatisfyCondition(const function<bool(TokenEnvironment&)>& c)
+	SatisfyCondition(const function<bool(SyntacticAnalyzerEnvironment&)>& c)
 		: c(c)
 	{ }
 
-	bool operator()(TokenEnvironment& env) const
+	bool operator()(SyntacticAnalyzerEnvironment& env) const
 	{
 		return c(env);
 	}
@@ -377,7 +378,7 @@ struct SatisfyCondition
 		return OrCondition(*this, std::forward<T>(other));
 	}
 private:
-	function<bool(TokenEnvironment&)> c;
+	function<bool(SyntacticAnalyzerEnvironment&)> c;
 };
 
 class syntax_exception : public exception

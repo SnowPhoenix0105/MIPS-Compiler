@@ -37,7 +37,8 @@ namespace ErrorDealingTest
 			SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
 			syntactic_analyzer.parse();
 			syntactic_analyzer.print_all_error(*os);
-			Assert::IsTrue(os->str().size() == 0);
+			string str = os->str();
+			Assert::IsTrue(str.size() == 0);
 		}
 
 		TEST_METHOD(MySample1)

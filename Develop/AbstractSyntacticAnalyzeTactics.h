@@ -249,12 +249,13 @@ public:
 	using state_t = SyntacticAnalyzerEnvironment::state_t;
 	using token_ptr = SyntacticAnalyzerEnvironment::token_ptr;
 
-	friend void analyze_function(
+	friend int analyze_function(
 		Env& env,
+		int line_number,
 		shared_ptr<const string> function_id,
 		BaseType return_type,
 		const char* information);
-	friend void analyze_inner_block(
+	friend int analyze_inner_block(
 		AbstractSyntacticAnalyzeTactics::Env& env,
 		shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list);
 

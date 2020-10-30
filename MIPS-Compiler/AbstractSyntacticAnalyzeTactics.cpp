@@ -133,7 +133,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 					env.error_back(token->line_number, ErrorType::duplicated_identifier);
 				}
 			}
-			if (env.ensure(SymbolType::assign, IsType(SymbolType::character) || in_branch_of<IntegerAnalyze>))
+			if (env.ensure(SymbolType::assign, OrCondition(IsType(SymbolType::character), in_branch_of<IntegerAnalyze>)))
 			{
 				env.dequeue_and_message_back();						// assign
 			}
@@ -593,7 +593,7 @@ void UnsignedIntegerAnalyze::analyze(Env& env)
 	env.message_back("<无符号整数>");
 }
 
-void analyze_inner_block(
+int analyze_inner_block(
 	AbstractSyntacticAnalyzeTactics::Env& env, 
 	shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list)
 {
@@ -623,10 +623,10 @@ void analyze_inner_block(
 	{
 		// TODO error
 	}
-	env.dequeue_and_message_back();						// right_brance
+	return env.dequeue_and_message_back()->line_number;						// right_brance
 }
 
-void analyze_function(
+int analyze_function(
 	AbstractSyntacticAnalyzeTactics::Env& env,
 	int line_number,
 	shared_ptr<const string> function_id, 
@@ -672,8 +672,9 @@ void analyze_function(
 	}
 	try
 	{
-		analyze_inner_block(env, param_list);
+		int line_number = analyze_inner_block(env, param_list);
 		env.message_back(information);
+		return line_number;
 	}
 	catch (const syntax_exception&)
 	{
@@ -692,7 +693,12 @@ void ReturnFunctionDefinationAnalyze::analyze(Env& env)
 	env.current_return_type = return_type;
 	env.return_count = 0;
 
-	analyze_function(env, function_token->line_number, function_token->id_name_content, return_type, "<有返回值函数定义>");
+	int line_number = analyze_function(env, function_token->line_number, function_token->id_name_content, return_type, "<有返回值函数定义>");
+
+	if (env.return_count == 0)
+	{
+		env.error_back(line_number, ErrorType::wrong_return_in_return_function);
+	}
 }
 
 // 无返回值函数定义
@@ -723,6 +729,8 @@ void MainFunctionAnalyze::analyze(Env& env)
 	}
 	env.dequeue_and_message_back();					// left_paren
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
+	env.current_return_type = BaseType::type_void;
+	env.return_count = 0;
 	analyze_inner_block(env, make_shared<const vector<shared_ptr<IdentifierInfo>>>());
 	env.message_back("<主函数>");
 }
@@ -737,7 +745,7 @@ void FunctionHeaderAnalyze::analyze(Env& env)
 		// TODO error
 	}
 	auto token = env.dequeue_and_message_back();		// identifier
-	token = dynamic_pointer_cast<const IdentifierToken>(token);
+	this->token = dynamic_pointer_cast<const IdentifierToken>(token);
 	env.message_back("<声明头部>");
 }
 
@@ -1414,6 +1422,7 @@ void SwitchStatementAnalyze::analyze(Env& env)
 	}
 	SwitchTableAnalyze st(switch_type);
 	st(env);												// 情况表
+	// if (env.ensure(in_branch_of<DefaultCaseAnalyze>, SymbolType::right_brance, ErrorType::switch_no_defaule))
 	if (env.ensure(in_branch_of<DefaultCaseAnalyze>, SymbolType::right_brance, ErrorType::switch_no_defaule))
 	{
 		DefaultCaseAnalyze()(env);									// 缺省
