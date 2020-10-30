@@ -3,7 +3,7 @@
 #include "../Develop/SyntacticAnalyzer.h"
 #include "../Develop/compile_controller.h"
 
-# define DEBUG_001
+# define DEBUG_002
 
 
 int main(int argc, char* argv[])
@@ -18,14 +18,15 @@ int main(int argc, char* argv[])
 	{
 		std::cout << line << endl;
 	}
-
-
-
 	unique_ptr<istream> input_stream(new std::ifstream(source_file));
 	unique_ptr<ostringstream> output_ostream(new std::ostringstream());
 
 	syntactic_analyze(std::move(input_stream), std::move(output_ostream));
 
 #endif // DEBUG_001
+
+#ifdef DEBUG_002
+
+#endif // DEBUG_002
 
 }

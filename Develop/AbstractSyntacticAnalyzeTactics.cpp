@@ -738,8 +738,8 @@ void MainFunctionAnalyze::analyze(Env& env)
 // 声明头部
 void FunctionHeaderAnalyze::analyze(Env& env)
 {
-	env.dequeue_and_message_back();						// key_char / key_int
 	return_type = env.peek() == SymbolType::key_char ? BaseType::type_char : BaseType::type_int;
+	env.dequeue_and_message_back();						// key_char / key_int
 	if (env.peek() != SymbolType::identifier)
 	{
 		// TODO error
@@ -989,7 +989,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		auto init_id_info = env.get_identifier_info(init_id_token->id_name_content);
 		if (init_id_info == nullptr)
 		{
-			// TODO error
+			env.error_back(init_token->line_number, ErrorType::undefined_identifier);
 		}
 		if (env.peek() != SymbolType::assign)
 		{
@@ -1019,7 +1019,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		auto delta_left_id_info = env.get_identifier_info(delta_left_id_token->id_name_content);
 		if (delta_left_id_info == nullptr)
 		{
-			// TOTO error
+			env.error_back(init_token->line_number, ErrorType::undefined_identifier);
 		}
 		if (env.peek() != SymbolType::assign)
 		{
@@ -1035,7 +1035,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		auto delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content);
 		if (delta_right_id_info == nullptr)
 		{
-			// TOTO error
+			env.error_back(init_token->line_number, ErrorType::undefined_identifier);
 		}
 		SymbolType delta_type = env.peek();
 		if (delta_type != SymbolType::plus && delta_type != SymbolType::minus)
@@ -1642,7 +1642,7 @@ void FactorAnalyze::analyze(Env& env)
 		}
 		ExpressionAnalyze expression_analyze;
 		expression_analyze(env);								// 表达式
-		type = expression_analyze.get_type();
+		type = BaseType::type_int;
 		env.dequeue_certain_and_message_back(SymbolType::right_paren);// right_paren
 	}
 	else if (in_branch_of<CallReturnFunctionStatementAnalyze>(env))

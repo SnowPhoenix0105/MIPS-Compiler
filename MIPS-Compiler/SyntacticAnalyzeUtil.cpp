@@ -107,9 +107,6 @@ bool SyntacticAnalyzerEnvironment::ensure_func(
 	throw syntax_exception();
 }
 
-
-
-
 SatisfyCondition wrap_condition(const function<bool(SyntacticAnalyzerEnvironment&)>& func)
 {
 	return SatisfyCondition(func);
