@@ -28,8 +28,8 @@ int main(int argc, char* argv[])
 
 #ifdef HW_3
 	unique_ptr<istream> input_file(new ifstream("testfile.txt"));
-	unique_ptr<ostream> output_file(new ofstream("output.txt"));
-	syntactic_analyze(std::move(input_file), std::move(output_file));
+	unique_ptr<ostream> output_file(new ofstream("error.txt"));
+	error_analyze(std::move(input_file), std::move(output_file));
 #endif // HW_2
 
 	return 0;

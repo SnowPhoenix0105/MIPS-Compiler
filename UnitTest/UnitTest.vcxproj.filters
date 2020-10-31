@@ -33,7 +33,10 @@
     <ClCompile Include="Test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ErrorDealingTest.cpp">
+    <ClCompile Include="NoErrorTest.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleErrorTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

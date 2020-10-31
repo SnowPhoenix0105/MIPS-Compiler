@@ -326,10 +326,11 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 							{
 								// TODO error
 							}
+							int line_number = env.peek_info()->line_number;
 							constant_analyze(env);							// 常量
 							if (!constant_analyze.is_type_of(base_type))
 							{
-								// TODO error
+								env.error_back(line_number, ErrorType::constant_type_mismatching);
 							}
 							// TODO 赋值
 						}
@@ -376,10 +377,11 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 						{
 							// TODO error
 						}
+						int line_number = env.peek_info()->line_number;
 						constant_analyze(env);							// 常量
 						if (!constant_analyze.is_type_of(base_type))
 						{
-							// TODO error
+							env.error_back(line_number, ErrorType::constant_type_mismatching);
 						}
 						// TODO 赋值
 					}
@@ -404,10 +406,11 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				{
 					// TODO error
 				}
-				constant_analyze(env);										// 常量
+				int line_number = env.peek_info()->line_number;
+				constant_analyze(env);							// 常量
 				if (!constant_analyze.is_type_of(base_type))
 				{
-					// TODO error
+					env.error_back(line_number, ErrorType::constant_type_mismatching);
 				}
 				// TODO 赋值
 
@@ -875,7 +878,7 @@ void StatementAnalyze::analyze(Env& env)
 	else if (env.peek() == SymbolType::left_brance)
 	{
 		env.dequeue_and_message_back();								// left_brance
-		StatementAnalyze()(env);									// 语句
+		StatementsListAnalyze()(env);									// 语句
 		if (env.peek() != SymbolType::right_brance)
 		{
 			// TODO error
@@ -1233,6 +1236,11 @@ void ParameterValueListAnalyze::analyze(Env& env)
 		}
 
 		++count;
+	}
+	int line_number = env.peek_info()->line_number;
+	if (count != param_type_list->size())
+	{
+		env.error_back(line_number, ErrorType::parameter_count_mismatching);
 	}
 	env.message_back("<值参数表>");
 }
@@ -1665,8 +1673,13 @@ void FactorAnalyze::analyze(Env& env)
 			{
 				// TODO error
 			}
+			int line_number = env.peek_info()->line_number;
 			ExpressionAnalyze size_1_expression_analyze;
 			size_1_expression_analyze(env);						// 表达式
+			if (size_1_expression_analyze.get_type() != BaseType::type_int)
+			{
+				env.error_back(line_number, ErrorType::non_int_index_for_array);
+			}
 			env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 			if (env.peek() == SymbolType::left_square)
 			{
@@ -1675,8 +1688,13 @@ void FactorAnalyze::analyze(Env& env)
 				{
 					// TODO error
 				}
+				int line_number = env.peek_info()->line_number;
 				ExpressionAnalyze size_2_expression_analyze;
 				size_2_expression_analyze(env);						// 表达式
+				if (size_2_expression_analyze.get_type() != BaseType::type_int)
+				{
+					env.error_back(line_number, ErrorType::non_int_index_for_array);
+				}
 				env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 
 				// 二维数组

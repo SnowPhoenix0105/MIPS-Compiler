@@ -81,18 +81,21 @@ void LexicalAnalyzer::check_character_symbol()
 {
 	*input_stream >> last_ch;
 	last_symbol = SymbolType::character;
-	if (std::isdigit(last_ch) || is_legal_alpha(last_ch) || last_ch == '*' || last_ch == '+' || last_ch == '-' || last_ch == '/')
+	if (!std::isdigit(last_ch) && !is_legal_alpha(last_ch) && last_ch != '*' && last_ch != '+' && last_ch != '-' && last_ch != '/')
 	{
-		last_content->push_back(last_ch);
-		*input_stream >> last_ch;
-		if (last_ch == '\'')
-		{
-			last_content->push_back('\'');
-			*input_stream >> last_ch;
-			return;
-		}
+		wrong = true;
 	}
-	wrong = true;
+	last_content->push_back(last_ch);
+	*input_stream >> last_ch;
+	if (last_ch == '\'')
+	{
+		*input_stream >> last_ch;
+	}
+	else
+	{
+		wrong = true;
+	}
+	last_content->push_back('\'');
 }
 
 void LexicalAnalyzer::check_string_symbol()
@@ -202,6 +205,7 @@ SymbolType LexicalAnalyzer::next()
 		}
 		last_symbol = SymbolType::wrong;
 	}
+	last_line_number = line_number;
 
 	// 结束时要保证 last_symbol 与 last_content 被更新, 并且 last_ch 指向下一个未被添加进 last_content 的非空字符.
 	read_until_not_space();
@@ -233,7 +237,7 @@ shared_ptr<const Token> LexicalAnalyzer::get_token() const
 	{
 	case SymbolType::character:
 		ret = make_shared<CharToken>();
-		dynamic_pointer_cast<CharToken>(ret)->char_content = last_content->at(1);
+		dynamic_pointer_cast<CharToken>(ret)->char_content = last_content->operator[](1);
 		break;
 	case SymbolType::number:
 		ret = make_shared<UnsignedToken>();
@@ -252,7 +256,7 @@ shared_ptr<const Token> LexicalAnalyzer::get_token() const
 	}
 	ret->type = last_symbol;
 	ret->print_content = formated_content();
-	ret->line_number = line_number;
+	ret->line_number = last_line_number;
 
 	DEBUG_LOG_VAL(10, "token", ret->to_print_string());
 

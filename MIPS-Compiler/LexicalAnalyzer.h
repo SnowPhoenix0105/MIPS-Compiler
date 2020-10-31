@@ -43,6 +43,7 @@ private:
 	shared_ptr<string> last_content;
 	shared_ptr<string> lower_ident;
 	int line_number = 1;
+	int last_line_number = 1;
 	char last_ch = ' ';
 	bool wrong;
 
@@ -179,7 +180,7 @@ public:
 	/// <returns></returns>
 	int get_line_number() const
 	{
-		return line_number;
+		return last_line_number;
 	}
 
 	bool is_wrong() const
