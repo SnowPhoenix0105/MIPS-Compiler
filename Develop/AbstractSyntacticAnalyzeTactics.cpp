@@ -17,6 +17,10 @@ bool AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 		DEBUG_LOG_VAL(5, "exception", typeid(*this).name());
 		return false;
 	}
+	catch (const exception& e)
+	{
+		env.error_back(env.peek_info()->line_number, e.what());
+	}
 	DEBUG_LOG_VAL(5, "finish", typeid(*this).name());
 	return true;
 }
@@ -78,7 +82,8 @@ void ProgramAnalyze::analyze(Env& env)
 			DEBUG_LOG_VAL(10, "env.peek(5)", symboltype_output_dictionary.at(env.peek(5)));
 			DEBUG_LOG_VAL(10, "env.peek(6)", symboltype_output_dictionary.at(env.peek(6)));
 			DEBUG_LOG_VAL(10, "env.peek(7)", symboltype_output_dictionary.at(env.peek(7)));
-			PANIC();
+			// PANIC();
+			env.error_back(env.peek_info()->line_number, "error");
 		}
 	}
 	env.message_back("<³ÌĞò>");

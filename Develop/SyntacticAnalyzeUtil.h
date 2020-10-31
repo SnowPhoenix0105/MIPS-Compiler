@@ -84,7 +84,7 @@ public:
 class ErrorEnvironment
 {
 protected:
-	multimap<int, string> errors;
+	multimap<pair<int, string>, char> errors;
 public:
 	virtual ~ErrorEnvironment() = default;
 
@@ -106,7 +106,7 @@ public:
 	void error_back(int line_number, T type)
 	{
 		DEBUG_LOG_VAL(5, "syntactic-analyzer error", type);
-		errors.insert(pair<int, string>(line_number, type));
+		errors.insert(pair<pair<int, string>, char>(pair<int, string>(line_number, type), 'a'));
 	}
 
 	void error_require(int line_number, SymbolType type)
@@ -134,7 +134,7 @@ class TokenEnvironment : public ErrorEnvironment, public MessageEnvironment
 {
 public:
 	using token_ptr = shared_ptr<const Token>;
-	static const shared_ptr<Token> NIL;
+	static const token_ptr NIL;
 protected:
 	unique_ptr<LexicalAnalyzer> lexical_analyzer;
 	vector<shared_ptr<const Token>> symbols;

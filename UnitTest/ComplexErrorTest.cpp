@@ -23,7 +23,7 @@ using std::unordered_set;
 
 namespace ErrorDealingTest
 {
-	TEST_CLASS(SimpleErrorTest)
+	TEST_CLASS(ComplexErrorTest)
 	{
 	public:
 		static const string test_resource_path;
@@ -77,62 +77,11 @@ namespace ErrorDealingTest
 			return answer;
 		}
 
-		TEST_METHOD(HW_EXAMPLE)
-		{
-			string test_case =
-				"const int const1 = 1, const2 = -100;\n"
-				"const char const3 = '?';\n"
-				"int change1;\n"
-				"char change3;\n"
-				"int gets1(int var1, int var2) {\n"
-				"	change1 = var1 + var2          return (change1);\n"
-				"}\n"
-				"void main() {\n"
-				"	change1 = 10;\n"
-				"	printf(\"Hello World\");\n"
-				"	printf(gets1(10, 20));\n"
-				"}";
-			vector<string> expect =
-			{
-				"2 a",
-				"6 k"
-			};
-			
-			assert_contain_expect(unique_ptr<istringstream>(new istringstream(test_case)), expect);
-		}
-
-		TEST_METHOD(Semicolon1)
+		TEST_METHOD(Complex1)
 		{
 			test_file("source1.c", "answer1.txt");
 		}
-
-		TEST_METHOD(CharIndex1)
-		{
-			auto result = test_file("source2.c", "answer2.txt");
-			Assert::IsTrue(result.count("46 i") == 0);
-		}
-
-		TEST_METHOD(ConstantType1)
-		{
-			auto result = test_file("source3.c", "answer3.txt");
-		}
-
-		TEST_METHOD(Parameter1)
-		{
-			auto result = test_file("source4.c", "answer4.txt");
-			Assert::IsTrue(result.count("32 e") == 0);
-		}
-
-		TEST_METHOD(RightSquare1)
-		{
-			auto result = test_file("source5.c", "answer5.txt");
-		}
-
-		TEST_METHOD(LexicalError1)
-		{
-			auto result = test_file("source6.c", "answer6.txt");
-		}
 	};
 
-	const string SimpleErrorTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\error_dealing");
+	const string ComplexErrorTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\complex_error");
 }

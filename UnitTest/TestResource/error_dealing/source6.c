@@ -2,10 +2,10 @@
 
 
 
-const char c_1 = 'o';
-const char c_2 = 'p', c_3 = 'a';
+const char c_1 = '?';
+const char c_2 = '', c_3 = 'a';
 char c_4 = 'b';
-char c_array[3] = {'c', 'd', 'e'};
+char c_array[3] = {'cc', 'd', 'e'};
 char c_matrix[3][3] = 
 {
     {'f', 'g', 'h'},
@@ -19,8 +19,8 @@ void main()
     const int i_1 = 1;
     const int i_2 = 2, i_3 = 3;
     int  i_4 = 4;
-    int i_array[3 = {5, 6, 7};
-    int i_matrix[3[3] = 
+    int i_array[3] = {5, 6, 7};
+    int i_matrix[3][3] = 
     {
         {8 , 9 , 10},
         {11, 12, 13},
@@ -29,7 +29,7 @@ void main()
     int result;
     int i, j;
     char result_c;
-    printf("18231045");
+    printf("");
     result = c_1 + c_2 + c_3 + c_4;
     for (i = 0; i < 3; i = i + 1)
     {
@@ -77,16 +77,16 @@ void main()
     }
     printf("else success: ", result);
     result = i_array[0];
-    i_array[0] = i_matrix[0][0;
-    i_matrix[0[0] = result;
+    i_array[0] = i_matrix[0][0];
+    i_matrix[0][0] = result;
     result = i_1 + i_2 + i_3 + i_4;
     for (i = 0; i != 3; i = i + 1)
     {
-        result = result + i_array[i;
+        result = result + i_array[i];
         j = 2;
         while (j >= 0)
         {
-            result = result + i_matrix[i[j];
+            result = result + i_matrix[i][j];
             j = j - 1;
         }
     }

@@ -106,7 +106,23 @@ public:
 		{
 			return true;
 		}
+		if (env.peek(2) == SymbolType::left_square && env.peek(4) == SymbolType::assign)
+		{
+			return true;
+		}
 		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::left_square && env.peek(8) == SymbolType::assign)
+		{
+			return true;
+		}
+		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::left_square && env.peek(7) == SymbolType::assign)
+		{
+			return true;
+		}
+		if (env.peek(2) == SymbolType::left_square && env.peek(4) == SymbolType::left_square && env.peek(7) == SymbolType::assign)
+		{
+			return true;
+		}
+		if (env.peek(2) == SymbolType::left_square && env.peek(4) == SymbolType::left_square && env.peek(6) == SymbolType::assign)
 		{
 			return true;
 		}

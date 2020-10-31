@@ -85,16 +85,21 @@ void LexicalAnalyzer::check_character_symbol()
 	{
 		wrong = true;
 	}
-	last_content->push_back(last_ch);
-	*input_stream >> last_ch;
 	if (last_ch == '\'')
 	{
-		*input_stream >> last_ch;
+		last_content->push_back('?');
 	}
 	else
 	{
+		last_content->push_back(last_ch);
+		*input_stream >> last_ch;
+	}
+	while (last_ch != '\'')
+	{
+		*input_stream >> last_ch;
 		wrong = true;
 	}
+	*input_stream >> last_ch;
 	last_content->push_back('\'');
 }
 
@@ -109,13 +114,16 @@ void LexicalAnalyzer::check_string_symbol()
 			if (last_ch == '\"')
 			{
 				*input_stream >> last_ch;
+				if (last_content->size() == 2)
+				{
+					wrong = true;
+				}
 				return;
 			}
 		}
 		else
 		{
 			wrong = true;
-			return;
 		}
 	}
 	wrong = true;
@@ -163,6 +171,7 @@ SymbolType LexicalAnalyzer::next()
 	{
 		throw TryToGetUnexistNextException("try to call next() at a LexicalAnalyzer with has_next() == false");
 	}
+	wrong = false;
 	last_content = make_shared<string>();
 	last_content->push_back(last_ch);
 	switch (last_ch)

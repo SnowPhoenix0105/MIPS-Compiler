@@ -158,6 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlackboxTest.cpp" />
+    <ClCompile Include="ComplexErrorTest.cpp" />
     <ClCompile Include="NoErrorTest.cpp" />
     <ClCompile Include="LexicalAnalyzerCorrectTest.cpp" />
     <ClCompile Include="pch.cpp">

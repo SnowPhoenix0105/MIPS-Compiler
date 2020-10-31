@@ -4,7 +4,7 @@ void ErrorEnvironment::print_all_error(ostream& os)
 {
 	for (const auto& p : errors)
 	{
-		os << p.first << ' ' << p.second << std::endl;
+		os << p.first.first << ' ' << p.first.second << std::endl;
 	}
 }
 
@@ -18,7 +18,7 @@ void MessageEnvironment::print_all_message(ostream& os)
 }
 
 
-const shared_ptr<Token> TokenEnvironment::NIL = make_shared<Token>();
+const TokenEnvironment::token_ptr TokenEnvironment::NIL = make_shared<Token>();
 
 void TokenEnvironment::ensure_capacity(size_t size)
 {
