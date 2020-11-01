@@ -45,7 +45,7 @@ TokenEnvironment::token_ptr TokenEnvironment::dequeue_certain(SymbolType type)
 	{
 		return dequeue();
 	}
-	if (type == SymbolType::semicolon)
+	if (type == SymbolType::semicolon || type == SymbolType::right_paren || type == SymbolType::right_square)
 	{
 		error_require(symbols[sym_index - 1]->line_number, type);
 	}
@@ -63,7 +63,7 @@ TokenEnvironment::token_ptr TokenEnvironment::dequeue_certain_and_message_back(S
 	{
 		return dequeue_and_message_back();
 	}
-	if (type == SymbolType::semicolon)
+	if (type == SymbolType::semicolon || type == SymbolType::right_paren || type == SymbolType::right_square)
 	{
 		error_require(symbols[sym_index - 1]->line_number, type);
 	}
