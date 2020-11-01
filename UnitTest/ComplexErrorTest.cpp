@@ -77,9 +77,20 @@ namespace ErrorDealingTest
 			return answer;
 		}
 
+		TEST_METHOD(Correct)
+		{
+			auto rlt = assert_contain_expect(unique_ptr<istream>(new std::ifstream(test_resource_path + "\\correct.c")), vector<string>());
+			Assert::IsTrue(rlt.size() == 0);
+		}
+
 		TEST_METHOD(Complex1)
 		{
 			test_file("source1.c", "answer1.txt");
+		}
+
+		TEST_METHOD(Complex2)
+		{
+			test_file("source2.c", "answer2.txt");
 		}
 	};
 

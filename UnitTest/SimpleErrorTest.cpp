@@ -147,6 +147,17 @@ namespace ErrorDealingTest
 		{
 			auto result = test_file("source9.c", "answer9.txt");
 		}
+
+		TEST_METHOD(Undifined1)
+		{
+			auto result = test_file("source10.c", "answer10.txt");
+		}
+
+		TEST_METHOD(Empty)
+		{
+			auto result = test_file("source11.c", "answer11.txt");
+			Assert::IsTrue(result.size() == 0);
+		}
 	};
 
 	const string SimpleErrorTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\error_dealing");

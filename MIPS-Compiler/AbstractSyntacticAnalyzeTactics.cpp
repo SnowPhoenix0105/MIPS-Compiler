@@ -104,10 +104,6 @@ void ConstantDeclarationAnalyze::analyze(Env& env)
 		env.dequeue_certain_and_message_back(SymbolType::semicolon);		// semicolon
 		flag = false;
 	}
-	if (flag)
-	{
-		// TODO error
-	}
 	env.message_back("<常量说明>");
 }
 
@@ -119,9 +115,10 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 	{
 		SymbolType type = env.peek();
 		env.dequeue_and_message_back();							// key_int / key_char
+		int count = 0;
 		while (true)
 		{
-			if (!new_ids.empty())
+			if (count != 0)
 			{
 				if (env.peek() != SymbolType::comma)
 				{
@@ -198,6 +195,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 				new_ids.push_back(id_info);
 				env.insert_identifier(id_info);
 			}
+			++count;
 		}
 		env.message_back("<常量定义>");
 	}
@@ -701,7 +699,7 @@ int analyze_inner_block(
 	}
 	env.dequeue_and_message_back();						// left_brance
 
-	if (env.peek() != SymbolType::left_brance
+	if (env.peek() != SymbolType::right_brance
 		&& !FirstSetJudgement().in_branch_of<CompoundStatementsAnalyze>(env))
 	{
 		// TODO error
@@ -867,11 +865,11 @@ void ParameterListAnalyze::analyze(Env& env)
 		}
 		if (env.peek() != SymbolType::key_int && env.peek() != SymbolType::key_char)
 		{
-			if (!flag)
+			if (flag)
 			{
-				break;
+				// TODO error
 			}
-			// TODO error
+			break;
 		}
 		auto type_token = env.dequeue_and_message_back();			// key_char / key_int
 		if (env.peek() != SymbolType::identifier)
@@ -1261,8 +1259,18 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 	auto token = env.dequeue_and_message_back();				// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 	auto id_info = env.get_identifier_info(id_token->id_name_content);
-	auto function_type = dynamic_pointer_cast<const FuctionIdentifierType>(id_info->return_type);
-	type = function_type->base_type;
+	shared_ptr<const vector<BaseType>> parameter_table;
+	if (id_info == nullptr)
+	{
+		env.error_back(token->line_number, ErrorType::undefined_identifier);
+		type = BaseType::type_int;
+	}
+	else
+	{
+		auto function_type = dynamic_pointer_cast<const FuctionIdentifierType>(id_info->return_type);
+		type = function_type->base_type;
+		parameter_table = function_type->param_type_list;
+	}
 
 	if (env.peek() != SymbolType::left_paren)
 	{
@@ -1273,7 +1281,7 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 	{
 		// TODO error
 	}
-	ParameterValueListAnalyze parameter_value_list_analyze(function_type->param_type_list);
+	ParameterValueListAnalyze parameter_value_list_analyze(parameter_table);
 	parameter_value_list_analyze(env);							// 值参数表
 
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
@@ -1285,20 +1293,29 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 void CallVoidFunctionStatementAnalyze::analyze(Env& env)
 {
 	auto token = env.dequeue_and_message_back();				// identifier
+	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
+	auto id_info = env.get_identifier_info(id_token->id_name_content);
+	shared_ptr<const vector<BaseType>> parameter_table;
+	if (id_info == nullptr)
+	{
+		env.error_back(token->line_number, ErrorType::undefined_identifier);
+	}
+	else
+	{
+		auto function_type = dynamic_pointer_cast<const FuctionIdentifierType>(id_info->return_type);
+		parameter_table = function_type->param_type_list;
+	}
+
 	if (env.peek() != SymbolType::left_paren)
 	{
 		// TODO error
 	}
 	env.dequeue_and_message_back();								// left_paren
-
-	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
-	auto id_info = env.get_identifier_info(id_token->id_name_content);
-	auto function_type = dynamic_pointer_cast<const FuctionIdentifierType>(id_info->return_type);
 	if (!in_branch_of<ParameterValueListAnalyze>(env) && env.peek() != SymbolType::right_paren)
 	{
 		// TODO error
 	}
-	ParameterValueListAnalyze parameter_value_list_analyze(function_type->param_type_list);
+	ParameterValueListAnalyze parameter_value_list_analyze(parameter_table);
 	parameter_value_list_analyze(env);							// 值参数表
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
@@ -1331,23 +1348,26 @@ void ParameterValueListAnalyze::analyze(Env& env)
 		int line_number = env.peek_info()->line_number;
 		expression_analyze(env);							// 表达式
 		BaseType value_type = expression_analyze.get_type();
-		if (count >= param_type_list->size())
+		if (param_type_list != nullptr)
 		{
-			env.error_back(line_number, ErrorType::parameter_count_mismatching);
-		}
-		else
-		{
-			BaseType param_type = (*param_type_list)[count];
-			if (value_type != param_type)
+			if (count >= param_type_list->size())
 			{
-				env.error_back(line_number, ErrorType::parameter_type_mismatching);
+				env.error_back(line_number, ErrorType::parameter_count_mismatching);
+			}
+			else
+			{
+				BaseType param_type = (*param_type_list)[count];
+				if (value_type != param_type)
+				{
+					env.error_back(line_number, ErrorType::parameter_type_mismatching);
+				}
 			}
 		}
 
 		++count;
 	}
 	int line_number = env.peek_info()->line_number;
-	if (count != param_type_list->size())
+	if (param_type_list != nullptr && count != param_type_list->size())
 	{
 		env.error_back(line_number, ErrorType::parameter_count_mismatching);
 	}
@@ -1359,10 +1379,19 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 {
 	auto token = env.dequeue_and_message_back();						// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
-	auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
-	if (id_type->extern_type == ExternType::constant)
+	shared_ptr<const IdentifierType> id_type;
+	auto id_info = env.get_identifier_info(id_token->id_name_content);
+	if (id_info == nullptr)
 	{
-		env.error_back(token->line_number, ErrorType::try_change_const_value);
+		env.error_back(token->line_number, ErrorType::undefined_identifier);
+	}
+	else
+	{
+		id_type = id_info->return_type;
+		if (id_type->extern_type == ExternType::constant)
+		{
+			env.error_back(token->line_number, ErrorType::try_change_const_value);
+		}
 	}
 
 	if (env.peek() == SymbolType::left_square)
@@ -1396,7 +1425,7 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 			}
 			env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 
-			if (id_type->extern_type != ExternType::d_array)
+			if (id_type != nullptr && id_type->extern_type != ExternType::d_array)
 			{
 				// TODO error
 			}
@@ -1404,7 +1433,7 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 		else
 		{
 			// 一维数组
-			if (id_type->extern_type != ExternType::l_array)
+			if (id_type != nullptr && id_type->extern_type != ExternType::l_array)
 			{
 				// TODO error
 			}
@@ -1413,7 +1442,7 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 	else
 	{
 		// 普通变量
-		if (id_type->extern_type != ExternType::variable)
+		if (id_type != nullptr && id_type->extern_type != ExternType::variable)
 		{
 			// TODO error
 		}
@@ -1780,8 +1809,19 @@ void FactorAnalyze::analyze(Env& env)
 		// assert env.peek() == SymbolType::identifier
 		auto token = env.dequeue_and_message_back();			// identifier
 		auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
-		auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
-		type = id_type->base_type;
+		shared_ptr<const IdentifierType> id_type;
+		auto id_info = env.get_identifier_info(id_token->id_name_content);
+		if (id_info == nullptr)
+		{
+			env.error_back(token->line_number, ErrorType::undefined_identifier);
+			type = BaseType::type_char;
+		}
+		else
+		{
+			id_type = id_info->return_type;
+			type = id_type->base_type;
+		}
+
 		if (env.peek() == SymbolType::left_square)
 		{
 			env.dequeue_and_message_back();						// left_square
@@ -1814,7 +1854,7 @@ void FactorAnalyze::analyze(Env& env)
 				env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 
 				// 二维数组
-				if (id_type->extern_type != ExternType::d_array)
+				if (id_type != nullptr && id_type->extern_type != ExternType::d_array)
 				{
 					// TODO error
 				}
@@ -1822,7 +1862,7 @@ void FactorAnalyze::analyze(Env& env)
 			else
 			{
 				// 一维数组
-				if (id_type->extern_type != ExternType::l_array)
+				if (id_type != nullptr && id_type->extern_type != ExternType::l_array)
 				{
 					// TODO error
 				}
@@ -1831,7 +1871,7 @@ void FactorAnalyze::analyze(Env& env)
 		else
 		{
 			// 普通变量
-			if (id_type->extern_type != ExternType::variable)
+			if (id_type != nullptr && id_type->extern_type != ExternType::variable)
 			{
 				// TODO error
 			}

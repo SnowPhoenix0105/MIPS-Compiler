@@ -97,33 +97,33 @@ public:
 		return b1 && b2;
 	}
 
-	inline bool is_assigned_variable(SyntacticAnalyzerEnvironment& env)
+	inline bool is_assigned_variable(SyntacticAnalyzerEnvironment& env, int offset)
 	{
-		if (env.peek(2) == SymbolType::assign)
+		if (env.peek(offset + 1) == SymbolType::assign)
 		{
 			return true;
 		}
-		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::assign)
+		if (env.peek(offset + 1) == SymbolType::left_square && env.peek(offset + 4) == SymbolType::assign)
 		{
 			return true;
 		}
-		if (env.peek(2) == SymbolType::left_square && env.peek(4) == SymbolType::assign)
+		if (env.peek(offset + 1) == SymbolType::left_square && env.peek(offset + 3) == SymbolType::assign)
 		{
 			return true;
 		}
-		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::left_square && env.peek(8) == SymbolType::assign)
+		if (env.peek(offset + 1) == SymbolType::left_square && env.peek(offset + 4) == SymbolType::left_square && env.peek(offset + 7) == SymbolType::assign)
 		{
 			return true;
 		}
-		if (env.peek(2) == SymbolType::left_square && env.peek(5) == SymbolType::left_square && env.peek(7) == SymbolType::assign)
+		if (env.peek(offset + 1) == SymbolType::left_square && env.peek(offset + 4) == SymbolType::left_square && env.peek(offset + 6) == SymbolType::assign)
 		{
 			return true;
 		}
-		if (env.peek(2) == SymbolType::left_square && env.peek(4) == SymbolType::left_square && env.peek(7) == SymbolType::assign)
+		if (env.peek(offset + 1) == SymbolType::left_square && env.peek(offset + 3) == SymbolType::left_square && env.peek(offset + 6) == SymbolType::assign)
 		{
 			return true;
 		}
-		if (env.peek(2) == SymbolType::left_square && env.peek(4) == SymbolType::left_square && env.peek(6) == SymbolType::assign)
+		if (env.peek(offset + 1) == SymbolType::left_square && env.peek(offset + 3) == SymbolType::left_square && env.peek(offset + 5) == SymbolType::assign)
 		{
 			return true;
 		}
@@ -134,7 +134,7 @@ public:
 	bool in_branch_of<VariableDefinationWithInitializationAnalyze>(SyntacticAnalyzerEnvironment& env)
 	{
 		return
-			is_assigned_variable(env)
+			is_assigned_variable(env, 1)
 			&& in_first_set_of<VariableDefinationWithInitializationAnalyze>(env);
 	}
 
@@ -142,50 +142,48 @@ public:
 	bool in_branch_of<VariableDefinationNoInitializationAnalyze>(SyntacticAnalyzerEnvironment& env)
 	{
 		return
-			!is_assigned_variable(env)
+			!is_assigned_variable(env, 1)
 			&& in_first_set_of<VariableDefinationNoInitializationAnalyze>(env);
 	}
 
 	template<>
-	bool in_branch_of<CallReturnFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+	bool in_branch_of<CallReturnFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment& env)
 	{
-		if (!in_first_set_of<CallReturnFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment))
+		if (!in_first_set_of<CallReturnFunctionStatementAnalyze>(env))
 		{
 			return false;
 		}
-		auto token = SyntacticAnalyzerEnvironment.peek_info();
+		if (env.peek(1) != SymbolType::left_paren)
+		{
+			return false;
+		}
+		auto token = env.peek_info();
 		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
-		auto id_info = SyntacticAnalyzerEnvironment.get_identifier_info(id);
-		return id_info->return_type->extern_type == ExternType::function
-			&& id_info->return_type->base_type != BaseType::type_void;
+		auto id_info = env.get_identifier_info(id);
+		return id_info == nullptr || id_info->return_type->base_type != BaseType::type_void;
 	}
 
 	template<>
-	bool in_branch_of<CallVoidFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+	bool in_branch_of<CallVoidFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment& env)
 	{
-		if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment))
+		if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(env))
 		{
 			return false;
 		}
-		auto token = SyntacticAnalyzerEnvironment.peek_info();
+		if (env.peek(1) != SymbolType::left_paren)
+		{
+			return false;
+		}
+		auto token = env.peek_info();
 		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
-		auto id_info = SyntacticAnalyzerEnvironment.get_identifier_info(id);
-		return id_info->return_type->extern_type == ExternType::function
-			&& id_info->return_type->base_type == BaseType::type_void;
+		auto id_info = env.get_identifier_info(id);
+		return id_info != nullptr && id_info->return_type->base_type == BaseType::type_void;
 	}
 
 	template<>
-	bool in_branch_of<AssignmentStatementAnalyze>(SyntacticAnalyzerEnvironment& SyntacticAnalyzerEnvironment)
+	bool in_branch_of<AssignmentStatementAnalyze>(SyntacticAnalyzerEnvironment& env)
 	{
-		if (!in_first_set_of<CallVoidFunctionStatementAnalyze>(SyntacticAnalyzerEnvironment))
-		{
-			return false;
-		}
-		auto token = SyntacticAnalyzerEnvironment.peek_info();
-		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
-		auto id_info = SyntacticAnalyzerEnvironment.get_identifier_info(id);
-		return id_info->return_type->is_one_from(ExternType::variable, ExternType::constant, ExternType::l_array, ExternType::d_array)
-			&& id_info->return_type->base_type != BaseType::type_void;
+		return in_first_set_of<AssignmentStatementAnalyze>(env) && is_assigned_variable(env, 0);
 	}
 
 	/*
