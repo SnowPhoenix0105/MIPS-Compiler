@@ -730,7 +730,7 @@ int analyze_function(
 	env.ensure(
 		[](SyntacticAnalyzerEnvironment& env)->bool
 		{
-			return FirstSetJudgement().in_branch_of<ParameterListAnalyze>(env) || env.peek() == SymbolType::right_paren;
+			return FirstSetJudgement().in_branch_of<ParameterListAnalyze>(env) || env.peek() == SymbolType::right_paren || env.peek() == SymbolType::left_brance;
 		},
 		{ SymbolType::left_brance });
 	ParameterListAnalyze parameter_list_analyze;
@@ -1159,11 +1159,11 @@ void ConditionStatementAnalyze::analyze(Env& env)
 {
 	env.dequeue_and_message_back();								// key_if
 	env.dequeue_certain_and_message_back(SymbolType::left_paren);		// left_paren
-	if (!in_branch_of<ConditionAnalyze>(env))
+	if (env.ensure(in_branch_of<ConditionAnalyze>, { SymbolType::right_paren }))
 	{
-		// TODO error
+		ConditionAnalyze()(env);									// 条件
 	}
-	ConditionAnalyze()(env);									// 条件
+
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	env.ensure(in_branch_of<StatementAnalyze>, Env::always_false);
@@ -1172,11 +1172,10 @@ void ConditionStatementAnalyze::analyze(Env& env)
 	if (env.peek() == SymbolType::key_else)
 	{
 		env.dequeue_and_message_back();							// else
-		if (!in_branch_of<StatementAnalyze>(env))
+		if (env.ensure(in_branch_of<StatementAnalyze>, { SymbolType::semicolon }))
 		{
-			// TODO error
+			StatementAnalyze()(env);									// 语句
 		}
-		StatementAnalyze()(env);									// 语句
 	}
 
 	env.message_back("<条件语句>");
@@ -1192,7 +1191,7 @@ void ConditionAnalyze::analyze(Env& env)
 	switch (env.peek())
 	{
 	default:
-		// TODO error
+		env.error_back(env.peek_info()->line_number, ErrorType::unknown_error);
 		break;
 	case SymbolType::equal:
 	case SymbolType::not_equal:
@@ -1204,16 +1203,15 @@ void ConditionAnalyze::analyze(Env& env)
 	}
 	int line_number = env.dequeue_and_message_back()->line_number;			// 关系运算符
 
-	if (!in_branch_of<ExpressionAnalyze>(env))
+	if (env.ensure(in_branch_of<ExpressionAnalyze>, { SymbolType::right_paren, SymbolType::semicolon }))
 	{
-		// TODO error
-	}
-	ExpressionAnalyze right_expression_analyze;
-	right_expression_analyze(env);								// 表达式
-	BaseType e2_type = right_expression_analyze.get_type();
-	if (e1_type == BaseType::type_char || e2_type == BaseType::type_char)
-	{
-		env.error_back(line_number, ErrorType::illegal_type_in_condition);
+		ExpressionAnalyze right_expression_analyze;
+		right_expression_analyze(env);								// 表达式
+		BaseType e2_type = right_expression_analyze.get_type();
+		if (e1_type == BaseType::type_char || e2_type == BaseType::type_char)
+		{
+			env.error_back(line_number, ErrorType::illegal_type_in_condition);
+		}
 	}
 	env.message_back("<条件>");
 }
@@ -1237,15 +1235,12 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 		parameter_table = function_type->param_type_list;
 	}
 
-	if (env.peek() != SymbolType::left_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_message_back();								// left_paren
-	if (!in_branch_of<ParameterValueListAnalyze>(env) && env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
+	env.dequeue_certain_and_message_back(SymbolType::left_paren);						// left_paren
+
+	env.ensure(
+		TypeInsideSet<Env>({ SymbolType::right_paren, SymbolType::semicolon }) || in_branch_of<ParameterValueListAnalyze>,
+		Env::always_false
+	);
 	ParameterValueListAnalyze parameter_value_list_analyze(parameter_table);
 	parameter_value_list_analyze(env);							// 值参数表
 
@@ -1271,17 +1266,15 @@ void CallVoidFunctionStatementAnalyze::analyze(Env& env)
 		parameter_table = function_type->param_type_list;
 	}
 
-	if (env.peek() != SymbolType::left_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_message_back();								// left_paren
-	if (!in_branch_of<ParameterValueListAnalyze>(env) && env.peek() != SymbolType::right_paren)
-	{
-		// TODO error
-	}
+	env.dequeue_certain_and_message_back(SymbolType::left_paren);								// left_paren
+	
+	env.ensure(
+		TypeInsideSet<Env>({ SymbolType::right_paren, SymbolType::semicolon }) || in_branch_of<ParameterValueListAnalyze>,
+		Env::always_false
+	);
 	ParameterValueListAnalyze parameter_value_list_analyze(parameter_table);
 	parameter_value_list_analyze(env);							// 值参数表
+
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	env.message_back("<无返回值函数调用语句>");
@@ -1304,11 +1297,11 @@ void ParameterValueListAnalyze::analyze(Env& env)
 		}
 		if (!in_branch_of<ExpressionAnalyze>(env))
 		{
-			if (count == 0)
+			if (count != 0)
 			{
-				break;
+				env.error_back(env.peek_info()->line_number, ErrorType::unknown_error);
 			}
-			// TODO error
+			break;
 		}
 		int line_number = env.peek_info()->line_number;
 		expression_analyze(env);							// 表达式
