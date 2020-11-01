@@ -294,15 +294,44 @@ public:
 		unsigned max_turn = numeric_limits<unsigned>::max()
 	);
 
-	template<typename T1, typename T2>
 	bool ensure(
-		T1 success_condition,
-		T2 next_condition,
+		function<bool(SyntacticAnalyzerEnvironment&)> success_condition,
+		function<bool(SyntacticAnalyzerEnvironment&)> next_condition,
 		ErrorType error_type = ErrorType::unknown_error,
 		unsigned max_turn = numeric_limits<unsigned>::max()
 	)
 	{
-		return ensure_func(wrap_condition(success_condition), wrap_condition(next_condition), error_type, max_turn);
+		return ensure_func(success_condition, next_condition, error_type, max_turn);
+	}
+
+	bool ensure(
+		function<bool(SyntacticAnalyzerEnvironment&)> success_condition,
+		initializer_list<SymbolType> next_condition,
+		ErrorType error_type = ErrorType::unknown_error,
+		unsigned max_turn = numeric_limits<unsigned>::max()
+	)
+	{
+		return ensure_func(success_condition, TypeInsideSet(next_condition), error_type, max_turn);
+	}
+
+	bool ensure(
+		initializer_list<SymbolType> success_condition,
+		initializer_list<SymbolType> next_condition,
+		ErrorType error_type = ErrorType::unknown_error,
+		unsigned max_turn = numeric_limits<unsigned>::max()
+	)
+	{
+		return ensure_func(TypeInsideSet(success_condition), TypeInsideSet(next_condition), error_type, max_turn);
+	}
+
+	bool ensure(
+		initializer_list<SymbolType> success_condition,
+		function<bool(SyntacticAnalyzerEnvironment&)> next_condition,
+		ErrorType error_type = ErrorType::unknown_error,
+		unsigned max_turn = numeric_limits<unsigned>::max()
+	)
+	{
+		return ensure_func(TypeInsideSet(success_condition), next_condition, error_type, max_turn);
 	}
 };
 

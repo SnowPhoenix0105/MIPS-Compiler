@@ -102,6 +102,11 @@ namespace ErrorDealingTest
 		{
 			test_file("source4.c", "answer4.txt");
 		}
+
+		TEST_METHOD(Complex5)
+		{
+			test_file("source5.c", "answer5.txt");
+		}
 	};
 
 	const string ComplexErrorTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\complex_error");

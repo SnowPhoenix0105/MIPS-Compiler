@@ -97,7 +97,7 @@ void ConstantDeclarationAnalyze::analyze(Env& env)
 	while (env.peek() == SymbolType::key_const)
 	{
 		env.dequeue_and_message_back();							// key_const
-		if (env.ensure(in_branch_of<ConstantDefinationAnalyze>, SymbolType::semicolon))
+		if (env.ensure(in_branch_of<ConstantDefinationAnalyze>, { SymbolType::semicolon }))
 		{
 			ConstantDefinationAnalyze()(env);						// 常量定义
 		}
@@ -127,7 +127,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 				env.dequeue_and_message_back();					// comma
 			}
 			shared_ptr<const IdentifierToken> id;
-			if (env.ensure(SymbolType::identifier, SymbolType::assign))
+			if (env.ensure({ SymbolType::identifier }, { SymbolType::assign }))
 			{
 				auto token = env.dequeue_and_message_back();		// identifier
 				id = dynamic_pointer_cast<const IdentifierToken>(token);
@@ -136,7 +136,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 					env.error_back(token->line_number, ErrorType::duplicated_identifier);
 				}
 			}
-			if (env.ensure(SymbolType::assign, OrCondition(IsType(SymbolType::character), in_branch_of<IntegerAnalyze>)))
+			if (env.ensure({ SymbolType::assign }, OrCondition(IsType(SymbolType::character), in_branch_of<IntegerAnalyze>)))
 			{
 				env.dequeue_and_message_back();						// assign
 			}
@@ -215,10 +215,7 @@ void VariableDeclarationAnalyze::analyze(Env& env)
 	bool flag = true;
 	while (in_branch_of<VariableDefinationAnalyze>(env))
 	{
-		if (env.ensure(in_branch_of<VariableDefinationAnalyze>, SymbolType::semicolon))
-		{
-			VariableDefinationAnalyze()(env);			// 变量定义
-		}
+		VariableDefinationAnalyze()(env);			// 变量定义
 		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 		flag = false;
 	}
@@ -1166,7 +1163,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		{
 			// TODO error
 		}
-		if (env.ensure(in_branch_of<StepLengthAnalyze>, SymbolType::right_paren))
+		if (env.ensure(in_branch_of<StepLengthAnalyze>, { SymbolType::right_paren }))
 		{
 			StepLengthAnalyze step_length_analyze;
 			step_length_analyze(env);								// 步长
@@ -1578,7 +1575,7 @@ void SwitchStatementAnalyze::analyze(Env& env)
 	SwitchTableAnalyze st(switch_type);
 	st(env);												// 情况表
 	// if (env.ensure(in_branch_of<DefaultCaseAnalyze>, SymbolType::right_brance, ErrorType::switch_no_defaule))
-	if (env.ensure(in_branch_of<DefaultCaseAnalyze>, SymbolType::right_brance, ErrorType::switch_no_defaule))
+	if (env.ensure(in_branch_of<DefaultCaseAnalyze>, { SymbolType::right_brance }, ErrorType::switch_no_defaule))
 	{
 		DefaultCaseAnalyze()(env);									// 缺省
 	}

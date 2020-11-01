@@ -559,13 +559,7 @@ struct ConditionAnalyze : AbstractSyntacticAnalyzeTactics
 {
 	static unordered_set<SymbolType> first_set()
 	{
-		return
-		{
-			SymbolType::identifier,				// 标识符/一维数组/二维数组/有返回值函数调用
-			SymbolType::left_paren,				// (表达式)
-			SymbolType::plus, SymbolType::minus, SymbolType::number,	//整数
-			SymbolType::character				// 字符
-		};
+		return ExpressionAnalyze::first_set();
 	};
 
 protected:
