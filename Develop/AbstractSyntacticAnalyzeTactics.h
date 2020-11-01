@@ -11,6 +11,7 @@
 #include "SyntacticAnalyzeUtil.h"
 #include "IdentifierTable.h"
 #include "SymbolType.h"
+#include "InitializeListAnalyze.h"
 
 using std::endl;
 using std::unordered_set;
@@ -18,7 +19,7 @@ using std::unordered_map;
 using std::initializer_list;
 using std::unordered_set;
 using std::make_pair;
-
+using std::bad_cast;
 
 struct VariableDeclarationAnalyze;
 struct VariableDefinationAnalyze;
@@ -183,7 +184,7 @@ public:
 		auto token = SyntacticAnalyzerEnvironment.peek_info();
 		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 		auto id_info = SyntacticAnalyzerEnvironment.get_identifier_info(id);
-		return id_info->return_type->is_one_from(ExternType::variable, ExternType::l_array, ExternType::d_array)
+		return id_info->return_type->is_one_from(ExternType::variable, ExternType::constant, ExternType::l_array, ExternType::d_array)
 			&& id_info->return_type->base_type != BaseType::type_void;
 	}
 
@@ -870,6 +871,7 @@ struct VariableDefinationWithInitializationAnalyze : AbstractSyntacticAnalyzeTac
 	};
 
 protected:
+	shared_ptr<InitializeListElement> analyze_initialize_list(Env& env);
 	virtual void analyze(Env& env);
 };
 

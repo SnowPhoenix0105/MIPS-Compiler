@@ -105,8 +105,9 @@ public:
 	template<typename T>
 	void error_back(int line_number, T type)
 	{
+		string t(type);
 		DEBUG_LOG_VAL(5, "syntactic-analyzer error", type);
-		errors.insert(pair<pair<int, string>, char>(pair<int, string>(line_number, type), 'a'));
+		errors.insert(pair<pair<int, string>, char>(make_pair(line_number, t), 'a'));
 	}
 
 	void error_require(int line_number, SymbolType type)
@@ -345,8 +346,7 @@ private:
 
 struct TypeInsideSet
 {
-	template<typename T>
-	TypeInsideSet(T&& set) : type_set(std::forward<T>(set)) { }
+	TypeInsideSet(std::initializer_list<SymbolType> set) : type_set(set) { }
 	bool operator()(SyntacticAnalyzerEnvironment& env) const
 	{
 		return type_set.count(env.peek()) != 0;

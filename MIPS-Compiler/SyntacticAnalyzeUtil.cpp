@@ -86,7 +86,7 @@ bool SyntacticAnalyzerEnvironment::ensure_func(
 		return true;
 	}
 	error_back(symbols[sym_index]->line_number, error_type);
-	size_t protec_index = sym_index++;
+	size_t protec_index = sym_index;
 	for (unsigned i = 0; i < max_turn; ++i)
 	{
 		if (success_condition(*this))

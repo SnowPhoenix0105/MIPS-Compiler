@@ -39,6 +39,9 @@
     <ClCompile Include="ErrorType.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="InitializeListAnalyze.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LexicalAnalyzer.h">
@@ -69,6 +72,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ErrorType.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InitializeListAnalyze.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

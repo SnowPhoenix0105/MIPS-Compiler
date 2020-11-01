@@ -50,6 +50,12 @@ struct IdentifierType
 		return (static_cast<unsigned>(extern_type) & (static_cast<unsigned>(t1) | static_cast<unsigned>(t2) | static_cast<unsigned>(t3))) != 0;
 	}
 
+
+	bool is_one_from(ExternType t1, ExternType t2, ExternType t3, ExternType t4) const
+	{
+		return (static_cast<unsigned>(extern_type) & (static_cast<unsigned>(t1) | static_cast<unsigned>(t2) | static_cast<unsigned>(t3) | static_cast<unsigned>(t4))) != 0;
+	}
+
 	virtual ~IdentifierType() = default;
 };
 

@@ -65,8 +65,19 @@ std::unique_ptr<std::ostream> error_analyze(std::unique_ptr<std::istream> input_
 {
 	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
 	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
-	syntactic_analyzer.parse();
-	syntactic_analyzer.print_all_error(*output_file);
+	try
+	{
+		syntactic_analyzer.parse();
+		syntactic_analyzer.print_all_error(*output_file);
+	}
+	catch (const std::exception& e)
+	{
+		*output_file << "1 " << e.what() << endl;
+	}
+	catch (...)
+	{
+
+	}
 	return output_file;
 }
 

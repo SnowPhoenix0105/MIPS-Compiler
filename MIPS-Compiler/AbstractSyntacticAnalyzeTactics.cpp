@@ -17,10 +17,10 @@ bool AbstractSyntacticAnalyzeTactics::operator()(Env& env)
 		DEBUG_LOG_VAL(5, "exception", typeid(*this).name());
 		return false;
 	}
-	catch (const exception& e)
-	{
-		env.error_back(env.peek_info()->line_number, e.what());
-	}
+	//catch (const exception& e)
+	//{
+	//	env.error_back(env.peek_info()->line_number, e.what());
+	//}
 	DEBUG_LOG_VAL(5, "finish", typeid(*this).name());
 	return true;
 }
@@ -84,6 +84,7 @@ void ProgramAnalyze::analyze(Env& env)
 			DEBUG_LOG_VAL(10, "env.peek(7)", symboltype_output_dictionary.at(env.peek(7)));
 			// PANIC();
 			env.error_back(env.peek_info()->line_number, "error");
+			break;
 		}
 	}
 	env.message_back("<程序>");
@@ -248,6 +249,45 @@ void VariableDefinationAnalyze::analyze(Env& env)
 	env.message_back("<变量定义>");
 }
 
+shared_ptr<InitializeListElement> VariableDefinationWithInitializationAnalyze::analyze_initialize_list(SyntacticAnalyzerEnvironment& env)
+{
+	int line_number = env.peek_info()->line_number;
+	if (in_branch_of<ConstantAnalyze>(env))
+	{
+		ConstantAnalyze constant_analyze;
+		constant_analyze(env);
+		if (constant_analyze.is_type_of(BaseType::type_char))
+		{
+			return make_shared<InitializeListChar>(line_number, constant_analyze.get_char());
+		}
+		else
+		{
+			return make_shared<InitializeListInteger>(line_number, constant_analyze.get_int());
+		}
+	}
+	if (env.peek() == SymbolType::left_brance)
+	{
+		env.dequeue_and_message_back();				// left_brance
+		auto ret = make_shared<InitializeList>(line_number);
+		while (env.peek() != SymbolType::right_brance)
+		{
+			if (ret->list.size() != 0)
+			{
+				env.dequeue_certain_and_message_back(SymbolType::comma);			// comma
+			}
+			auto rlt = analyze_initialize_list(env);
+			if (rlt == nullptr)
+			{
+				break;
+			}
+			ret->list.push_back(rlt);
+		}
+		ret->last_line = env.dequeue_certain_and_message_back(SymbolType::right_brance)->line_number;	// right_brance
+		return ret;
+	}
+	return nullptr;
+}
+
 // 变量定义及初始化
 void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 {
@@ -295,62 +335,77 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					unsigned_analyze(env);
 					unsigned size_2 = unsigned_analyze.get_value();
 					env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
+
 					env.dequeue_and_message_back();						// assigin
-					if (env.peek() != SymbolType::left_brance)
-					{
-						// TODO error
-					}
-					env.dequeue_and_message_back();						// left_brance
-					for (int i = 0; i != size_1; ++i)
-					{
-						if (i != 0)
-						{
-							if (env.peek() != SymbolType::comma)
-							{
-								// TODO error
-							}
-							env.dequeue_and_message_back();					// comma
-						}
-						if (env.peek() != SymbolType::left_brance)
-						{
-							// TODO error
-						}
-						env.dequeue_and_message_back();						// left_brance
 
-						for (int j = 0; j != size_2; ++j)
+					auto rlt = analyze_initialize_list(env);
+					vector<char> char_vec;
+					vector<int> int_vec;
+					if (rlt != nullptr)
+					{
+						auto list_1 = dynamic_pointer_cast<InitializeList>(rlt);
+						if (list_1 == nullptr)
 						{
-							if (j != 0)
+							env.error_back(rlt->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 0
+							continue;
+						}
+						if (list_1->list.size() != size_1)
+						{
+							env.error_back(list_1->last_line, ErrorType::array_initialize_mismatching);				// 不符合第一维
+						}
+						for (auto line : list_1->list)
+						{
+							auto list_2 = dynamic_pointer_cast<InitializeList>(line);
+							if (list_2 == nullptr)
 							{
-								if (env.peek() != SymbolType::comma)
+								env.error_back(line->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 1
+								continue;
+							}
+							if (list_2->list.size() != size_2)
+							{
+								env.error_back(list_2->last_line, ErrorType::array_initialize_mismatching);			// 不符合第二维
+							}
+							for (auto elem : list_2->list)
+							{
+								if (typeid(*elem) == typeid(InitializeList))
 								{
-									// TODO error
+									env.error_back(elem->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 3
+									continue;
 								}
-								env.dequeue_and_message_back();					// comma
+								if (type == SymbolType::key_char)
+								{
+									auto ch = dynamic_pointer_cast<InitializeListChar>(elem);
+									if (ch == nullptr)
+									{
+										env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+									}
+									else
+									{
+										char_vec.push_back(ch->content);
+									}
+								}
+								else
+								{
+									// type == SymbolType::key_int
+									auto in = dynamic_pointer_cast<InitializeListInteger>(elem);
+									if (in == nullptr)
+									{
+										env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+									}
+									else
+									{
+										int_vec.push_back(in->content);
+									}
+								}
 							}
-							if (!in_branch_of<ConstantAnalyze>(env))
-							{
-								// TODO error
-							}
-							int line_number = env.peek_info()->line_number;
-							constant_analyze(env);							// 常量
-							if (!constant_analyze.is_type_of(base_type))
-							{
-								env.error_back(line_number, ErrorType::constant_type_mismatching);
-							}
-							// TODO 赋值
 						}
-
-						if (env.peek() != SymbolType::right_brance)
-						{
-							// TODO error
-						}
-						env.dequeue_and_message_back();						// right_brance
 					}
-					if (env.peek() != SymbolType::right_brance)
+					else
 					{
 						// TODO error
 					}
-					env.dequeue_and_message_back();						// right_brance
+
+					// 赋值
 
 					// 插入符号表
 					shared_ptr<DoubleDimensionalArrayIdentifierType> id_type = make_shared<DoubleDimensionalArrayIdentifierType>();
@@ -367,34 +422,62 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					{
 						// TODO error
 					}
-					env.dequeue_and_message_back();						// left_brance
-					for (int i = 0; i != size_1; ++i)
+
+					auto rlt = analyze_initialize_list(env);
+					vector<char> char_vec;
+					vector<int> int_vec;
+					if (rlt != nullptr)
 					{
-						if (i != 0)
+						auto list = dynamic_pointer_cast<InitializeList>(rlt);
+						if (list == nullptr)
 						{
-							if (env.peek() != SymbolType::comma)
+							env.error_back(rlt->line_number, ErrorType::array_initialize_mismatching);		// 维数错误 0
+						}
+						if (list->list.size() != size_1)
+						{
+							env.error_back(list->end_line(), ErrorType::array_initialize_mismatching);		// 长度不匹配
+						}
+						for (auto elem : list->list)
+						{
+
+							if (typeid(*elem) == typeid(InitializeList))
 							{
-								// TODO error
+								env.error_back(elem->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 2
+								continue;
 							}
-							env.dequeue_and_message_back();					// comma
+							if (type == SymbolType::key_char)
+							{
+								auto ch = dynamic_pointer_cast<InitializeListChar>(elem);
+								if (ch == nullptr)
+								{
+									env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+								}
+								else
+								{
+									char_vec.push_back(ch->content);
+								}
+							}
+							else
+							{
+								// type == SymbolType::key_int
+								auto in = dynamic_pointer_cast<InitializeListInteger>(elem);
+								if (in == nullptr)
+								{
+									env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+								}
+								else
+								{
+									int_vec.push_back(in->content);
+								}
+							}
 						}
-						if (!in_branch_of<ConstantAnalyze>(env))
-						{
-							// TODO error
-						}
-						int line_number = env.peek_info()->line_number;
-						constant_analyze(env);							// 常量
-						if (!constant_analyze.is_type_of(base_type))
-						{
-							env.error_back(line_number, ErrorType::constant_type_mismatching);
-						}
-						// TODO 赋值
 					}
-					if (env.peek() != SymbolType::right_brance)
+					else
 					{
 						// TODO error
 					}
-					env.dequeue_and_message_back();						// right_brance
+
+					// 赋值
 
 					// 插入符号表
 					shared_ptr<LinearArrayIdentifierType> id_type = make_shared<LinearArrayIdentifierType>();
@@ -631,7 +714,7 @@ int analyze_inner_block(
 	{
 		// TODO error
 	}
-	return env.dequeue_and_message_back()->line_number;						// right_brance
+	return env.dequeue_and_message_back()->line_number;						// right_brance 
 }
 
 int analyze_function(
@@ -973,11 +1056,10 @@ void LoopStatementAnalyze::analyze(Env& env)
 		ConditionAnalyze()(env);								// 条件
 
 		env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
-		if (!in_branch_of<StatementAnalyze>(env))
+		if (env.ensure(in_branch_of<StatementAnalyze>, Env::always_true))
 		{
-			// TODO error
+			StatementAnalyze()(env);									// 语句
 		}
-		StatementAnalyze()(env);									// 语句
 	}
 	else
 	{
@@ -999,6 +1081,13 @@ void LoopStatementAnalyze::analyze(Env& env)
 		{
 			env.error_back(init_token->line_number, ErrorType::undefined_identifier);
 		}
+		else
+		{
+			if (init_id_info->return_type->extern_type == ExternType::constant)
+			{
+				env.error_back(init_id_token->line_number, ErrorType::try_change_const_value);
+			}
+		}
 		if (env.peek() != SymbolType::assign)
 		{
 			// TODO error
@@ -1008,7 +1097,8 @@ void LoopStatementAnalyze::analyze(Env& env)
 		{
 			// TODO error
 		}
-		ExpressionAnalyze()(env);								// 表达式
+		ExpressionAnalyze expression_analyze;
+		expression_analyze(env);								// 表达式
 		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 
 		if (!in_branch_of<ConditionAnalyze>(env))
@@ -1027,7 +1117,14 @@ void LoopStatementAnalyze::analyze(Env& env)
 		auto delta_left_id_info = env.get_identifier_info(delta_left_id_token->id_name_content);
 		if (delta_left_id_info == nullptr)
 		{
-			env.error_back(init_token->line_number, ErrorType::undefined_identifier);
+			env.error_back(delta_left_token->line_number, ErrorType::undefined_identifier);
+		}
+		else
+		{
+			if (delta_left_id_info->return_type->extern_type == ExternType::constant)
+			{
+				env.error_back(delta_left_id_token->line_number, ErrorType::try_change_const_value);
+			}
 		}
 		if (env.peek() != SymbolType::assign)
 		{
@@ -1043,7 +1140,14 @@ void LoopStatementAnalyze::analyze(Env& env)
 		auto delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content);
 		if (delta_right_id_info == nullptr)
 		{
-			env.error_back(init_token->line_number, ErrorType::undefined_identifier);
+			env.error_back(delta_right_token->line_number, ErrorType::undefined_identifier);
+		}
+		else
+		{
+			if (delta_right_id_info->return_type->extern_type == ExternType::constant)
+			{
+				env.error_back(delta_right_id_token->line_number, ErrorType::try_change_const_value);
+			}
 		}
 		SymbolType delta_type = env.peek();
 		if (delta_type != SymbolType::plus && delta_type != SymbolType::minus)
@@ -1350,7 +1454,7 @@ void ReadStatementAnalyze::analyze(Env& env)
 	auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
 	if (id_type->extern_type != ExternType::variable)
 	{
-		// TODO error
+		env.error_back(token->line_number, ErrorType::try_change_const_value);
 	}
 	// 读取
 
@@ -1547,11 +1651,18 @@ void ReturnStatementAnalyze::analyze(Env& env)
 	{
 		env.error_back(line_number, ErrorType::return_value_in_void_function);
 	}
-	else if (env.ensure(in_branch_of<ExpressionAnalyze>, SymbolType::right_paren, ErrorType::wrong_return_in_return_function))
+	if (env.peek() == SymbolType::right_paren)
+	{
+		if (env.current_return_type != BaseType::type_void)
+		{
+			env.error_back(line_number, ErrorType::wrong_return_in_return_function);
+		}
+	}
+	else if (env.ensure(in_branch_of<ExpressionAnalyze>, TypeInsideSet({ SymbolType::right_paren , SymbolType::semicolon, SymbolType::right_brance }), ErrorType::wrong_return_in_return_function))
 	{
 		ExpressionAnalyze expression_analyze;
 		expression_analyze(env);
-		if (expression_analyze.get_type() != env.current_return_type)
+		if (expression_analyze.get_type() != env.current_return_type && env.current_return_type != BaseType::type_void)
 		{
 			env.error_back(line_number, ErrorType::wrong_return_in_return_function);
 		}
