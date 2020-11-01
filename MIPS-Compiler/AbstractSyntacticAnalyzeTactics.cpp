@@ -347,52 +347,58 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 							env.error_back(rlt->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 0
 							continue;
 						}
-						if (list_1->list.size() != size_1)
+						else
 						{
-							env.error_back(list_1->last_line, ErrorType::array_initialize_mismatching);				// 不符合第一维
-						}
-						for (auto line : list_1->list)
-						{
-							auto list_2 = dynamic_pointer_cast<InitializeList>(line);
-							if (list_2 == nullptr)
+							if (list_1->list.size() != size_1)
 							{
-								env.error_back(line->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 1
-								continue;
+								env.error_back(list_1->last_line, ErrorType::array_initialize_mismatching);				// 不符合第一维
 							}
-							if (list_2->list.size() != size_2)
+							for (auto line : list_1->list)
 							{
-								env.error_back(list_2->last_line, ErrorType::array_initialize_mismatching);			// 不符合第二维
-							}
-							for (auto elem : list_2->list)
-							{
-								if (typeid(*elem) == typeid(InitializeList))
+								auto list_2 = dynamic_pointer_cast<InitializeList>(line);
+								if (list_2 == nullptr)
 								{
-									env.error_back(elem->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 3
+									env.error_back(line->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 1
 									continue;
-								}
-								if (type == SymbolType::key_char)
-								{
-									auto ch = dynamic_pointer_cast<InitializeListChar>(elem);
-									if (ch == nullptr)
-									{
-										env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
-									}
-									else
-									{
-										char_vec.push_back(ch->content);
-									}
 								}
 								else
 								{
-									// type == SymbolType::key_int
-									auto in = dynamic_pointer_cast<InitializeListInteger>(elem);
-									if (in == nullptr)
+									if (list_2->list.size() != size_2)
 									{
-										env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+										env.error_back(list_2->last_line, ErrorType::array_initialize_mismatching);			// 不符合第二维
 									}
-									else
+									for (auto elem : list_2->list)
 									{
-										int_vec.push_back(in->content);
+										if (typeid(*elem) == typeid(InitializeList))
+										{
+											env.error_back(elem->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 3
+											continue;
+										}
+										if (type == SymbolType::key_char)
+										{
+											auto ch = dynamic_pointer_cast<InitializeListChar>(elem);
+											if (ch == nullptr)
+											{
+												env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+											}
+											else
+											{
+												char_vec.push_back(ch->content);
+											}
+										}
+										else
+										{
+											// type == SymbolType::key_int
+											auto in = dynamic_pointer_cast<InitializeListInteger>(elem);
+											if (in == nullptr)
+											{
+												env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+											}
+											else
+											{
+												int_vec.push_back(in->content);
+											}
+										}
 									}
 								}
 							}
@@ -431,41 +437,44 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 						{
 							env.error_back(rlt->line_number, ErrorType::array_initialize_mismatching);		// 维数错误 0
 						}
-						if (list->list.size() != size_1)
+						else
 						{
-							env.error_back(list->end_line(), ErrorType::array_initialize_mismatching);		// 长度不匹配
-						}
-						for (auto elem : list->list)
-						{
+							if (list->list.size() != size_1)
+							{
+								env.error_back(list->end_line(), ErrorType::array_initialize_mismatching);		// 长度不匹配
+							}
+							for (auto elem : list->list)
+							{
 
-							if (typeid(*elem) == typeid(InitializeList))
-							{
-								env.error_back(elem->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 2
-								continue;
-							}
-							if (type == SymbolType::key_char)
-							{
-								auto ch = dynamic_pointer_cast<InitializeListChar>(elem);
-								if (ch == nullptr)
+								if (typeid(*elem) == typeid(InitializeList))
 								{
-									env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+									env.error_back(elem->line_number, ErrorType::array_initialize_mismatching);	// 维数错误 2
+									continue;
+								}
+								if (type == SymbolType::key_char)
+								{
+									auto ch = dynamic_pointer_cast<InitializeListChar>(elem);
+									if (ch == nullptr)
+									{
+										env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+									}
+									else
+									{
+										char_vec.push_back(ch->content);
+									}
 								}
 								else
 								{
-									char_vec.push_back(ch->content);
-								}
-							}
-							else
-							{
-								// type == SymbolType::key_int
-								auto in = dynamic_pointer_cast<InitializeListInteger>(elem);
-								if (in == nullptr)
-								{
-									env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
-								}
-								else
-								{
-									int_vec.push_back(in->content);
+									// type == SymbolType::key_int
+									auto in = dynamic_pointer_cast<InitializeListInteger>(elem);
+									if (in == nullptr)
+									{
+										env.error_back(elem->line_number, ErrorType::constant_type_mismatching);	// 常量类型不匹配
+									}
+									else
+									{
+										int_vec.push_back(in->content);
+									}
 								}
 							}
 						}
@@ -754,11 +763,11 @@ int analyze_function(
 	shared_ptr<IdentifierInfo> function_info = make_shared<IdentifierInfo>();
 	function_info->return_type = id_type;
 	function_info->id = function_id;
-
 	if (need_insert)
 	{
 		env.insert_identifier(function_info);
 	}
+
 	try
 	{
 		int line_number = analyze_inner_block(env, param_list);

@@ -123,6 +123,10 @@ void LexicalAnalyzer::check_string_symbol()
 		}
 		else
 		{
+			if (last_ch == '\n')
+			{
+				++line_number;
+			}
 			wrong = true;
 		}
 	}
