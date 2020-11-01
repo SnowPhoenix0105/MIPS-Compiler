@@ -158,6 +158,11 @@ namespace ErrorDealingTest
 			auto result = test_file("source11.c", "answer11.txt");
 			Assert::IsTrue(result.size() == 0);
 		}
+
+		TEST_METHOD(ComplexIndex1)
+		{
+			auto result = test_file("source12.c", "answer12.txt");
+		}
 	};
 
 	const string SimpleErrorTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\error_dealing");
