@@ -658,7 +658,7 @@ struct CompoundStatementsAnalyze : AbstractSyntacticAnalyzeTactics
 	{
 		unordered_set<SymbolType> ret =
 		{
-			SymbolType::key_int, SymbolType::key_char,	// 常量/变量说明
+			SymbolType::key_const, SymbolType::key_int, SymbolType::key_char,	// 常量/变量说明
 		};
 		for (SymbolType t : StatementsListAnalyze::first_set())
 		{
@@ -714,7 +714,7 @@ struct FunctionHeaderAnalyze : AbstractSyntacticAnalyzeTactics
 protected:
 	virtual void analyze(Env& env);
 private:
-	shared_ptr<const IdentifierToken> token;
+	shared_ptr<const IdentifierToken> token = nullptr;
 	BaseType return_type;
 };
 

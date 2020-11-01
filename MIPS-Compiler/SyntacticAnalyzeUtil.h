@@ -251,6 +251,11 @@ public:
 	{
 		return true;
 	}
+
+	static bool always_false(TokenEnvironment& env)
+	{
+		return false;
+	}
 };
 
 
