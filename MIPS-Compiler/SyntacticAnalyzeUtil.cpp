@@ -106,18 +106,3 @@ bool SyntacticAnalyzerEnvironment::ensure_func(
 	sym_index = protec_index;
 	throw syntax_exception();
 }
-
-SatisfyCondition wrap_condition(const function<bool(SyntacticAnalyzerEnvironment&)>& func)
-{
-	return SatisfyCondition(func);
-}
-
-IsType wrap_condition(SymbolType type)
-{
-	return IsType(type);
-}
-
-TypeInsideSet wrap_condition(std::initializer_list<SymbolType> type_set)
-{
-	return TypeInsideSet(type_set);
-}

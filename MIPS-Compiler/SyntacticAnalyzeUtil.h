@@ -33,14 +33,85 @@ using std::numeric_limits;
 
 class SyntacticAnalyzerEnvironment;
 class TokenEnvironment;
-struct IsType;
-struct TypeInsideSet;
-struct SatisfyCondition;
 
-SatisfyCondition wrap_condition(const function<bool(SyntacticAnalyzerEnvironment&)>& func);
-IsType wrap_condition(SymbolType type);
-TypeInsideSet wrap_condition(std::initializer_list<SymbolType> type_set);
+template<class Env = SyntacticAnalyzerEnvironment>
+struct OrCondition
+{
+	OrCondition(const function<bool(Env&)>& c1, const function<bool(Env&)>& c2)
+		: c1(c1), c2(c2)
+	{ }
 
+	bool operator()(Env& env) const
+	{
+		return c1(env) || c2(env);
+	}
+
+	template<typename T>
+	OrCondition<Env> operator||(T&& other)
+	{
+		return OrCondition<Env>(*this, std::forward<T>(other));
+	}
+private:
+	function<bool(Env&)> c1;
+	function<bool(Env&)> c2;
+};
+
+template<class Env = SyntacticAnalyzerEnvironment>
+struct IsType
+{
+	IsType(SymbolType type) : type(type) { }
+	bool operator()(Env& env) const
+	{
+		return env.peek() == type;
+	}
+
+	template<typename T>
+	OrCondition<Env> operator||(T&& other)
+	{
+		return OrCondition<Env>(*this, std::forward<T>(other));
+	}
+private:
+	SymbolType type;
+};
+
+template<class Env = SyntacticAnalyzerEnvironment>
+struct TypeInsideSet
+{
+	TypeInsideSet(std::initializer_list<SymbolType> set) : type_set(set) { }
+	bool operator()(Env& env) const
+	{
+		return type_set.count(env.peek()) != 0;
+	}
+
+	template<typename T>
+	OrCondition<Env> operator||(T&& other)
+	{
+		return OrCondition<Env>(*this, std::forward<T>(other));
+	}
+private:
+	unordered_set<SymbolType> type_set;
+};
+
+template<class Env = SyntacticAnalyzerEnvironment>
+struct SatisfyCondition
+{
+	SatisfyCondition(const function<bool(Env&)>& c)
+		: c(c)
+	{ }
+
+	bool operator()(Env& env) const
+	{
+		return c(env);
+	}
+
+	template<typename T>
+	OrCondition<Env> operator||(T&& other)
+	{
+		return OrCondition<Env>(*this, std::forward<T>(other));
+	}
+private:
+	function<bool(Env&)> c;
+};
 
 class Enviromentstate
 {
@@ -310,7 +381,7 @@ public:
 		unsigned max_turn = numeric_limits<unsigned>::max()
 	)
 	{
-		return ensure_func(success_condition, TypeInsideSet(next_condition), error_type, max_turn);
+		return ensure_func(success_condition, TypeInsideSet<SyntacticAnalyzerEnvironment>(next_condition), error_type, max_turn);
 	}
 
 	bool ensure(
@@ -320,7 +391,7 @@ public:
 		unsigned max_turn = numeric_limits<unsigned>::max()
 	)
 	{
-		return ensure_func(TypeInsideSet(success_condition), TypeInsideSet(next_condition), error_type, max_turn);
+		return ensure_func(TypeInsideSet<SyntacticAnalyzerEnvironment>(success_condition), TypeInsideSet<SyntacticAnalyzerEnvironment>(next_condition), error_type, max_turn);
 	}
 
 	bool ensure(
@@ -330,84 +401,10 @@ public:
 		unsigned max_turn = numeric_limits<unsigned>::max()
 	)
 	{
-		return ensure_func(TypeInsideSet(success_condition), next_condition, error_type, max_turn);
+		return ensure_func(TypeInsideSet<SyntacticAnalyzerEnvironment>(success_condition), next_condition, error_type, max_turn);
 	}
 };
 
-struct OrCondition
-{
-	OrCondition(const function<bool(SyntacticAnalyzerEnvironment&)>& c1, const function<bool(SyntacticAnalyzerEnvironment&)>& c2)
-		: c1(c1), c2(c2)
-	{ }
-
-	bool operator()(SyntacticAnalyzerEnvironment& env) const
-	{
-		return c1(env) || c2(env);
-	}
-
-	template<typename T>
-	OrCondition operator||(T&& other)
-	{
-		return OrCondition(*this, std::forward<T>(other));
-	}
-private:
-	function<bool(SyntacticAnalyzerEnvironment&)> c1;
-	function<bool(SyntacticAnalyzerEnvironment&)> c2;
-};
-
-struct IsType
-{
-	IsType(SymbolType type) : type(type) { }
-	bool operator()(SyntacticAnalyzerEnvironment& env) const
-	{
-		return env.peek() == type;
-	}
-
-	//template<typename T>
-	//OrCondition operator||(T&& other)
-	//{
-	//	return OrCondition(*this, std::forward<T>(other));
-	//}
-private:
-	SymbolType type;
-};
-
-struct TypeInsideSet
-{
-	TypeInsideSet(std::initializer_list<SymbolType> set) : type_set(set) { }
-	bool operator()(SyntacticAnalyzerEnvironment& env) const
-	{
-		return type_set.count(env.peek()) != 0;
-	}
-
-	template<typename T>
-	OrCondition operator||(T&& other)
-	{
-		return OrCondition(*this, std::forward<T>(other));
-	}
-private:
-	unordered_set<SymbolType> type_set;
-};
-
-struct SatisfyCondition
-{
-	SatisfyCondition(const function<bool(SyntacticAnalyzerEnvironment&)>& c)
-		: c(c)
-	{ }
-
-	bool operator()(SyntacticAnalyzerEnvironment& env) const
-	{
-		return c(env);
-	}
-
-	template<typename T>
-	OrCondition operator||(T&& other)
-	{
-		return OrCondition(*this, std::forward<T>(other));
-	}
-private:
-	function<bool(SyntacticAnalyzerEnvironment&)> c;
-};
 
 class syntax_exception : public exception
 {

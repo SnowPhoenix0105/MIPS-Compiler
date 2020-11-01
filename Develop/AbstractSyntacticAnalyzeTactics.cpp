@@ -136,7 +136,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 					env.error_back(token->line_number, ErrorType::duplicated_identifier);
 				}
 			}
-			if (env.ensure({ SymbolType::assign }, OrCondition(IsType(SymbolType::character), in_branch_of<IntegerAnalyze>)))
+			if (env.ensure({ SymbolType::assign }, OrCondition<Env>(IsType<Env>(SymbolType::character), in_branch_of<IntegerAnalyze>)))
 			{
 				env.dequeue_and_message_back();						// assign
 			}
@@ -1693,7 +1693,7 @@ void ReturnStatementAnalyze::analyze(Env& env)
 			env.error_back(line_number, ErrorType::wrong_return_in_return_function);
 		}
 	}
-	else if (env.ensure(in_branch_of<ExpressionAnalyze>, TypeInsideSet({ SymbolType::right_paren , SymbolType::semicolon, SymbolType::right_brance }), ErrorType::wrong_return_in_return_function))
+	else if (env.ensure(in_branch_of<ExpressionAnalyze>, TypeInsideSet<Env>({ SymbolType::right_paren , SymbolType::semicolon, SymbolType::right_brance }), ErrorType::wrong_return_in_return_function))
 	{
 		ExpressionAnalyze expression_analyze;
 		expression_analyze(env);
