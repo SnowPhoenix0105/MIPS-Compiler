@@ -2,7 +2,11 @@
 
 void SyntacticAnalyzer::parse()
 {
-	ProgramAnalyze()(env);
+	try
+	{
+		ProgramAnalyze()(env);
+	}
+	catch (const reach_end_exception&) { }
 }
 
 void SyntacticAnalyzer::print_all_message(ostream& os)

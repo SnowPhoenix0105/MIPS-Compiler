@@ -411,6 +411,10 @@ public:
 	}
 };
 
+class reach_end_exception : public exception
+{
+	using exception::exception;
+};
 
 class syntax_exception : public exception
 {
@@ -422,8 +426,6 @@ public:
 	const shared_ptr<syntax_exception> inner_exception;
 
 	using exception::exception;
-
-	syntax_exception() : exception() { }
 
 	syntax_exception(const syntax_exception& cpy)
 		: exception(cpy),

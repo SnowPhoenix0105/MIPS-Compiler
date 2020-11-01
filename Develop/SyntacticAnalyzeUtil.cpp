@@ -104,5 +104,5 @@ bool SyntacticAnalyzerEnvironment::ensure_func(
 		dequeue_and_message_back();
 	}
 	sym_index = protec_index;
-	throw syntax_exception();
+	throw reach_end_exception();
 }

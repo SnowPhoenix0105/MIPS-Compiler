@@ -1071,17 +1071,12 @@ void LoopStatementAnalyze::analyze(Env& env)
 					env.error_back(init_id_token->line_number, ErrorType::try_change_const_value);
 				}
 			}
-			if (env.peek() != SymbolType::assign)
+			env.dequeue_certain_and_message_back(SymbolType::assign);		// assign
+			if (env.ensure(in_branch_of<ExpressionAnalyze>, { SymbolType::semicolon }))
 			{
-				// TODO error
+				ExpressionAnalyze expression_analyze;
+				expression_analyze(env);								// 表达式
 			}
-			env.dequeue_and_message_back();							// assign
-			if (!in_branch_of<ExpressionAnalyze>(env))
-			{
-				// TODO error
-			}
-			ExpressionAnalyze expression_analyze;
-			expression_analyze(env);								// 表达式
 		}
 		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 
@@ -1108,34 +1103,33 @@ void LoopStatementAnalyze::analyze(Env& env)
 				}
 			}
 			env.dequeue_certain_and_message_back(SymbolType::assign);		// assign
-			if (env.peek() != SymbolType::identifier)
+			if (env.peek() == SymbolType::identifier)
 			{
-				// TODO error
-			}
-			auto delta_right_token = env.dequeue_and_message_back();	// identifier
-			auto delta_right_id_token = dynamic_pointer_cast<const IdentifierToken>(delta_right_token);
-			auto delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content);
-			if (delta_right_id_info == nullptr)
-			{
-				env.error_back(delta_right_token->line_number, ErrorType::undefined_identifier);
-			}
-			else
-			{
-				if (delta_right_id_info->return_type->extern_type == ExternType::constant)
+				auto delta_right_token = env.dequeue_and_message_back();	// identifier
+				auto delta_right_id_token = dynamic_pointer_cast<const IdentifierToken>(delta_right_token);
+				auto delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content);
+				if (delta_right_id_info == nullptr)
 				{
-					env.error_back(delta_right_id_token->line_number, ErrorType::try_change_const_value);
+					env.error_back(delta_right_token->line_number, ErrorType::undefined_identifier);
 				}
+				else
+				{
+					if (delta_right_id_info->return_type->extern_type == ExternType::constant)
+					{
+						env.error_back(delta_right_id_token->line_number, ErrorType::try_change_const_value);
+					}
+				}
+			}
+			else 
+			{
+				env.error_back(env.peek_info()->line_number, ErrorType::unknown_error);
 			}
 			SymbolType delta_type = env.peek();
 			if (delta_type != SymbolType::plus && delta_type != SymbolType::minus)
 			{
-				// TODO error
+				env.error_back(env.peek_info()->line_number, ErrorType::unknown_error);
 			}
 			env.dequeue_and_message_back();							// +/-
-			if (!in_branch_of<StepLengthAnalyze>(env))
-			{
-				// TODO error
-			}
 			if (env.ensure(in_branch_of<StepLengthAnalyze>, { SymbolType::right_paren }))
 			{
 				StepLengthAnalyze step_length_analyze;
@@ -1164,11 +1158,7 @@ void StepLengthAnalyze::analyze(Env& env)
 void ConditionStatementAnalyze::analyze(Env& env)
 {
 	env.dequeue_and_message_back();								// key_if
-	if (env.peek() != SymbolType::left_paren)
-	{
-		// TODO error
-	}
-	env.dequeue_and_message_back();								// left_paren
+	env.dequeue_certain_and_message_back(SymbolType::left_paren);		// left_paren
 	if (!in_branch_of<ConditionAnalyze>(env))
 	{
 		// TODO error
