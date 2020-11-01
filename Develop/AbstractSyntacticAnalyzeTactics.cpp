@@ -1356,6 +1356,7 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 	{
 		// สýื้
 		int line_number = env.dequeue_and_message_back()->line_number;		// left_square
+		// if (env.ensure(in_branch_of<ExpressionAnalyze>, {SymbolType::left_square, SymbolType::right_square, SymbolType::assign }))
 		if (!in_branch_of<ExpressionAnalyze>(env))
 		{
 			// TODO error

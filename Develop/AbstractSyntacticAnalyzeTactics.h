@@ -183,7 +183,7 @@ public:
 	template<>
 	bool in_branch_of<AssignmentStatementAnalyze>(SyntacticAnalyzerEnvironment& env)
 	{
-		return in_first_set_of<AssignmentStatementAnalyze>(env) && is_assigned_variable(env, 0);
+		return in_first_set_of<AssignmentStatementAnalyze>(env) && env.peek(1) != SymbolType::left_paren;
 	}
 
 	/*
