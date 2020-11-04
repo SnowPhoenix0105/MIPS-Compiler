@@ -144,6 +144,7 @@
     <ClCompile Include="ErrorType.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
     <ClCompile Include="InitializeListAnalyze.cpp" />
+    <ClCompile Include="IrTable.cpp" />
     <ClCompile Include="LexicalAnalyzer.cpp" />
     <ClCompile Include="SyntacticAnalyzeUtil.cpp" />
     <ClCompile Include="SymbolType.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="global_control.h" />
     <ClInclude Include="IdentifierTable.h" />
     <ClInclude Include="InitializeListAnalyze.h" />
+    <ClInclude Include="IrTable.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
     <ClInclude Include="SyntacticAnalyzeUtil.h" />
     <ClInclude Include="SymbolToken.h" />
