@@ -67,9 +67,10 @@
 
 #define DEBUG_LOG_MSG(required, msg) DEBUG_DO((required_level),				\
 	std::cout << "[DEBUG_LOG]\t@" __FILE__ ":" << __LINE__ << '\t'			\
-	<< (msg) << std::end;													\
+	<< (msg) << std::endl;													\
 		)
 
+#define ASSERT(required_level, state) DEBUG_DO(required_level, if ((state) == false) throw;)
 
 #else
 
@@ -80,7 +81,7 @@
 #define DEBUG_LOG_VAR(required_level, var) ;
 #define DEBUG_LOG_MSG(required, name, msg) ;
 #define PANIC() ;
-
+#define ASSERT(required_level, state);
 
 #endif // DEBUG_LEVEL
 /////////////////////////////////////////////////////////////////////////////////////////
