@@ -119,6 +119,13 @@ irelem_t LabelAllocator::end() const
 	return stored | 0x0C00'0000;
 }
 
+VarAllocator::VarAllocator() : tmps(), nameds()
+{
+	_sp = alloc_named(make_shared<const string>("_sp"));
+	_ret = alloc_named(make_shared<const string>("_ret"));
+	_zero = alloc_named(make_shared<const string>("_zero"));
+}
+
 irelem_t VarAllocator::alloc_tmp()
 {
 	irelem_t ret = tmps.size() | 0xA000'0000;
@@ -136,6 +143,18 @@ irelem_t VarAllocator::alloc_named(shared_ptr<const string> name)
 string VarAllocator::var_to_string(irelem_t var)
 {
 	ASSERT(4, IrType::is_var(var));
+	if (var == _sp)
+	{
+		return "$sp";
+	}
+	if (var == _ret)
+	{
+		return "$ret";
+	}
+	if (var == _zero)
+	{
+		return "$0";
+	}
 	size_t ord = IrType::get_ord(var);
 	if (IrType::is_tmp(var))
 	{

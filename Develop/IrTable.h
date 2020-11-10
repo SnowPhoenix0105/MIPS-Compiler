@@ -21,26 +21,26 @@ using std::to_string;
 
 enum class IrHead
 {
-	label,		// ���ñ�ǩ	<label>
-	func,		// ���庯������ֵ <type>
-	param,		// ���庯�����β� <var>
-	arr,		// ��������	<arr> <type> <imm>
-	add,		// �ӷ�	<var> <val> <val>
-	sub,		// ����	<var> <val> <val>
-	mult,		// �˷�	<var> <val> <val>
-	div,		// ����	<var> <val> <val>
-	sl,			// ��λ�� <var> <val> <val>
-	sr,			// ��λ�� <var> <val> <val>
-	less,		// С��	<var> <val> <val>
-	save,		// ��������Ԫ��	<var> <var> <arr>
-	load,		// ��������Ԫ��	<var> <var> <arr>
-	beq,		// ����?�� <val> <val> <label>
-	bne,		// ����ת�� <val> <val> <label>
-	_goto,		// ������ת�� <label>
-	push,		// ����ѹ�� <val>
-	call,		// �������� <label>
-	scanf,		// ������ <string> <var>
-	printf,		// д���� <var>
+	label,		// 	<label>
+	func,		//  <type>
+	param,		//  <var>
+	arr,		// 	<arr> <type> <imm>
+	add,		// 	<var> <val> <val>
+	sub,		// 	<var> <val> <val>
+	mult,		// 	<var> <val> <val>
+	div,		// 	<var> <val> <val>
+	sl,			//  <var> <val> <val>
+	sr,			//  <var> <val> <val>
+	less,		// 	<var> <val> <val>
+	save,		// 	<var> <var> <arr>
+	load,		// 	<var> <var> <arr>
+	beq,		//  <val> <val> <label>
+	bne,		//  <val> <val> <label>
+	_goto,		//  <label>
+	push,		//  <val>
+	call,		//  <label>
+	scanf,		//  <string> <var>
+	printf,		//  <var>
 };
 
 using irelem_t = uint32_t;
@@ -48,12 +48,9 @@ using irelem_t = uint32_t;
 
 struct IrType
 {
-	static const irelem_t zero	= 0xC000'0000;
-	static const irelem_t ret	= 0xC000'0001;
-	static const irelem_t sp	= 0xC000'0002;
-	static const irelem_t _int	= 0xC000'0003;
-	static const irelem_t _char = 0xC000'0004;
-	static const irelem_t _void = 0xC000'0005;
+	static const irelem_t _int	= 0xC000'0000;
+	static const irelem_t _char = 0xC000'0001;
+	static const irelem_t _void = 0xC000'0002;
 	static bool is_val(irelem_t v) { return (v >> 31) == 0b1; }
 	static bool is_var(irelem_t v) { return (v >> 29) == 0b101; }
 	static bool is_tmp(irelem_t v) { return (v >> 28) == 0b1010; }
@@ -74,7 +71,7 @@ struct IrType
 	static bool is_start(irelem_t v) { return (v & 0x8C00'0000) == 1; }
 	static bool is_mid(irelem_t v) { return (v & 0x8C00'0000) == 2; }
 	static bool is_end(irelem_t v) { return (v & 0x8C00'0000) == 3; }
-	static uint32_t  get_ord(irelem_t v) { return  v & 0x0300'0000; }
+	static uint32_t  get_ord(irelem_t v) { return  v & 0x03FF'FFFF; }
 };
 
 class LabelAllocator
@@ -106,7 +103,11 @@ private:
 	vector<const shared_ptr<const string>> tmps;
 	vector<const pair<shared_ptr<const string>, shared_ptr<const string>>> nameds;
 	shared_ptr<const string> current_func = make_shared<const string>("__global");
+	irelem_t _sp;
+	irelem_t _ret;
+	irelem_t _zero;
 public:
+	VarAllocator();
 	VarAllocator& set_function(shared_ptr<const string> func_name)
 	{
 		current_func = func_name;
@@ -116,6 +117,9 @@ public:
 	irelem_t alloc(shared_ptr<const string> name) { return alloc_named(name); }
 	irelem_t alloc_tmp();
 	irelem_t alloc_named(shared_ptr<const string> name);
+	irelem_t sp() { return _sp; }
+	irelem_t ret() { return _ret; }
+	irelem_t zero() { return _zero; }
 	string var_to_string(irelem_t var);
 };
 
