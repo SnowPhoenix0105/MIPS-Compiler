@@ -132,3 +132,64 @@ irelem_t VarAllocator::alloc_named(shared_ptr<const string> name)
 	nameds.push_back(make_pair(current_func, name));
 	return ret;
 }
+
+irelem_t CstAllocator::alloc_imm(int imm)
+{
+	auto idx = imm_cache.find(imm);
+	if (idx != imm_cache.end())
+	{
+		return *idx;
+	}
+	size_t ord = imms.size();
+	irelem_t ret = 0x8000'0000 | ord;
+	imms.push_back(imm);
+	return ret;
+}
+
+irelem_t CstAllocator::alloc_arr(shared_ptr<const string> func, shared_ptr<const string> arr)
+{
+	size_t ord = arrs.size();
+	irelem_t ret = 0x9000'0000 | ord;
+	arrs.push_back(make_pair(func, arr));
+	return ret;
+}
+
+irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
+{
+	ASSERT(4, IrType::is_cst(cst_1));
+	ASSERT(4, IrType::is_cst(cst_2));
+	if (IrType::is_imm(cst_1) && IrType::is_imm(cst_2))
+	{
+		int val = imm_value(cst_1) + imm_value(cst_2);
+		return alloc_imm(val);
+	}
+	size_t ord = incalculate_cst.size();
+	irelem_t ret = 0x9800'0000 | ord;
+	incalculate_cst.push_back(make_pair(cst_1, cst_2));
+	return ret;
+}
+
+int CstAllocator::imm_value(irelem_t imm) const
+{
+	ASSERT(0, IrType::is_imm(imm));
+	size_t ord = IrType::get_ord(imm);
+	return imms.at(ord);
+}
+
+int CstAllocator::value_of(irelem_t cst) const
+{
+	ASSERT(0, IrType::is_cst(cst));
+	if (IrType::is_imm(cst))
+	{
+		return imm_value(cst);
+	}
+	size_t ord = IrType::get_ord(cst);
+	if (IrType::is_pure_arr(cst))
+	{
+		return arr_value.at(ord);
+	}
+	const auto& pair = incalculate_cst.at(ord);
+	int val1 = value_of(pair.first);
+	int val2 = value_of(pair.second);
+	return val1 + val2;
+}

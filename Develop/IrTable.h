@@ -15,29 +15,30 @@ using std::pair;
 using std::shared_ptr;
 using std::make_shared;
 using std::make_pair;
+using std::unordered_map;
 
 enum class IrHead
 {
-	label,		// ·ÅÖÃ±êÇ©	<label>
-	func,		// ¶¨Òåº¯Êý·µ»ØÖµ <type>
-	param,		// ¶¨Òåº¯ÊýµÄÐÎ²Î <var>
-	arr,		// Êý×éÉùÃ÷	<arr> <type> <imm>
-	add,		// ¼Ó·¨	<var> <val> <val>
-	sub,		// ¼õ·¨	<var> <val> <val>
-	mult,		// ³Ë·¨	<var> <val> <val>
-	div,		// ³ý·¨	<var> <val> <val>
-	sl,			// ×óÎ»ÒÆ <var> <val> <val>
-	sr,			// ÓÒÎ»ÒÆ <var> <val> <val>
-	less,		// Ð¡ÓÚ	<var> <val> <val>
-	save,		// ±£´æÊý×éÔªËØ	<var> <var> <arr>
-	load,		// ¼ÓÔØÊý×éÔªËØ	<var> <var> <arr>
-	beq,		// ÏàµÈ×ªÒÆ <val> <val> <label>
-	bne,		// ²»µÈ×ªÒÆ <val> <val> <label>
-	_goto,		// ÎÞÌõ¼þ×ªÒÆ <label>
-	push,		// º¯ÊýÑ¹²Î <val>
-	call,		// º¯Êýµ÷ÓÃ <label>
-	scanf,		// ¶Á²Ù×÷ <string> <var>
-	printf,		// Ð´²Ù×÷ <var>
+	label,		// ï¿½ï¿½ï¿½Ã±ï¿½Ç©	<label>
+	func,		// ï¿½ï¿½ï¿½åº¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ <type>
+	param,		// ï¿½ï¿½ï¿½åº¯ï¿½ï¿½ï¿½ï¿½ï¿½Î²ï¿½ <var>
+	arr,		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	<arr> <type> <imm>
+	add,		// ï¿½Ó·ï¿½	<var> <val> <val>
+	sub,		// ï¿½ï¿½ï¿½ï¿½	<var> <val> <val>
+	mult,		// ï¿½Ë·ï¿½	<var> <val> <val>
+	div,		// ï¿½ï¿½ï¿½ï¿½	<var> <val> <val>
+	sl,			// ï¿½ï¿½Î»ï¿½ï¿½ <var> <val> <val>
+	sr,			// ï¿½ï¿½Î»ï¿½ï¿½ <var> <val> <val>
+	less,		// Ð¡ï¿½ï¿½	<var> <val> <val>
+	save,		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½	<var> <var> <arr>
+	load,		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½	<var> <var> <arr>
+	beq,		// ï¿½ï¿½ï¿½×ªï¿½ï¿½ <val> <val> <label>
+	bne,		// ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ <val> <val> <label>
+	_goto,		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ <label>
+	push,		// ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ <val>
+	call,		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ <label>
+	scanf,		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ <string> <var>
+	printf,		// Ð´ï¿½ï¿½ï¿½ï¿½ <var>
 };
 
 using irelem_t = uint32_t;
@@ -93,8 +94,8 @@ public:
 class VarAllocator
 {
 private:
-	vector<shared_ptr<const string>> tmps;
-	vector<pair<shared_ptr<const string>, shared_ptr<const string>>> nameds;
+	vector<const shared_ptr<const string>> tmps;
+	vector<const pair<shared_ptr<const string>, shared_ptr<const string>>> nameds;
 	shared_ptr<const string> current_func = make_shared<const string>("__global");
 public:
 	VarAllocator& set_function(shared_ptr<const string> func_name)
@@ -108,7 +109,23 @@ public:
 	irelem_t alloc_named(shared_ptr<const string> name);
 };
 
+class CstAllocator
+{
+private:
+	vector<const int> imms;
+	unordered_map<int, relem_t> imm_cache;
+	vector<const pair<shared_ptr<const string>, shared_ptr<const string>>> arrs;
+	vector<const pair<irelem_t, irelem_t>> incalculate_cst;
+	unordered_map<relem_t, const int> arr_value;
 
+	int imm_value(irelem_t imm) const;
+public:
+	irelem_t alloc_arr(shared_ptr<const string> func, shared_ptr<const string> arr);
+	irelem_t alloc_imm(int imm);
+	irelem_t cst_add(irelem_t cst_1, irelem_t cst_2);
+	CstAllocator& set_arr_value(irelem_t arr, int value);
+	int value_of(irelem_t cst) const;
+};
 
 #endif // !__IR_TABLE_H__
 
