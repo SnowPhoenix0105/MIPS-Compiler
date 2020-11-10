@@ -193,3 +193,9 @@ int CstAllocator::value_of(irelem_t cst) const
 	int val2 = value_of(pair.second);
 	return val1 + val2;
 }
+
+
+IrTable IrTableBuilder::build()
+{
+	return IrTable(*this);
+}

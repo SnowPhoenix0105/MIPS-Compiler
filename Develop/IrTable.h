@@ -127,5 +127,34 @@ public:
 	int value_of(irelem_t cst) const;
 };
 
+struct IrElemAllocator
+: 	LabelAllocator, VarAllocator, CstAllocator { };
+
+struct Ir
+{
+	IrHead head;
+	irelem_t elem[3];
+}
+
+struct IrTable;
+
+struct IrTableBuilder : vector<Ir>
+{
+	IrTable build();
+};
+
+struct IrTable
+{
+	IrTable(const vector<Ir>& table) : table(table) { }
+
+	const Ir& operator[](size_t index) const { return table.at(index); }
+	vector<const Ir>::const_iterator beg() const { return table.cbeg(); }
+	vector<const Ir>::const_iterator end() const { return table.cend(); }
+private:
+	const vector<const Ir> table;
+}
+
+
+
 #endif // !__IR_TABLE_H__
 
