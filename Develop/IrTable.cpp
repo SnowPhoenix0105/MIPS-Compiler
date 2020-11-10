@@ -133,6 +133,18 @@ irelem_t VarAllocator::alloc_named(shared_ptr<const string> name)
 	return ret;
 }
 
+string VarAllocator::var_to_string(irelem_t var)
+{
+	ASSERT(4, IrType::is_var(var));
+	size_t ord = IrType::get_ord(var);
+	if (IrType::is_tmp(var))
+	{
+		return *tmps.at(ord) + "_tmp_" + to_string(ord);
+	}
+	const auto& pair = nameds.at(ord);
+	return *pair.first + "_var_" + *pair.second;
+}
+
 irelem_t CstAllocator::alloc_imm(int imm)
 {
 	auto idx = imm_cache.find(imm);
@@ -193,7 +205,6 @@ int CstAllocator::value_of(irelem_t cst) const
 	int val2 = value_of(pair.second);
 	return val1 + val2;
 }
-
 
 IrTable IrTableBuilder::build()
 {
