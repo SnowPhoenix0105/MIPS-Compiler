@@ -119,7 +119,9 @@ irelem_t LabelAllocator::end() const
 	return stored | 0x0C00'0000;
 }
 
-VarAllocator::VarAllocator() : tmps(), nameds()
+const shared_ptr<const string> VarAllocator::__global = make_shared<const string>("__global");
+
+VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global)
 {
 	_sp = alloc_named(make_shared<const string>("_sp"));
 	_ret = alloc_named(make_shared<const string>("_ret"));
@@ -169,7 +171,7 @@ irelem_t CstAllocator::alloc_imm(int imm)
 	auto idx = imm_cache.find(imm);
 	if (idx != imm_cache.end())
 	{
-		return *idx;
+		return idx->second;
 	}
 	size_t ord = imms.size();
 	irelem_t ret = 0x8000'0000 | ord;
@@ -223,6 +225,23 @@ int CstAllocator::value_of(irelem_t cst) const
 	int val1 = value_of(pair.first);
 	int val2 = value_of(pair.second);
 	return val1 + val2;
+}
+
+irelem_t StringAllocator::alloc_string(shared_ptr<const string> str)
+{
+	return alloc_string(*str);
+}
+
+irelem_t StringAllocator::alloc_string(const string& str)
+{
+	const auto& it = map.find(str);
+	if (it != map.end())
+	{
+		return it->second;
+	}
+	irelem_t ret = map.size() | 0xC000'0000;
+	map.insert(make_pair(str, ret));
+	return ret;
 }
 
 IrTable IrTableBuilder::build()

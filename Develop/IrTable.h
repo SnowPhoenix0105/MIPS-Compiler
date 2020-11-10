@@ -22,9 +22,14 @@ using std::to_string;
 enum class IrHead
 {
 	label,		// 	<label>
+
+	gvar,		//  <var> [<imm>]
+	arr,		// 	<arr> <type> <imm>
+	init,		//  <imm>
 	func,		//  <type>
 	param,		//  <var>
-	arr,		// 	<arr> <type> <imm>
+
+
 	add,		// 	<var> <val> <val>
 	sub,		// 	<var> <val> <val>
 	mult,		// 	<var> <val> <val>
@@ -32,15 +37,19 @@ enum class IrHead
 	sl,			//  <var> <val> <val>
 	sr,			//  <var> <val> <val>
 	less,		// 	<var> <val> <val>
+
 	save,		// 	<var> <var> <arr>
 	load,		// 	<var> <var> <arr>
+
 	beq,		//  <val> <val> <label>
 	bne,		//  <val> <val> <label>
 	_goto,		//  <label>
+
 	push,		//  <val>
 	call,		//  <label>
+
 	scanf,		//  <var>
-	printf,		//  <string> <var>
+	printf,		//  [<string>] [<var>]
 };
 
 using irelem_t = uint32_t;
@@ -68,10 +77,10 @@ struct IrType
 	static bool is_switch	(irelem_t v) { return (v >> 28) == 0b0011; }
 	static bool is_for		(irelem_t v) { return (v >> 28) == 0b0100; }
 	static bool is_while	(irelem_t v) { return (v >> 28) == 0b0101; }
-	static bool is_beg		(irelem_t v) { return (v & 0x8C00'0000) == 0; }
-	static bool is_start	(irelem_t v) { return (v & 0x8C00'0000) == 1; }
-	static bool is_mid		(irelem_t v) { return (v & 0x8C00'0000) == 2; }
-	static bool is_end		(irelem_t v) { return (v & 0x8C00'0000) == 3; }
+	static bool is_beg		(irelem_t v) { return (v & 0x8C00'0000) == 0x0000'0000; }
+	static bool is_start	(irelem_t v) { return (v & 0x8C00'0000) == 0x0400'0000; }
+	static bool is_mid		(irelem_t v) { return (v & 0x8C00'0000) == 0x0800'0000; }
+	static bool is_end		(irelem_t v) { return (v & 0x8C00'0000) == 0x0C00'0000; }
 	static uint32_t  get_ord(irelem_t v) { return  v & 0x03FF'FFFF; }
 };
 
@@ -119,10 +128,10 @@ public:
 	irelem_t alloc(shared_ptr<const string> name) { return alloc_named(name); }
 	irelem_t alloc_tmp();
 	irelem_t alloc_named(shared_ptr<const string> name);
-	irelem_t sp() { return _sp; }
-	irelem_t ret() { return _ret; }
-	irelem_t zero() { return _zero; }
-	string var_to_string(irelem_t var);
+	irelem_t sp() const noexcept { return _sp; }
+	irelem_t ret() const noexcept { return _ret; }
+	irelem_t zero() const noexcept { return _zero; }
+	string var_to_string(irelem_t var) const;
 };
 
 class CstAllocator
@@ -134,7 +143,6 @@ private:
 	vector<const pair<irelem_t, irelem_t>> incalculate_cst;
 	unordered_map<irelem_t, const int> arr_value;
 
-	int imm_value(irelem_t imm) const;
 public:
 	irelem_t alloc_arr(shared_ptr<const string> func, shared_ptr<const string> arr);
 	irelem_t alloc_imm(int imm);
@@ -143,6 +151,7 @@ public:
 	{
 		arr_value.insert(make_pair(arr, value));
 	}
+	int imm_value(irelem_t imm) const;
 	int value_of(irelem_t cst) const;
 };
 
@@ -153,11 +162,14 @@ private:
 public:
 	irelem_t alloc_string(shared_ptr<const string> str);
 	irelem_t alloc_string(const string& str);
-	const unordered_map<string, irelem_t>& get_map() { return map; }
+	const unordered_map<string, irelem_t>& get_map() const { return map; }
 };
 
 struct IrElemAllocator
-	: LabelAllocator, VarAllocator, CstAllocator, StringAllocator { };
+	: LabelAllocator, VarAllocator, CstAllocator, StringAllocator 
+{
+	
+};
 
 struct Ir
 {
@@ -176,7 +188,8 @@ struct IrTable
 {
 	IrTable(const vector<Ir>& table) : table(table) { }
 
-	const Ir& operator[](size_t index) const { return table.at(index); }
+	const Ir& operator[](size_t index) { return table.at(index); }
+	const Ir& at(size_t index) const { return table.at(index); }
 	vector<Ir>::const_iterator begin() const { return table.cbegin(); }
 	vector<Ir>::const_iterator end() const { return table.cend(); }
 	size_t size() const { return table.size(); }

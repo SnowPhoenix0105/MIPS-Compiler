@@ -142,7 +142,7 @@ irelem_t VarAllocator::alloc_named(shared_ptr<const string> name)
 	return ret;
 }
 
-string VarAllocator::var_to_string(irelem_t var)
+string VarAllocator::var_to_string(irelem_t var) const
 {
 	ASSERT(4, IrType::is_var(var));
 	if (var == _sp)
