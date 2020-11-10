@@ -149,6 +149,7 @@
     <ClCompile Include="SyntacticAnalyzeUtil.cpp" />
     <ClCompile Include="SymbolType.cpp" />
     <ClCompile Include="SyntacticAnalyzer.cpp" />
+    <ClCompile Include="TargetCodeGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbstractSyntacticAnalyzeTactics.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="SymbolToken.h" />
     <ClInclude Include="SymbolType.h" />
     <ClInclude Include="SyntacticAnalyzer.h" />
+    <ClInclude Include="TargetCodeGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

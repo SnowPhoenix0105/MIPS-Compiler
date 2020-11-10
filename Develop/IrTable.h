@@ -39,8 +39,8 @@ enum class IrHead
 	_goto,		//  <label>
 	push,		//  <val>
 	call,		//  <label>
-	scanf,		//  <string> <var>
-	printf,		//  <var>
+	scanf,		//  <var>
+	printf,		//  <string> <var>
 };
 
 using irelem_t = uint32_t;
@@ -48,29 +48,30 @@ using irelem_t = uint32_t;
 
 struct IrType
 {
-	static const irelem_t _int	= 0xC000'0000;
-	static const irelem_t _char = 0xC000'0001;
-	static const irelem_t _void = 0xC000'0002;
-	static bool is_val(irelem_t v) { return (v >> 31) == 0b1; }
-	static bool is_var(irelem_t v) { return (v >> 29) == 0b101; }
-	static bool is_tmp(irelem_t v) { return (v >> 28) == 0b1010; }
-	static bool is_named(irelem_t v) { return (v >> 28) == 0b1011; }
-	static bool is_cst(irelem_t v) { return (v >> 29) == 0b100; }
-	static bool is_imm(irelem_t v) { return (v >> 28) == 0b1000; }
-	static bool is_arr(irelem_t v) { return (v >> 28) == 0b1001; }
-	static bool is_pure_arr(irelem_t v) { return (v >> 27) == 0b10010; }
-	static bool is_fix_idx(irelem_t v) { return (v >> 27) == 0b10011; }
-	static bool is_special(irelem_t v) { return (v >> 30) == 0b11; }
-	static bool is_label(irelem_t v) { return (v >> 31) == 0b0; }
-	static bool is_func(irelem_t v) { return (v >> 28) == 0b0001; }
-	static bool is_if(irelem_t v) { return (v >> 28) == 0b0010; }
-	static bool is_switch(irelem_t v) { return (v >> 28) == 0b0011; }
-	static bool is_for(irelem_t v) { return (v >> 28) == 0b0100; }
-	static bool is_while(irelem_t v) { return (v >> 28) == 0b0101; }
-	static bool is_beg(irelem_t v) { return (v & 0x8C00'0000) == 0; }
-	static bool is_start(irelem_t v) { return (v & 0x8C00'0000) == 1; }
-	static bool is_mid(irelem_t v) { return (v & 0x8C00'0000) == 2; }
-	static bool is_end(irelem_t v) { return (v & 0x8C00'0000) == 3; }
+	static const irelem_t _int	= 0xE000'0000;
+	static const irelem_t _char = 0xE000'0001;
+	static const irelem_t _void = 0xE000'0002;
+	static bool is_val		(irelem_t v) { return (v >> 31) == 0b1; }
+	static bool is_var		(irelem_t v) { return (v >> 29) == 0b101; }
+	static bool is_tmp		(irelem_t v) { return (v >> 28) == 0b1010; }
+	static bool is_named	(irelem_t v) { return (v >> 28) == 0b1011; }
+	static bool is_cst		(irelem_t v) { return (v >> 29) == 0b100; }
+	static bool is_imm		(irelem_t v) { return (v >> 28) == 0b1000; }
+	static bool is_arr		(irelem_t v) { return (v >> 28) == 0b1001; }
+	static bool is_pure_arr	(irelem_t v) { return (v >> 27) == 0b10010; }
+	static bool is_fix_idx	(irelem_t v) { return (v >> 27) == 0b10011; }
+	static bool is_string	(irelem_t v) { return (v >> 29) == 0b110; }
+	static bool is_special	(irelem_t v) { return (v >> 29) == 0b111; }
+	static bool is_label	(irelem_t v) { return (v >> 31) == 0b0; }
+	static bool is_func		(irelem_t v) { return (v >> 28) == 0b0001; }
+	static bool is_if		(irelem_t v) { return (v >> 28) == 0b0010; }
+	static bool is_switch	(irelem_t v) { return (v >> 28) == 0b0011; }
+	static bool is_for		(irelem_t v) { return (v >> 28) == 0b0100; }
+	static bool is_while	(irelem_t v) { return (v >> 28) == 0b0101; }
+	static bool is_beg		(irelem_t v) { return (v & 0x8C00'0000) == 0; }
+	static bool is_start	(irelem_t v) { return (v & 0x8C00'0000) == 1; }
+	static bool is_mid		(irelem_t v) { return (v & 0x8C00'0000) == 2; }
+	static bool is_end		(irelem_t v) { return (v & 0x8C00'0000) == 3; }
 	static uint32_t  get_ord(irelem_t v) { return  v & 0x03FF'FFFF; }
 };
 
@@ -100,9 +101,10 @@ public:
 class VarAllocator
 {
 private:
+	static const shared_ptr<const string> __global;
 	vector<const shared_ptr<const string>> tmps;
 	vector<const pair<shared_ptr<const string>, shared_ptr<const string>>> nameds;
-	shared_ptr<const string> current_func = make_shared<const string>("__global");
+	shared_ptr<const string> current_func;
 	irelem_t _sp;
 	irelem_t _ret;
 	irelem_t _zero;
@@ -144,8 +146,18 @@ public:
 	int value_of(irelem_t cst) const;
 };
 
+class StringAllocator
+{
+private:
+	unordered_map<string, irelem_t> map;
+public:
+	irelem_t alloc_string(shared_ptr<const string> str);
+	irelem_t alloc_string(const string& str);
+	const unordered_map<string, irelem_t>& get_map() { return map; }
+};
+
 struct IrElemAllocator
-	: LabelAllocator, VarAllocator, CstAllocator { };
+	: LabelAllocator, VarAllocator, CstAllocator, StringAllocator { };
 
 struct Ir
 {
@@ -167,6 +179,7 @@ struct IrTable
 	const Ir& operator[](size_t index) const { return table.at(index); }
 	vector<Ir>::const_iterator begin() const { return table.cbegin(); }
 	vector<Ir>::const_iterator end() const { return table.cend(); }
+	size_t size() const { return table.size(); }
 private:
 	const vector<Ir> table;
 };
