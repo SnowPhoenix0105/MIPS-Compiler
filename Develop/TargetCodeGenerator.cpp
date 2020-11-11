@@ -28,22 +28,23 @@ void SimpleGenerator::next_function_info()
 	ASSERT(3, func_name == allocator.func_name(label));
 }
 
-void SimpleGenerator::init_total()
+void SimpleGenerator::init_global()
 {
-	// TODO
 	const IrElemAllocator& allocator = *allocator_ptr;
 	const IrTable& ir_table = *ir_table_ptr;
 	unsigned offset = 0;
 	buffer << ".data" << endl;
 	buffer << "__GP__:" << endl;
-	for (size_t i = 0; ; ++i)
+	bool flag = true;
+	for (size_t i = 0; flag ; ++i)
 	{
 		const auto& ir = ir_table.at(i);
 		switch (ir.head)
 		{
 		case IrHead::label:
 			// 变量声明结束
-			goto END_FOR;
+			flag = false;
+			break;
 		case IrHead::gvar:
 		{
 			// 全局变量
@@ -104,12 +105,50 @@ void SimpleGenerator::init_total()
 			PANIC();
 		}
 	}
-END_FOR:
 	buffer << ".text" << endl;
 }
 
 void SimpleGenerator::init_func()
 {
+	// TODO
+	const IrElemAllocator& allocator = *allocator_ptr;
+	const IrTable& ir_table = *ir_table_ptr;
+	// 遍历 beg -> mid , 统计形参, 数组
+	unordered_set<irelem_t> param_set;
+	for (size_t i = func_beg_index + 1; i != func_mid_index; ++i)
+	{
+		const auto& ir = ir_table.at(i);
+		switch (ir.head)
+		{
+		case IrHead::func:
+			break;
+		case IrHead::param:
+		{
+			ASSERT(4, IrType::is_var(ir.elem[0]));
+			param_set.insert(ir.elem[0]);
+		}
+		case IrHead::arr:
+		{
+			// TODO
+		}
+		default:
+			break;
+		}
+	}
+
+	// 遍历 mid -> end , 统计局部var数量
+	unordered_set<irelem_t> var_set;
+	for (size_t i = func_mid_index + 1; i != func_end_index; ++i)
+	{
+		const auto& ir = ir_table.at(i);
+		for (size_t j = 0; j < 3; ++j)
+		{
+			if (allocator.is_local_var(ir.elem[j]))
+			{
+				var_set.insert(ir.elem[j]);
+			}
+		}
+	}
 	// TODO
 }
 
@@ -134,7 +173,7 @@ void SimpleGenerator::fresh_buffer(ostream& os)
 
 void SimpleGenerator::translate(ostream& os)
 {
-	init_total();
+	init_global();
 	// TODO 
 	// TODO main : la $gp,__GP__
 }

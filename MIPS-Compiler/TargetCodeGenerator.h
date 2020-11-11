@@ -6,10 +6,12 @@
 #include "IrTable.h"
 #include <iostream>
 #include <sstream>
+#include <unordered_set>
 
 using std::ostream;
 using std::ostringstream;
 using std::endl;
+using std::unordered_set;
 
 struct ITargetCodeGenerator
 {
@@ -26,17 +28,22 @@ struct ArrayInfo
 class SimpleGenerator : public ITargetCodeGenerator
 {
 private:
+	// 分别指向同一个函数的对应label
 	size_t func_beg_index = 0;
 	size_t func_mid_index = 0;
 	size_t func_end_index = 0;
+	// 其它当前函数信息
 	size_t stack_size = 0;
-	shared_ptr<const IrElemAllocator> allocator_ptr;
-	shared_ptr<const IrTable> ir_table;
 	string func_name = "__global";
+	// IR信息
+	shared_ptr<const IrElemAllocator> allocator_ptr;
+	shared_ptr<const IrTable> ir_table_ptr;
 	ostringstream buffer;	// 目标代码的buffer
-	unordered_map<irelem_t, const string> global_label_table;		// 全局变量的label
-	unordered_map<irelem_t, const unsigned> func_var_offset_table;
-	unordered_map<irelem_t, const ArrayInfo> arr_info_table;
+	// 变量偏移表
+	unordered_map<irelem_t, unsigned> global_var_offset_table;	
+	unordered_map<irelem_t, ArrayInfo> global_arr_info_table;
+	unordered_map<irelem_t, unsigned> func_var_offset_table;
+	unordered_map<irelem_t, ArrayInfo> func_arr_info_table;
 
 
 	/// <summary>
@@ -46,10 +53,10 @@ private:
 
 	/// <summary>
 	/// 为每个全局变量分配空间, 分配label, 填入初值;
-	/// 填写global_label_table.
+	/// 填写global_var_offset_table和global_arr_info_table.
 	/// </summary>
 	/// <returns></returns>
-	void init_total();
+	void init_global();
 	 
 	/// <summary>
 	/// 扫描当前func_beg_index, func_mid_index, func_end_index标注的函数;
@@ -78,7 +85,7 @@ private:
 public:
 	virtual ~SimpleGenerator() = default;
 	SimpleGenerator(shared_ptr<const IrElemAllocator> allocator, shared_ptr<const IrTable> ir)
-		: allocator_ptr(allocator), ir_table(ir) { }
+		: allocator_ptr(allocator), ir_table_ptr(ir) { }
 
 	/// <summary>
 	/// 将allocator指导下的ir转换为string并输入到os中.
@@ -86,7 +93,7 @@ public:
 	/// <param name="allocator"></param>
 	/// <param name="ir"></param>
 	/// <param name="os"></param>
-	virtual void translate(const IrTable& ir, ostream& os);
+	virtual void translate(ostream& os);
 };
 
 

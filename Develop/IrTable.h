@@ -117,6 +117,7 @@ private:
 	vector<pair<shared_ptr<const string>, shared_ptr<const string>>> nameds;
 	shared_ptr<const string> current_func;
 	irelem_t _sp;
+	irelem_t _gp;
 	irelem_t _ret;
 	irelem_t _zero;
 public:
@@ -133,6 +134,9 @@ public:
 	irelem_t sp() const noexcept { return _sp; }
 	irelem_t ret() const noexcept { return _ret; }
 	irelem_t zero() const noexcept { return _zero; }
+	bool is_reserved_var(irelem_t var) const;
+	bool is_global_var(irelem_t named) const;
+	bool is_local_var(irelem_t var) const;
 	string var_to_string(irelem_t var) const;
 };
 

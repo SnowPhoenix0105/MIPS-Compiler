@@ -142,12 +142,43 @@ irelem_t VarAllocator::alloc_named(shared_ptr<const string> name)
 	return ret;
 }
 
+bool VarAllocator::is_reserved_var(irelem_t var) const
+{
+	return var == _sp || var == _zero || var == _gp || var == _ret;
+}
+
+bool VarAllocator::is_global_var(irelem_t named) const
+{
+	if (!IrType::is_named(named))
+	{
+		return false;
+	}
+	return nameds.at(IrType::get_ord(named)).first == __global && !is_reserved_var(named);
+}
+
+bool VarAllocator::is_local_var(irelem_t var) const
+{
+	if (!IrType::is_var(var))
+	{
+		return false;
+	}
+	if (IrType::is_tmp(var))
+	{
+		return true;
+	}
+	return nameds.at(IrType::get_ord(var)).first != __global;
+}
+
 string VarAllocator::var_to_string(irelem_t var) const
 {
 	ASSERT(4, IrType::is_var(var));
 	if (var == _sp)
 	{
 		return "$sp";
+	}
+	if (var == _gp)
+	{
+		return "$gp";
 	}
 	if (var == _ret)
 	{
