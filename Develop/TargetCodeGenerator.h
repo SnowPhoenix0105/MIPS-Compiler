@@ -35,7 +35,7 @@ private:
 	shared_ptr<const IrTable> ir_table_ptr;
 	string func_name = "__global";
 	ostringstream buffer;	// 目标代码的buffer
-	unordered_map<irelem_t, string> global_var_label_table;		// 全局变量的label
+	unordered_map<irelem_t, unsigned> global_var_offset_table;		// 全局变量的label
 	unordered_map<irelem_t, ArrayInfo> global_arr_info_table;
 	unordered_map<irelem_t, unsigned> func_var_offset_table;
 	unordered_map<irelem_t, ArrayInfo> func_arr_info_table;

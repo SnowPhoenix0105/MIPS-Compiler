@@ -42,10 +42,15 @@ void SimpleGenerator::init_total()
 		switch (ir.head)
 		{
 		case IrHead::label:
+			// 变量声明结束
 			goto END_FOR;
 		case IrHead::gvar:
 		{
-			string var_label = allocator.var_to_string(ir.elem[0]);
+			// 全局变量
+			irelem_t var = ir.elem[0];
+			string var_label = allocator.var_to_string(var);
+			global_var_offset_table.insert(make_pair(var, offset));
+			offset += 4;
 			buffer << var_label << ":\t.word";
 			if (ir.elem[1] == IrType::NIL)
 			{
@@ -59,18 +64,40 @@ void SimpleGenerator::init_total()
 		}
 		case IrHead::arr:
 		{
+			// 全局数组
 			irelem_t arr = ir.elem[0];
 			bool is_int = ir.elem[1] == IrType::_int;
 			int size = allocator.imm_value(ir.elem[2]);
 			global_arr_info_table.insert(make_pair(arr, ArrayInfo{ offset, is_int }));
 			int space = size * (is_int ? 4 : 1);
-			space = (space + 3) ^ 3;
+			space = (space + 3) & ~3;			// up tp 4*n
+			offset += space;
+			// 无初始化
 			if (ir_table.at(i + 1).head != IrHead::init)
 			{
-				buffer << ".space";
+				buffer << ".space " << space << endl;
 				break;
 			}
-			
+			// 有初始化
+			const char* head = is_int ? ".word " : ".byte ";
+			int count = 0;
+			for (; count != size; ++count)
+			{
+				const auto& init = ir_table.at(i + count);
+				ASSERT(3, init.head == IrHead::init);
+				irelem_t imm = init.elem[0];
+				unsigned value = allocator.imm_value(imm);
+				buffer << head << value << endl;
+			}
+			if (is_int)
+			{
+				break;
+			}
+			// 字对齐
+			for (; count != space; ++count)
+			{
+				buffer << head << 0 << endl;
+			}
 			break;
 		}
 		default:
