@@ -26,6 +26,7 @@ enum class IrHead
 	gvar,		//  <var> [<imm>]
 	arr,		// 	<arr> <type> <imm>
 	init,		//  <imm>
+
 	func,		//  <type>
 	param,		//  <var>
 
@@ -57,30 +58,31 @@ using irelem_t = uint32_t;
 
 struct IrType
 {
-	static const irelem_t _int	= 0xE000'0000;
-	static const irelem_t _char = 0xE000'0001;
-	static const irelem_t _void = 0xE000'0002;
-	static bool is_val		(irelem_t v) { return (v >> 31) == 0b1; }
-	static bool is_var		(irelem_t v) { return (v >> 29) == 0b101; }
-	static bool is_tmp		(irelem_t v) { return (v >> 28) == 0b1010; }
-	static bool is_named	(irelem_t v) { return (v >> 28) == 0b1011; }
-	static bool is_cst		(irelem_t v) { return (v >> 29) == 0b100; }
-	static bool is_imm		(irelem_t v) { return (v >> 28) == 0b1000; }
-	static bool is_arr		(irelem_t v) { return (v >> 28) == 0b1001; }
-	static bool is_pure_arr	(irelem_t v) { return (v >> 27) == 0b10010; }
-	static bool is_fix_idx	(irelem_t v) { return (v >> 27) == 0b10011; }
-	static bool is_string	(irelem_t v) { return (v >> 29) == 0b110; }
-	static bool is_special	(irelem_t v) { return (v >> 29) == 0b111; }
-	static bool is_label	(irelem_t v) { return (v >> 31) == 0b0; }
-	static bool is_func		(irelem_t v) { return (v >> 28) == 0b0001; }
-	static bool is_if		(irelem_t v) { return (v >> 28) == 0b0010; }
-	static bool is_switch	(irelem_t v) { return (v >> 28) == 0b0011; }
-	static bool is_for		(irelem_t v) { return (v >> 28) == 0b0100; }
-	static bool is_while	(irelem_t v) { return (v >> 28) == 0b0101; }
-	static bool is_beg		(irelem_t v) { return (v & 0x8C00'0000) == 0x0000'0000; }
-	static bool is_start	(irelem_t v) { return (v & 0x8C00'0000) == 0x0400'0000; }
-	static bool is_mid		(irelem_t v) { return (v & 0x8C00'0000) == 0x0800'0000; }
-	static bool is_end		(irelem_t v) { return (v & 0x8C00'0000) == 0x0C00'0000; }
+	static const irelem_t NIL = 0xE000'0000;
+	static const irelem_t _int = 0xE000'0001;
+	static const irelem_t _char = 0xE000'0002;
+	static const irelem_t _void = 0xE000'0003;
+	static bool is_val(irelem_t v) { return (v >> 31) == 0b1; }
+	static bool is_var(irelem_t v) { return (v >> 29) == 0b101; }
+	static bool is_tmp(irelem_t v) { return (v >> 28) == 0b1010; }
+	static bool is_named(irelem_t v) { return (v >> 28) == 0b1011; }
+	static bool is_cst(irelem_t v) { return (v >> 29) == 0b100; }
+	static bool is_imm(irelem_t v) { return (v >> 28) == 0b1000; }
+	static bool is_arr(irelem_t v) { return (v >> 28) == 0b1001; }
+	static bool is_pure_arr(irelem_t v) { return (v >> 27) == 0b10010; }
+	static bool is_fix_idx(irelem_t v) { return (v >> 27) == 0b10011; }
+	static bool is_string(irelem_t v) { return (v >> 29) == 0b110; }
+	static bool is_special(irelem_t v) { return (v >> 29) == 0b111; }
+	static bool is_label(irelem_t v) { return (v >> 31) == 0b0; }
+	static bool is_func(irelem_t v) { return (v >> 28) == 0b0001; }
+	static bool is_if(irelem_t v) { return (v >> 28) == 0b0010; }
+	static bool is_switch(irelem_t v) { return (v >> 28) == 0b0011; }
+	static bool is_for(irelem_t v) { return (v >> 28) == 0b0100; }
+	static bool is_while(irelem_t v) { return (v >> 28) == 0b0101; }
+	static bool is_beg(irelem_t v) { return (v & 0x8C00'0000) == 0x0000'0000; }
+	static bool is_start(irelem_t v) { return (v & 0x8C00'0000) == 0x0400'0000; }
+	static bool is_mid(irelem_t v) { return (v & 0x8C00'0000) == 0x0800'0000; }
+	static bool is_end(irelem_t v) { return (v & 0x8C00'0000) == 0x0C00'0000; }
 	static uint32_t  get_ord(irelem_t v) { return  v & 0x03FF'FFFF; }
 };
 
@@ -111,8 +113,8 @@ class VarAllocator
 {
 private:
 	static const shared_ptr<const string> __global;
-	vector<const shared_ptr<const string>> tmps;
-	vector<const pair<shared_ptr<const string>, shared_ptr<const string>>> nameds;
+	vector<shared_ptr<const string>> tmps;
+	vector<pair<shared_ptr<const string>, shared_ptr<const string>>> nameds;
 	shared_ptr<const string> current_func;
 	irelem_t _sp;
 	irelem_t _ret;
@@ -137,11 +139,11 @@ public:
 class CstAllocator
 {
 private:
-	vector<const int> imms;
+	vector<int> imms;
 	unordered_map<int, irelem_t> imm_cache;
-	vector<const pair<shared_ptr<const string>, shared_ptr<const string>>> arrs;
-	vector<const pair<irelem_t, irelem_t>> incalculate_cst;
-	unordered_map<irelem_t, const int> arr_value;
+	vector<pair<shared_ptr<const string>, shared_ptr<const string>>> arrs;
+	vector<pair<irelem_t, irelem_t>> incalculate_cst;
+	unordered_map<irelem_t, int> arr_value;
 
 public:
 	irelem_t alloc_arr(shared_ptr<const string> func, shared_ptr<const string> arr);
@@ -166,15 +168,14 @@ public:
 };
 
 struct IrElemAllocator
-	: LabelAllocator, VarAllocator, CstAllocator, StringAllocator 
+	: LabelAllocator, VarAllocator, CstAllocator, StringAllocator
 {
-	
 };
 
 struct Ir
 {
 	IrHead head;
-	irelem_t elem[3];
+	irelem_t elem[3] = { IrType::NIL, IrType::NIL, IrType::NIL };
 };
 
 struct IrTable;

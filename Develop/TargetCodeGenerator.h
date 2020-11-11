@@ -32,12 +32,13 @@ private:
 	size_t func_end_index = 0;
 	size_t stack_size = 0;
 	shared_ptr<const IrElemAllocator> allocator_ptr;
-	shared_ptr<const IrTable> ir_table;
+	shared_ptr<const IrTable> ir_table_ptr;
 	string func_name = "__global";
 	ostringstream buffer;	// 目标代码的buffer
-	unordered_map<irelem_t, const string> global_label_table;		// 全局变量的label
-	unordered_map<irelem_t, const unsigned> func_var_offset_table;
-	unordered_map<irelem_t, const ArrayInfo> arr_info_table;
+	unordered_map<irelem_t, string> global_var_label_table;		// 全局变量的label
+	unordered_map<irelem_t, ArrayInfo> global_arr_info_table;
+	unordered_map<irelem_t, unsigned> func_var_offset_table;
+	unordered_map<irelem_t, ArrayInfo> func_arr_info_table;
 
 
 	/// <summary>
@@ -79,7 +80,7 @@ private:
 public:
 	virtual ~SimpleGenerator() = default;
 	SimpleGenerator(shared_ptr<const IrElemAllocator> allocator, shared_ptr<const IrTable> ir)
-		: allocator_ptr(allocator), ir_table(ir) { }
+		: allocator_ptr(allocator), ir_table_ptr(ir) { }
 
 	/// <summary>
 	/// 将allocator指导下的ir转换为string并输入到os中.

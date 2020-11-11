@@ -43,7 +43,7 @@ namespace BlackboxTest
 			ostringstream commond;
 			commond
 				<< "java "
-				<< "-jar " << test_resource_path << "\\Mars4_5.jar"
+				<< "-jar " << test_resource_path << "\\MARS-JDK7-RE.jar"
 				<< " db "
 				<< test_resource_path << "\\empty\\empty.asm";
 			execute_cmd(commond.str(), string(), test_resource_path + "\\empty\\empty_result.txt");
@@ -103,7 +103,7 @@ namespace BlackboxTest
 		ostringstream commond;
 		commond
 			<< "java "
-			<< "-jar " << BlackboxTest::test_resource_path << "\\Mars4_5.jar"
+			<< "-jar " << BlackboxTest::test_resource_path << "\\MARS-JDK7-RE.jar"
 			<< " db "
 			<< assembly_file;
 		execute_cmd(commond.str(), input_file_name, output_file_name);

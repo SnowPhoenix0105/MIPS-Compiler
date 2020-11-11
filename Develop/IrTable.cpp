@@ -50,7 +50,7 @@ string LabelAllocator::label_to_string(irelem_t label) const
 	}
 
 	auto ord = IrType::get_ord(label);
-	if (IrType::is_func)
+	if (IrType::is_func(label))
 	{
 		ret += funcs.at(ord);
 	}
