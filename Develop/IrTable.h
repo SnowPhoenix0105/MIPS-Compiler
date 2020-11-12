@@ -37,12 +37,18 @@ enum class IrHead
 	sub,		// 	<var> <val> <val>
 	mult,		// 	<var> <val> <val>
 	div,		// 	<var> <val> <val>
+	_and,		//  <var> <val> <val>
+	_or,		//  <var> <val> <val>
+	_nor,		//  <var> <val> <val>
+	_xor,		//  <var> <val> <val>
 	sl,			//  <var> <val> <val>
 	sr,			//  <var> <val> <val>
 	less,		// 	<var> <val> <val>
 
-	save,		// 	<var> <var> <arr>
-	load,		// 	<var> <var> <arr>
+	lw,			// 	<var> <var> <arr>
+	lb,			// 	<var> <var> <arr>
+	sw,			// 	<var> <var> <arr>
+	sb,			// 	<var> <var> <arr>
 
 	beq,		//  <val> <val> <label>
 	bne,		//  <val> <val> <label>
@@ -50,9 +56,10 @@ enum class IrHead
 
 	push,		//  <val>
 	call,		//  <label>
+	ret,		//  null
 
-	scanf,		//  <var>
-	printf,		//  [<string>] [<var>]
+	scanf,		//  <var> <type>
+	printf,		//  [<string>] [<var> <type>]		
 };
 
 using irelem_t = uint32_t;
@@ -163,8 +170,8 @@ public:
 		arr_value.insert(make_pair(arr, value));
 		return *this;
 	}
-	int imm_value(irelem_t imm) const;
-	int value_of(irelem_t cst) const;
+	int imm_to_value(irelem_t imm) const;
+	int cst_to_value(irelem_t cst) const;
 };
 
 class StringAllocator

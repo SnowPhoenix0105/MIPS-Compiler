@@ -149,7 +149,7 @@ irelem_t VarAllocator::alloc_named(shared_ptr<const string> name)
 
 bool VarAllocator::is_reserved_var(irelem_t var) const
 {
-	return var == _sp || var == _zero || var == _gp || var == _ret;
+	return _reserved_var.count(var) != 0;
 }
 
 bool VarAllocator::is_global_var(irelem_t named) const
@@ -187,7 +187,7 @@ string VarAllocator::var_to_string(irelem_t var) const
 	}
 	if (var == _ret)
 	{
-		return "$ret";
+		return "$v0";
 	}
 	if (var == _zero)
 	{
@@ -229,7 +229,7 @@ irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
 	ASSERT(4, IrType::is_cst(cst_2));
 	if (IrType::is_imm(cst_1) && IrType::is_imm(cst_2))
 	{
-		int val = imm_value(cst_1) + imm_value(cst_2);
+		int val = imm_to_value(cst_1) + imm_to_value(cst_2);
 		return alloc_imm(val);
 	}
 	size_t ord = incalculate_cst.size();
@@ -238,19 +238,19 @@ irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
 	return ret;
 }
 
-int CstAllocator::imm_value(irelem_t imm) const
+int CstAllocator::imm_to_value(irelem_t imm) const
 {
 	ASSERT(0, IrType::is_imm(imm));
 	size_t ord = IrType::get_ord(imm);
 	return imms.at(ord);
 }
 
-int CstAllocator::value_of(irelem_t cst) const
+int CstAllocator::cst_to_value(irelem_t cst) const
 {
 	ASSERT(0, IrType::is_cst(cst));
 	if (IrType::is_imm(cst))
 	{
-		return imm_value(cst);
+		return imm_to_value(cst);
 	}
 	size_t ord = IrType::get_ord(cst);
 	if (IrType::is_pure_arr(cst))
@@ -258,8 +258,8 @@ int CstAllocator::value_of(irelem_t cst) const
 		return arr_value.at(ord);
 	}
 	const auto& pair = incalculate_cst.at(ord);
-	int val1 = value_of(pair.first);
-	int val2 = value_of(pair.second);
+	int val1 = cst_to_value(pair.first);
+	int val2 = cst_to_value(pair.second);
 	return val1 + val2;
 }
 
