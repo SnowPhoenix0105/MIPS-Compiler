@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef __SIMPLE_TARGET_GENERATOR_H__
 #define __SIMPLE_TARGET_GENERATOR_H__
@@ -20,68 +19,68 @@ using std::unordered_set;
 class SimpleCodeGenerator : public ITargetCodeGenerator
 {
 private:
-	// ·Ö±ğÖ¸ÏòÍ¬Ò»¸öº¯ÊıµÄ¶ÔÓ¦label
+	// åˆ†åˆ«æŒ‡å‘åŒä¸€ä¸ªå‡½æ•°çš„å¯¹åº”label
 	size_t func_beg_index = 0;
 	size_t func_mid_index = 0;
 	size_t func_end_index = 0;
-	// ÆäËüµ±Ç°º¯ÊıĞÅÏ¢
+	// å…¶å®ƒå½“å‰å‡½æ•°ä¿¡æ¯
 	size_t stack_size = 0;
 	string func_name = "__global";
-	// IRĞÅÏ¢
+	// IRä¿¡æ¯
 	shared_ptr<IrElemAllocator> allocator_ptr;
 	shared_ptr<const IrTable> ir_table_ptr;
-	// ±äÁ¿Æ«ÒÆ±í
+	// å˜é‡åç§»è¡¨
 	unordered_map<irelem_t, unsigned> global_var_offset_table;
 	unordered_map<irelem_t, unsigned> func_var_offset_table;
 	unordered_map<irelem_t, string> string_label_table;
 	// mips
-	ostringstream buffer;	// Ä¿±ê´úÂëµÄbuffer
+	ostringstream buffer;	// ç›®æ ‡ä»£ç çš„buffer
 	MipsInstructionFormatter mips;
 
 
 
 	/// <summary>
-	/// ¸üĞÂfunc_beg_index, func_mid_index, func_end_index, func_name.
+	/// æ›´æ–°func_beg_index, func_mid_index, func_end_index, func_name.
 	/// </summary>
 	void next_function_info();
 
 	/// <summary>
-	/// ÎªÃ¿¸öÈ«¾Ö±äÁ¿·ÖÅä¿Õ¼ä, ·ÖÅälabel, ÌîÈë³õÖµ;
-	/// ÌîĞ´global_var_offset_table, string_label_table;
+	/// ä¸ºæ¯ä¸ªå…¨å±€å˜é‡åˆ†é…ç©ºé—´, åˆ†é…label, å¡«å…¥åˆå€¼;
+	/// å¡«å†™global_var_offset_table, string_label_table;
 	/// </summary>
 	/// <returns></returns>
 	void init_global();
 
 	/// <summary>
-	/// É¨Ãèµ±Ç°func_beg_index, func_mid_index, func_end_index±ê×¢µÄº¯Êı;
-	/// ÖØĞÂÌîĞ´func_var_offset_table;
-	/// ¼ÆËãÔËĞĞÕ»´óĞ¡²¢Ğ´Èëstack_size.
+	/// æ‰«æå½“å‰func_beg_index, func_mid_index, func_end_indexæ ‡æ³¨çš„å‡½æ•°;
+	/// é‡æ–°å¡«å†™func_var_offset_table;
+	/// è®¡ç®—è¿è¡Œæ ˆå¤§å°å¹¶å†™å…¥stack_size.
 	/// </summary>
 	void init_func();
 
 	/// <summary>
-	/// Íê³É½øÈëº¯ÊıÌåÇ°µÄ³õÊ¼»¯¹¤×÷, ²»°üÀ¨Êı×é³õÊ¼»¯.
+	/// å®Œæˆè¿›å…¥å‡½æ•°ä½“å‰çš„åˆå§‹åŒ–å·¥ä½œ, ä¸åŒ…æ‹¬æ•°ç»„åˆå§‹åŒ–.
 	/// </summary>
 	void beg_func();
 
 	/// <summary>
-	/// Íê³É½øÈëmainº¯ÊıÌåÇ°µÄ³õÊ¼»¯¹¤×÷.
+	/// å®Œæˆè¿›å…¥mainå‡½æ•°ä½“å‰çš„åˆå§‹åŒ–å·¥ä½œ.
 	/// </summary>
 	void beg_main();
 
 	/// <summary>
-	/// Íê³É·µ»Ø¹¤×÷
+	/// å®Œæˆè¿”å›å·¥ä½œ
 	/// </summary>
 	/// <param name="stack_size"></param>
 	void end_func();
 
 	/// <summary>
-	/// ÍË³ö³ÌĞò
+	/// é€€å‡ºç¨‹åº
 	/// </summary>
 	void end_main();
 
 	/// <summary>
-	/// Çå¿Õ»º³åÇø, ·µ»Ø»º³åÇøÖĞÔ­ÏÈµÄÄÚÈİ.
+	/// æ¸…ç©ºç¼“å†²åŒº, è¿”å›ç¼“å†²åŒºä¸­åŸå…ˆçš„å†…å®¹.
 	/// </summary>
 	string fresh_buffer();
 
@@ -90,7 +89,7 @@ private:
 	void save_reg_to_var(const string& reg, irelem_t var);
 
 	/// <summary>
-	/// ·ÖÎöº¯ÊıÌå.
+	/// åˆ†æå‡½æ•°ä½“.
 	/// </summary>
 	void func_body();
 public:
@@ -99,7 +98,7 @@ public:
 		: allocator_ptr(allocator), ir_table_ptr(ir) { }
 
 	/// <summary>
-	/// ½«allocatorÖ¸µ¼ÏÂµÄir×ª»»Îªstring²¢ÊäÈëµ½osÖĞ.
+	/// å°†allocatoræŒ‡å¯¼ä¸‹çš„irè½¬æ¢ä¸ºstringå¹¶è¾“å…¥åˆ°osä¸­.
 	/// </summary>
 	/// <param name="allocator"></param>
 	/// <param name="ir"></param>

@@ -79,7 +79,7 @@
 #define DEBUG_DO(required_level, operate) ;
 #define DEBUG_LOG_VAL(required_level, name, var) ;
 #define DEBUG_LOG_VAR(required_level, var) ;
-#define DEBUG_LOG_MSG(required, name, msg) ;
+#define DEBUG_LOG_MSG(required, msg) ;
 #define PANIC() ;
 #define ASSERT(required_level, state);
 

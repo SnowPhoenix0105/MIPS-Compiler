@@ -41,12 +41,12 @@ void SimpleCodeGenerator::init_global()
 		switch (ir.head)
 		{
 		case IrHead::label:
-			// ±äÁ¿ÉùÃ÷½áÊø
+			// å˜é‡å£°æ˜ç»“æŸ
 			flag = false;
 			break;
 		case IrHead::gvar:
 		{
-			// È«¾Ö±äÁ¿
+			// å…¨å±€å˜é‡
 			irelem_t var = ir.elem[0];
 			string var_label = allocator.var_to_string(var);
 			global_var_offset_table.insert(make_pair(var, offset));
@@ -64,7 +64,7 @@ void SimpleCodeGenerator::init_global()
 		}
 		case IrHead::arr:
 		{
-			// È«¾ÖÊı×é
+			// å…¨å±€æ•°ç»„
 			irelem_t arr = ir.elem[0];
 			bool is_int = ir.elem[1] == IrType::_int;
 			int size = allocator.imm_to_value(ir.elem[2]);
@@ -72,13 +72,13 @@ void SimpleCodeGenerator::init_global()
 			int space = size * (is_int ? 4 : 1);
 			space = (space + 3) & ~3;			// up tp 4*n
 			offset += space;
-			// ÎŞ³õÊ¼»¯
+			// æ— åˆå§‹åŒ–
 			if (ir_table.at(i + 1).head != IrHead::init)
 			{
 				buffer << ".space " << space << endl;
 				break;
 			}
-			// ÓĞ³õÊ¼»¯
+			// æœ‰åˆå§‹åŒ–
 			const char* head = is_int ? ".word " : ".byte ";
 			int end = i + size;
 			while (i != end)
@@ -93,7 +93,7 @@ void SimpleCodeGenerator::init_global()
 			{
 				break;
 			}
-			// ×Ö¶ÔÆë
+			// å­—å¯¹é½
 			for (int j = 0; j != space - size; ++j)
 			{
 				buffer << head << 0 << endl;
@@ -121,7 +121,7 @@ void SimpleCodeGenerator::init_func()
 	const IrElemAllocator& allocator = *allocator_ptr;
 	const IrTable& ir_table = *ir_table_ptr;
 
-	// ±éÀú mid -> end , Í³¼Æ¾Ö²¿varÊıÁ¿
+	// éå† mid -> end , ç»Ÿè®¡å±€éƒ¨varæ•°é‡
 	unordered_set<irelem_t> var_set;
 	for (size_t i = func_mid_index + 1; i != func_end_index; ++i)
 	{
@@ -134,7 +134,7 @@ void SimpleCodeGenerator::init_func()
 			}
 		}
 	}
-	// ±éÀú beg -> mid , Í³¼ÆĞÎ²Î, ³õÊ¼»¯Êı×é
+	// éå† beg -> mid , ç»Ÿè®¡å½¢å‚, åˆå§‹åŒ–æ•°ç»„
 	vector<irelem_t> param_list;
 	unsigned offset = 0;
 	for (size_t i = func_beg_index + 1; i != func_mid_index; ++i)
@@ -160,12 +160,12 @@ void SimpleCodeGenerator::init_func()
 			space = (space + 3) & ~3;			// up tp 4*n
 			unsigned off = offset;
 			offset += space;
-			// ÎŞ³õÊ¼»¯
+			// æ— åˆå§‹åŒ–
 			if (ir_table.at(i + 1).head != IrHead::init)
 			{
 				break;
 			}
-			// ÓĞ³õÊ¼»¯
+			// æœ‰åˆå§‹åŒ–
 			const char* head = is_int ? "sw " : "sb ";
 			unsigned delta_off = is_int ? 4 : 1;
 			int end = i + size;
@@ -185,7 +185,7 @@ void SimpleCodeGenerator::init_func()
 			break;
 		}
 	}
-	// Çå³ıĞèÒªÌØÊâ·ÖÅäµÄ¼Ä´æÆ÷
+	// æ¸…é™¤éœ€è¦ç‰¹æ®Šåˆ†é…çš„å¯„å­˜å™¨
 	for (auto p : param_list)
 	{
 		var_set.erase(p);
@@ -208,6 +208,7 @@ void SimpleCodeGenerator::init_func()
 	offset += 4;
 	// $ra
 	offset += 4;
+	stack_size = offset;
 }
 
 void SimpleCodeGenerator::beg_main()

@@ -12,11 +12,12 @@ using std::ostream;
 using std::ostringstream;
 using std::endl;
 using std::unordered_set;
+using std::to_string;
 
 struct ITargetCodeGenerator
 {
 	virtual ~ITargetCodeGenerator() = 0;
-	virtual void translate(const IrTable& ir, const ostream& os) = 0;
+	virtual void translate(ostream& os) = 0;
 };
 
 struct ArrayInfo
@@ -25,89 +26,269 @@ struct ArrayInfo
 	bool is_int;
 };
 
-class SimpleGenerator : public ITargetCodeGenerator
+struct MipsInstructionFormatter
 {
-private:
-	// 分别指向同一个函数的对应label
-	size_t func_beg_index = 0;
-	size_t func_mid_index = 0;
-	size_t func_end_index = 0;
-	// 其它当前函数信息
-	size_t stack_size = 0;
-	string func_name = "__global";
-	// IR信息
-	shared_ptr<const IrElemAllocator> allocator_ptr;
-	shared_ptr<const IrTable> ir_table_ptr;
-	ostringstream buffer;	// 目标代码的buffer
-	// 变量偏移表
-	unordered_map<irelem_t, unsigned> global_var_offset_table;	
-	unordered_map<irelem_t, ArrayInfo> global_arr_info_table;
-	unordered_map<irelem_t, unsigned> func_var_offset_table;
-	unordered_map<irelem_t, ArrayInfo> func_arr_info_table;
+	const int print_int = 1;	// print $a0
+	const int print_string = 4;	// print char * $a0
+	const int read_int = 5;		// return $v0
+	const int exit = 10;
+	const int print_char = 11;	// print $a0
+	const int read_cahr = 12;	// return $v0
+
+	string mem_op(const string& op, const string& target, const string& base, int offset) const
+	{
+		ostringstream oss;
+		oss << '\t' << op << '\t' << target << ',' << offset << '(' << base << ')';
+		return oss.str();
+	}
+
+	string quaternary(const string& op, const string& r1, const string& r2, const string& r3) const
+	{
+		ostringstream oss;
+		oss << '\t' << op << '\t' << r1 << ',' << r2 << ',' << r3;
+		return oss.str();
+	}
+
+	string triple(const string& op, const string& r1, const string& r2) const
+	{
+		ostringstream oss;
+		oss << '\t' << op << '\t' << r1 << ',' << r2;
+		return oss.str();
+	}
+
+	string tuple(const string& op, const string& reg) const
+	{
+		ostringstream oss;
+		oss << '\t' << op << '\t' << reg;
+		return oss.str();
+	}
+
+	string label(const string& label) const
+	{
+		ostringstream oss;
+		oss <<  label << ':';
+		return oss.str();
+	}
+
+	// 四元组
+	string addu(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("addu", target, source1, source2);
+	}
+
+	string addu(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("addiu", target, source1, to_string(source2));
+	}
+
+	string subu(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("subu", target, source1, source2);
+	}
+
+	string subu(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("addiu", target, source1, to_string(-source2));
+	}
+
+	string _and(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("and", target, source1, source2);
+	}
+
+	string _and(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("andi", target, source1, to_string(source2));
+	}
+
+	string _or(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("or", target, source1, source2);
+	}
+
+	string _or(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("ori", target, source1, to_string(source2));
+	}
+
+	string _nor(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("nor", target, source1, source2);
+	}
+
+	string _nor(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("nori", target, source1, to_string(source2));
+	}
+
+	string _xor(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("xor", target, source1, source2);
+	}
+
+	string _xori(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("xori", target, source1, to_string(source2));
+	}
+
+	string sll(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("sllv", target, source1, source2);
+	}
+
+	string sll(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("sll", target, source1, to_string(source2));
+	}
+
+	string sra(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("srav", target, source1, source2);
+	}
+
+	string sra(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("sra", target, source1, to_string(source2));
+	}
+
+	string slt(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("slt", target, source1, source2);
+	}
+
+	string slt(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("slti", target, source1, to_string(source2));
+	}
+
+	string mulo(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("mulo", target, source1, source2);
+	}
+
+	string mulo(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("mulo", target, source1, to_string(source2));
+	}
+
+	string div(const string& target, const string& source1, string source2) const
+	{
+		return quaternary("div", target, source1, source2);
+	}
+
+	string div(const string& target, const string& source1, int source2) const
+	{
+		return quaternary("div", target, source1, to_string(source2));
+	}
+
+	string beq(const string& reg1, const string& reg2, string label) const
+	{
+		return quaternary("beq", reg1, reg2, label);
+	}
+
+	string bne(const string& reg1, const string& reg2, string label) const
+	{
+		return quaternary("bne", reg1, reg2, label);
+	}
+
+	
+
+	// 间接寻址型四元组
+	string lw(const string& target, const string& base, int offset) const
+	{
+		return mem_op("lw", target, base, offset);
+	}
+
+	string sw(const string& target, const string& base, int offset) const
+	{
+		return mem_op("sw", target, base, offset);
+	}
+
+	string lb(const string& target, const string& base, int offset) const
+	{
+		return mem_op("lb", target, base, offset);
+	}
+
+	string sb(const string& target, const string& base, int offset) const
+	{
+		return mem_op("sb", target, base, offset);
+	}
 
 
-	/// <summary>
-	/// 更新func_beg_index, func_mid_index, func_end_index, func_name.
-	/// </summary>
-	void next_function_info();
 
-	/// <summary>
-	/// 为每个全局变量分配空间, 分配label, 填入初值;
-	/// 填写global_var_offset_table和global_arr_info_table.
-	/// </summary>
-	/// <returns></returns>
-	void init_global();
-	 
-	/// <summary>
-	/// 扫描当前func_beg_index, func_mid_index, func_end_index标注的函数;
-	/// 重新填写func_var_offset_table, arr_info_table;
-	/// 计算运行栈大小并写入stack_size.
-	/// </summary>
-	void init_func();
 
-	/// <summary>
-	/// 完成进入函数体前的初始化工作, 不包括数组初始化.
-	/// </summary>
-	void beg_func();
+	// 三元组
+	string mul(const string& source1, const string& source2) const
+	{
+		return triple("mul", source1, source2);
+	}
 
-	/// <summary>
-	/// 完成进入main函数体前的初始化工作.
-	/// </summary>
-	void beg_main();
+	string mul(const string& source1, int source2) const
+	{
+		return triple("mul", source1, to_string(source2));
+	}
 
-	/// <summary>
-	/// 完成返回工作
-	/// </summary>
-	/// <param name="stack_size"></param>
-	void end_func();
+	string div(const string& source1, const string& source2) const
+	{
+		return triple("div", source1, source2);
+	}
 
-	/// <summary>
-	/// 退出程序
-	/// </summary>
-	void end_main();
+	string div(const string& source1, int source2) const
+	{
+		return triple("div", source1, to_string(source2));
+	}
 
-	/// <summary>
-	/// 清空缓冲区, 返回缓冲区中原先的内容.
-	/// </summary>
-	string fresh_buffer();
+	string la(const string& target, const string& label) const
+	{
+		return triple("la", target, label);
+	}
 
-	/// <summary>
-	/// 分析函数体.
-	/// </summary>
-	void analyze_func();
-public:
-	virtual ~SimpleGenerator() = default;
-	SimpleGenerator(shared_ptr<const IrElemAllocator> allocator, shared_ptr<const IrTable> ir)
-		: allocator_ptr(allocator), ir_table_ptr(ir) { }
+	string li(const string& target, int value) const
+	{
+		return triple("li", target, to_string(value));
+	}
 
-	/// <summary>
-	/// 将allocator指导下的ir转换为string并输入到os中.
-	/// </summary>
-	/// <param name="allocator"></param>
-	/// <param name="ir"></param>
-	/// <param name="os"></param>
-	virtual void translate(ostream& os);
+
+
+
+	// 二元组
+
+	string mfhi(const string& target) const
+	{
+		return tuple("mfhi", target);
+	}
+
+	string mflo(const string& target) const
+	{
+		return tuple("mflo", target);
+	}
+
+	string jr(const string& target) const
+	{
+		return tuple("jr", target);
+	}
+
+	string jr() const
+	{
+		return tuple("jr", "$ra");
+	}
+
+	string j(const string& target) const
+	{
+		return tuple("j", target);
+	}
+
+	string jal(const string& target) const
+	{
+		return tuple("jal", target);
+	}
+
+	string syscall() const
+	{
+		return "\tsyscall";
+	}
 };
+
 
 
 #endif // !__TARGET_CODE_GENERATOR_H__

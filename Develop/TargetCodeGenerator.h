@@ -18,7 +18,7 @@ using std::to_string;
 struct ITargetCodeGenerator
 {
 	virtual ~ITargetCodeGenerator() = 0;
-	virtual void translate(const IrTable& ir, const ostream& os) = 0;
+	virtual void translate(ostream& os) = 0;
 };
 
 struct ArrayInfo
@@ -29,6 +29,13 @@ struct ArrayInfo
 
 struct MipsInstructionFormatter
 {
+	const int print_int = 1;	// print $a0
+	const int print_string = 4;	// print char * $a0
+	const int read_int = 5;		// return $v0
+	const int exit = 10;
+	const int print_char = 11;	// print $a0
+	const int read_cahr = 12;	// return $v0
+
 	string mem_op(const string& op, const string& target, const string& base, int offset) const
 	{
 		ostringstream oss;
@@ -277,6 +284,10 @@ struct MipsInstructionFormatter
 		return tuple("jal", target);
 	}
 
+	string syscall() const
+	{
+		return "\tsyscall";
+	}
 };
 
 
