@@ -67,10 +67,14 @@ private:
 	void init_func();
 
 	/// <summary>
-	/// 完成进入函数体前的
+	/// 完成进入函数体前的初始化工作, 不包括数组初始化.
 	/// </summary>
-	/// <param name="stack_size"></param>
 	void beg_func();
+
+	/// <summary>
+	/// 完成进入main函数体前的初始化工作.
+	/// </summary>
+	void beg_main();
 
 	/// <summary>
 	/// 完成返回工作
@@ -79,10 +83,19 @@ private:
 	void end_func();
 
 	/// <summary>
-	/// 将缓冲区内容写入, 并清空缓冲区.
+	/// 退出程序
 	/// </summary>
-	/// <param name="os"></param>
-	void fresh_buffer(ostream& os);
+	void end_main();
+
+	/// <summary>
+	/// 清空缓冲区, 返回缓冲区中原先的内容.
+	/// </summary>
+	string fresh_buffer();
+
+	/// <summary>
+	/// 分析函数体.
+	/// </summary>
+	void analyze_func();
 public:
 	virtual ~SimpleGenerator() = default;
 	SimpleGenerator(shared_ptr<const IrElemAllocator> allocator, shared_ptr<const IrTable> ir)

@@ -121,11 +121,16 @@ irelem_t LabelAllocator::end() const
 
 const shared_ptr<const string> VarAllocator::__global = make_shared<const string>("__global");
 
-VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global)
+VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global), _reserved_var()
 {
 	_sp = alloc_named(make_shared<const string>("_sp"));
+	_gp = alloc_named(make_shared<const string>("_gp"));
 	_ret = alloc_named(make_shared<const string>("_ret"));
 	_zero = alloc_named(make_shared<const string>("_zero"));
+	_reserved_var.insert(_sp);
+	_reserved_var.insert(_gp);
+	_reserved_var.insert(_ret);
+	_reserved_var.insert(_zero);
 }
 
 irelem_t VarAllocator::alloc_tmp()

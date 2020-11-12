@@ -6,6 +6,7 @@
 #include "global_control.h"
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <string>
 
@@ -16,6 +17,7 @@ using std::shared_ptr;
 using std::make_shared;
 using std::make_pair;
 using std::unordered_map;
+using std::unordered_set;
 using std::to_string;
 
 
@@ -120,6 +122,7 @@ private:
 	irelem_t _gp;
 	irelem_t _ret;
 	irelem_t _zero;
+	unordered_set<irelem_t> _reserved_var;
 public:
 	VarAllocator();
 	VarAllocator& set_function(shared_ptr<const string> func_name)
@@ -134,7 +137,9 @@ public:
 	irelem_t sp() const noexcept { return _sp; }
 	irelem_t ret() const noexcept { return _ret; }
 	irelem_t zero() const noexcept { return _zero; }
+	irelem_t gp() const noexcept { return _gp; }
 	bool is_reserved_var(irelem_t var) const;
+	const unordered_set<irelem_t>& reversed_var() const noexcept { return _reserved_var; }
 	bool is_global_var(irelem_t named) const;
 	bool is_local_var(irelem_t var) const;
 	string var_to_string(irelem_t var) const;
