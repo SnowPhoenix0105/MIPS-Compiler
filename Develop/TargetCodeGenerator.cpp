@@ -69,7 +69,8 @@ void SimpleGenerator::init_global()
 			irelem_t arr = ir.elem[0];
 			bool is_int = ir.elem[1] == IrType::_int;
 			int size = allocator.imm_value(ir.elem[2]);
-			global_arr_info_table.insert(make_pair(arr, ArrayInfo{ offset, is_int }));
+			allocator_ptr->set_arr_value(arr, offset);
+			global_arr_is_int_table.insert(make_pair(arr, is_int));
 			int space = size * (is_int ? 4 : 1);
 			space = (space + 3) & ~3;			// up tp 4*n
 			offset += space;
@@ -106,6 +107,7 @@ void SimpleGenerator::init_global()
 		}
 	}
 	buffer << ".text" << endl;
+	buffer << "j func_beg_main" << endl;
 }
 
 void SimpleGenerator::init_func()
@@ -148,7 +150,8 @@ void SimpleGenerator::init_func()
 			irelem_t arr = ir.elem[0];
 			bool is_int = ir.elem[1] == IrType::_int;
 			int size = allocator.imm_value(ir.elem[2]);
-			func_arr_info_table.insert(make_pair(arr, ArrayInfo{ offset, is_int }));
+			allocator_ptr->set_arr_value(arr, offset);
+			func_arr_is_int_table.insert(make_pair(arr, is_int));
 			int space = size * (is_int ? 4 : 1);
 			space = (space + 3) & ~3;			// up tp 4*n
 			unsigned off = offset;
@@ -205,24 +208,28 @@ void SimpleGenerator::init_func()
 
 void SimpleGenerator::beg_main()
 {
+	buffer << "func_beg_main:" << endl;
 	buffer << "la $gp,__GP__" << endl;
 	buffer << "addiu $sp, $sp, -" << stack_size << endl;
 }
 
 void SimpleGenerator::beg_func()
 {
+	buffer << allocator_ptr->label_to_string(ir_table_ptr->at(func_beg_index).elem[0]) << ':' << endl;
 	buffer << "sw $ra, " << stack_size - 4 << "($sp)" << endl;
 	buffer << "addiu $sp, $sp, -" << stack_size << endl;
 }
 
 void SimpleGenerator::end_main()
 {
+	buffer << "func_end_main:" << endl;
 	buffer << "li $v0, 10" << endl;
 	buffer << "syscall" << endl;
 }
 
 void SimpleGenerator::end_func()
 {
+	buffer << allocator_ptr->label_to_string(ir_table_ptr->at(func_end_index).elem[0]) << ':' << endl;
 	buffer << "lw $ra, " << stack_size - 4 << "($sp)" << endl;
 	buffer << "addiu $sp, $sp, " << stack_size << endl;
 	buffer << "jr $ra" << endl;
@@ -235,9 +242,39 @@ string SimpleGenerator::fresh_buffer()
 	return ret;
 }
 
+string SimpleGenerator::load_val_to_reg(const string& reg, irelem_t val)
+{
+	ASSERT(4, IrType::is_val(val));
+	// TODO
+}
+
 void SimpleGenerator::func_body()
 {
 	// TODO
+	buffer << allocator_ptr->label_to_string(ir_table_ptr->at(func_mid_index).elem[0]) << ':' << endl;
+	const IrElemAllocator& allocator = *allocator_ptr;
+	const IrTable& ir_table = *ir_table_ptr;
+
+	size_t index = func_mid_index + 1;
+	while (index < func_end_index)
+	{
+		const auto& ir = ir_table.at(index);
+		switch (ir.head)
+		{
+		case IrHead::label:
+		{
+			buffer << allocator.label_to_string(ir.elem[0]) << ':' << endl;
+			break;
+		}
+		case IrHead::add:
+		{
+			// TODO
+		}
+
+		default:
+			break;
+		}
+	}
 }
 
 void SimpleGenerator::translate(ostream& os)
@@ -261,8 +298,8 @@ void SimpleGenerator::translate(ostream& os)
 			beg_func();
 		}
 		os << fresh_buffer();
-		os << arr_init_codes;
 
+		os << arr_init_codes;
 		func_body();
 
 		os << fresh_buffer();

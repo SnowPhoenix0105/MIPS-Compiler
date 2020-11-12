@@ -37,14 +37,14 @@ private:
 	size_t stack_size = 0;
 	string func_name = "__global";
 	// IR信息
-	shared_ptr<const IrElemAllocator> allocator_ptr;
+	shared_ptr<IrElemAllocator> allocator_ptr;
 	shared_ptr<const IrTable> ir_table_ptr;
 	ostringstream buffer;	// 目标代码的buffer
 	// 变量偏移表
 	unordered_map<irelem_t, unsigned> global_var_offset_table;	
-	unordered_map<irelem_t, ArrayInfo> global_arr_info_table;
+	unordered_map<irelem_t, bool> global_arr_is_int_table;
 	unordered_map<irelem_t, unsigned> func_var_offset_table;
-	unordered_map<irelem_t, ArrayInfo> func_arr_info_table;
+	unordered_map<irelem_t, bool> func_arr_is_int_table;
 
 
 	/// <summary>
@@ -54,14 +54,14 @@ private:
 
 	/// <summary>
 	/// 为每个全局变量分配空间, 分配label, 填入初值;
-	/// 填写global_var_offset_table和global_arr_info_table.
+	/// 填写global_var_offset_table和global_arr_is_int_table.
 	/// </summary>
 	/// <returns></returns>
 	void init_global();
 	 
 	/// <summary>
 	/// 扫描当前func_beg_index, func_mid_index, func_end_index标注的函数;
-	/// 重新填写func_var_offset_table, arr_info_table;
+	/// 重新填写func_var_offset_table, func_arr_is_int_table;
 	/// 计算运行栈大小并写入stack_size.
 	/// </summary>
 	void init_func();
@@ -92,13 +92,15 @@ private:
 	/// </summary>
 	string fresh_buffer();
 
+	string load_val_to_reg(const string& reg, irelem_t val);
+
 	/// <summary>
 	/// 分析函数体.
 	/// </summary>
-	void analyze_func();
+	void func_body();
 public:
 	virtual ~SimpleGenerator() = default;
-	SimpleGenerator(shared_ptr<const IrElemAllocator> allocator, shared_ptr<const IrTable> ir)
+	SimpleGenerator(shared_ptr<IrElemAllocator> allocator, shared_ptr<const IrTable> ir)
 		: allocator_ptr(allocator), ir_table_ptr(ir) { }
 
 	/// <summary>

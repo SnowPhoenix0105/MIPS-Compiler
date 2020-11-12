@@ -161,6 +161,7 @@ public:
 	CstAllocator& set_arr_value(irelem_t arr, int value)
 	{
 		arr_value.insert(make_pair(arr, value));
+		return *this;
 	}
 	int imm_value(irelem_t imm) const;
 	int value_of(irelem_t cst) const;
