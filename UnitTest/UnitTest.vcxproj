@@ -169,6 +169,7 @@
     </ClCompile>
     <ClCompile Include="SimpleErrorTest.cpp" />
     <ClCompile Include="SyntacticAnalyzeCorrectTest.cpp" />
+    <ClCompile Include="TargetCodeGeneratorSimpleTest.cpp" />
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="UnitTest.cpp" />
   </ItemGroup>

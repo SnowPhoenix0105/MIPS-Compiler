@@ -155,14 +155,22 @@ public:
 class CstAllocator
 {
 private:
+	static const shared_ptr<const string> __global;
 	vector<int> imms;
 	unordered_map<int, irelem_t> imm_cache;
 	vector<pair<shared_ptr<const string>, shared_ptr<const string>>> arrs;
 	vector<pair<irelem_t, irelem_t>> incalculate_cst;
 	unordered_map<irelem_t, int> arr_value;
+	shared_ptr<const string> current_func;
 
 public:
-	irelem_t alloc_arr(shared_ptr<const string> func, shared_ptr<const string> arr);
+	CstAllocator() : imms(), imm_cache(), arrs(), incalculate_cst(), arr_value(), current_func(__global) { }
+	CstAllocator& set_function(shared_ptr<const string> func_name)
+	{
+		current_func = func_name;
+		return *this;
+	}
+	irelem_t alloc_arr(shared_ptr<const string> arr);
 	irelem_t alloc_imm(int imm);
 	irelem_t cst_add(irelem_t cst_1, irelem_t cst_2);
 	CstAllocator& set_arr_value(irelem_t arr, int value)
@@ -187,6 +195,12 @@ public:
 struct IrElemAllocator
 	: LabelAllocator, VarAllocator, CstAllocator, StringAllocator
 {
+	IrElemAllocator& set_function(shared_ptr<const string> func_name)
+	{
+		VarAllocator::set_function(func_name);
+		CstAllocator::set_function(func_name);
+		return *this;
+	}
 };
 
 struct Ir
@@ -199,7 +213,18 @@ struct IrTable;
 
 struct IrTableBuilder : vector<Ir>
 {
-	IrTable build();
+	shared_ptr<IrTable> build();
+	void push_back(IrHead head, irelem_t elem1 = IrType::NIL, irelem_t elem2 = IrType::NIL, irelem_t elem3 = IrType::NIL)
+	{
+		vector<Ir>::push_back(Ir{ head, {elem1, elem2, elem3} });
+	}
+	void push_back_all(std::initializer_list<Ir> list)
+	{
+		for (const auto& ir : list)
+		{
+			vector<Ir>::push_back(ir);
+		}
+	}
 };
 
 struct IrTable

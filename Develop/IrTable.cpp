@@ -202,6 +202,8 @@ string VarAllocator::var_to_string(irelem_t var) const
 	return *pair.first + "_var_" + *pair.second;
 }
 
+const shared_ptr<const string> CstAllocator::__global = make_shared<const string>("__global");
+
 irelem_t CstAllocator::alloc_imm(int imm)
 {
 	auto idx = imm_cache.find(imm);
@@ -215,11 +217,11 @@ irelem_t CstAllocator::alloc_imm(int imm)
 	return ret;
 }
 
-irelem_t CstAllocator::alloc_arr(shared_ptr<const string> func, shared_ptr<const string> arr)
+irelem_t CstAllocator::alloc_arr(shared_ptr<const string> arr)
 {
 	size_t ord = arrs.size();
 	irelem_t ret = 0x9000'0000 | ord;
-	arrs.push_back(make_pair(func, arr));
+	arrs.push_back(make_pair(current_func, arr));
 	return ret;
 }
 
@@ -280,7 +282,7 @@ irelem_t StringAllocator::alloc_string(const string& str)
 	return ret;
 }
 
-IrTable IrTableBuilder::build()
+shared_ptr<IrTable> IrTableBuilder::build()
 {
-	return IrTable(*this);
+	return make_shared<IrTable>(*this);
 }
