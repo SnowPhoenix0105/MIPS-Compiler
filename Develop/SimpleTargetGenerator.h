@@ -95,14 +95,12 @@ private:
 	void func_body();
 public:
 	virtual ~SimpleCodeGenerator() = default;
-	SimpleCodeGenerator(shared_ptr<IrElemAllocator> allocator, shared_ptr<const IrTable> ir)
-		: allocator_ptr(allocator), ir_table_ptr(ir) { }
+	SimpleCodeGenerator(shared_ptr<IrElemAllocator> allocator, shared_ptr<const IrTable> ir_table)
+		: allocator_ptr(allocator), ir_table_ptr(ir_table) { }
 
 	/// <summary>
 	/// 将allocator指导下的ir转换为string并输入到os中.
 	/// </summary>
-	/// <param name="allocator"></param>
-	/// <param name="ir"></param>
 	/// <param name="os"></param>
 	virtual void translate(ostream& os);
 };
