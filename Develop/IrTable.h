@@ -240,6 +240,19 @@ private:
 	const vector<Ir> table;
 };
 
+struct IrFactory
+{
+	shared_ptr<IrElemAllocator> allocator_ptr;
+	IrElemAllocator& allocator() { return *allocator_ptr; }
+
+	static constexpr irelem_t nil() { return IrType::NIL; }
+
+	Ir label(irelem_t label)
+	{
+		return Ir{ IrHead::label, {label, nil(), nil()} };
+	}
+};
+
 
 
 #endif // !__IR_TABLE_H__
