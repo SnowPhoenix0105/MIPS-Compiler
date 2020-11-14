@@ -51,7 +51,8 @@ void SimpleCodeGenerator::init_global()
 			string var_label = allocator.var_to_string(var);
 			global_var_offset_table.insert(make_pair(var, offset));
 			offset += 4;
-			buffer << var_label << ":\t.word";
+			//buffer << var_label << ":\t.word";
+			buffer << ".word";
 			if (code.elem[1] == IrType::NIL)
 			{
 				buffer << endl;
@@ -107,10 +108,11 @@ void SimpleCodeGenerator::init_global()
 	int str_count = 0;
 	for (const auto& p : allocator.get_map())
 	{
-		string l = "string";
-		l += str_count++;
+		string l = "string_";
+		l += to_string(str_count++);
 		string_label_table.insert(make_pair(p.second, l));
-		buffer << ".asciiz \"" << p.second << '\"';
+		buffer << mips.label(l) << endl;
+		buffer << ".asciiz \"" << p.first << '\"' << endl;
 	}
 	buffer << "\n\n\n\n\n.text" << endl;
 	buffer << mips.j("func_beg_main") << endl;
@@ -208,6 +210,7 @@ void SimpleCodeGenerator::init_func()
 	offset += 4;
 	// $ra
 	offset += 4;
+	stack_size = offset;
 }
 
 void SimpleCodeGenerator::beg_main()
@@ -215,7 +218,6 @@ void SimpleCodeGenerator::beg_main()
 	buffer << mips.label("func_beg_main") << endl;
 	buffer << mips.la("$gp", "__GP__") << endl;
 	buffer << mips.subu("$sp", "$sp", stack_size) << endl;
-	buffer << mips.label("func_mid_main") << endl;
 }
 
 void SimpleCodeGenerator::beg_func()
@@ -223,12 +225,11 @@ void SimpleCodeGenerator::beg_func()
 	buffer << mips.label(allocator_ptr->label_to_string(ir_table_ptr->at(func_beg_index).elem[0])) << endl;
 	buffer << mips.sw("$ra", "$sp", stack_size - 4) << endl;
 	buffer << mips.subu("$sp", "$sp", stack_size) << endl;
-	buffer << mips.label(allocator_ptr->label_to_string(ir_table_ptr->at(func_mid_index).elem[0])) << endl;
 }
 
 void SimpleCodeGenerator::end_main()
 {
-	buffer << mips.label("func_end_main:") << endl;
+	buffer << mips.label("func_end_main") << endl;
 	buffer << mips.li("$v0", 10) << endl;
 	buffer << mips.syscall() << endl;
 }
@@ -262,7 +263,7 @@ void SimpleCodeGenerator::load_val_to_reg(const string& reg, irelem_t val)
 		buffer << mips.lw(reg, "$gp", global_var_offset_table.at(val)) << endl;
 		return;
 	}
-	buffer << mips.lw(reg, "$fp", func_var_offset_table.at(val)) << endl;
+	buffer << mips.lw(reg, "$sp", func_var_offset_table.at(val)) << endl;
 	return;
 }
 
@@ -282,7 +283,7 @@ void SimpleCodeGenerator::save_reg_to_var(const string& reg, irelem_t var)
 		buffer << mips.sw(reg, "$gp", global_var_offset_table.at(var)) << endl;
 		return;
 	}
-	buffer << mips.sw(reg, "$fp", func_var_offset_table.at(var)) << endl;
+	buffer << mips.sw(reg, "$sp", func_var_offset_table.at(var)) << endl;
 	return;
 }
 
@@ -296,11 +297,11 @@ case IrHead::head:											\
 
 void SimpleCodeGenerator::func_body()
 {
-	buffer << allocator_ptr->label_to_string(ir_table_ptr->at(func_mid_index).elem[0]) << ':' << endl;
+	// buffer << allocator_ptr->label_to_string(ir_table_ptr->at(func_mid_index).elem[0]) << ':' << endl;
 	const IrElemAllocator& allocator = *allocator_ptr;
 	const IrTable& ir_table = *ir_table_ptr;
 
-	for (size_t index = func_mid_index + 1; index < func_end_index; ++index)
+	for (size_t index = func_mid_index; index < func_end_index; ++index)
 	{
 		const auto& code = ir_table.at(index);
 		switch (code.head)
@@ -330,12 +331,12 @@ void SimpleCodeGenerator::func_body()
 			save_reg_to_var("$t0", code.elem[0]);
 			break;
 		case IrHead::sw:
-			save_reg_to_var("$t0", code.elem[0]);
+			load_val_to_reg("$t0", code.elem[0]);
 			load_val_to_reg("$t1", code.elem[1]);
 			buffer << mips.sw("$t0", "$t1", allocator.cst_to_value(code.elem[2])) << endl;
 			break;
 		case IrHead::sb:
-			save_reg_to_var("$t0", code.elem[0]);
+			load_val_to_reg("$t0", code.elem[0]);
 			load_val_to_reg("$t1", code.elem[1]);
 			buffer << mips.sb("$t0", "$t1", allocator.cst_to_value(code.elem[2])) << endl;
 			break;
@@ -379,10 +380,10 @@ void SimpleCodeGenerator::func_body()
 				buffer << mips.li("$v0", mips.print_string) << endl;
 				buffer << mips.syscall() << endl;
 			}
-			if (str && val)
+			if (val)
 			{
 				load_val_to_reg("$a0", code.elem[1]);
-				buffer << mips.li("$v0", code.elem[2] == IrType::_int ? mips.print_int : mips.print_char);
+				buffer << mips.li("$v0", code.elem[2] == IrType::_int ? mips.print_int : mips.print_char) << endl;
 				buffer << mips.syscall() << endl;
 			}
 			buffer << mips.li("$a0", '\n') << endl;
