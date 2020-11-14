@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="TestResource">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/UnitTest/TestResource/error_dealing.zip!/" />
+      <root url="jar://$PROJECT_DIR$/UnitTest/TestResource/complex_error.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Documents">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Documents/错误处理文档.zip!/" />
+      <root url="jar://$PROJECT_DIR$/Documents/语法分析文档.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

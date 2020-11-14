@@ -44,7 +44,7 @@ namespace BlackboxTest
 			commond
 				<< "java "
 				<< "-jar " << test_resource_path << "\\MARS-JDK7-RE.jar"
-				<< " db "
+				<< ' '//<< " db "
 				<< test_resource_path << "\\empty\\empty.asm";
 			execute_cmd(commond.str(), string(), test_resource_path + "\\empty\\empty_result.txt");
 			base_result = read_file(test_resource_path + "\\empty\\empty_result.txt");
@@ -104,7 +104,7 @@ namespace BlackboxTest
 		commond
 			<< "java "
 			<< "-jar " << BlackboxTest::test_resource_path << "\\MARS-JDK7-RE.jar"
-			<< " db "
+			<< ' '//<< " db "
 			<< assembly_file;
 		execute_cmd(commond.str(), input_file_name, output_file_name);
 	}
@@ -155,13 +155,16 @@ namespace BlackboxTest
 		cmd_builder << cmd;
 		if (input_file_name.size() != 0)
 		{
-			cmd_builder << " <" << input_file_name;
+			cmd_builder << " < " << input_file_name;
 		}
 		if (output_file_name.size() != 0)
 		{
-			cmd_builder << " >" << output_file_name;
+			cmd_builder << " > " << output_file_name;
 		}
 		cmd_builder << endl;
-		std::system(cmd_builder.str().c_str());
+		string scmd = cmd_builder.str();
+		const char* ccmd = scmd.c_str();
+		Logger::WriteMessage(ccmd);
+		std::system(ccmd);
 	}
 }
