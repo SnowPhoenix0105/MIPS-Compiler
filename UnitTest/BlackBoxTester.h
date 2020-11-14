@@ -78,6 +78,29 @@ namespace MarsTester
 		Assert::Fail();
 	}
 
+	inline string remove_tab_and_multispace(const string& str)
+	{
+		string ret;
+		bool reading_space = false;
+		for (char c : str)
+		{
+			if (c == ' ' || c == '\t')
+			{
+				if (!reading_space)
+				{
+					reading_space = true;
+					ret.push_back(' ');
+				}
+			}
+			else
+			{
+				reading_space = false;
+				ret.push_back(c);
+			}
+		}
+		return ret;
+	}
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -97,7 +120,7 @@ namespace MarsTester
 			+ string("\n>>>>>>>>>>>>>>>>>>>>>>>>>>\n")
 			+ real_result
 			+ "\n<<<<<<<<<<<<<<<<<<<<<<<<<<\n").c_str());
-		Assert::AreEqual(*expect, real_result);
+		Assert::AreEqual(remove_tab_and_multispace(*expect), remove_tab_and_multispace(real_result));
 	}
 
 	// 测试一个系列: 需求的外部资源有:源文件,输入,期望输出 

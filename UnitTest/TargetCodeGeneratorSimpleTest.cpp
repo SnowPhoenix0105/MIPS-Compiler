@@ -48,12 +48,17 @@ namespace TargetCodeGeneratorTest
 
 
 	public:
+		TEST_CLASS_INITIALIZE(init)
+		{
+			MarsTester::init();
+		}
 
 		TEST_METHOD(SimpleTest1)
 		{
 			string assembly_file = test_resource_path + "\\target_gen_test\\sample1.asm";
 			string input_file_name = test_resource_path + "\\target_gen_test\\sample1.in";
 			string output_file_name = test_resource_path + "\\target_gen_test\\sample1.out";
+			string expect_file_name = test_resource_path + "\\target_gen_test\\sample1.expect";
 			auto pair = get_sample1();
 			shared_ptr<IrElemAllocator> allocator_ptr = pair.first;
 			shared_ptr<IrTable> ir_table = pair.second;
@@ -62,7 +67,8 @@ namespace TargetCodeGeneratorTest
 			ofstream ofs(assembly_file);
 			ofs << mips << endl;
 			ofs.close();
-			BlackBoxTester::assembly_and_simulate(assembly_file, input_file_name, output_file_name);
+			MarsTester::assembly_and_simulate(assembly_file, input_file_name, output_file_name);
+			MarsTester::compare_and_judge(expect_file_name, output_file_name);
 		}
 	};
 

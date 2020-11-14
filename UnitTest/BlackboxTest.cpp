@@ -18,7 +18,7 @@ using std::ifstream;
 using std::endl;
 using std::unique_ptr;
 
-namespace BlackBoxTester
+namespace MarsTester
 {
 	const string test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource");
 	shared_ptr<string> base_result = nullptr;
@@ -35,13 +35,13 @@ namespace BlackboxTest
 	public:
 		TEST_CLASS_INITIALIZE(init)
 		{
-			BlackBoxTester::init();
+			MarsTester::init();
 		}
 
 		// 测试本测试程序的正确性
 		TEST_METHOD(no_compile_test)
 		{
-			BlackBoxTester::self_judge();
+			MarsTester::self_judge();
 		}
 
 		//TEST_CASE(fuck_you)
