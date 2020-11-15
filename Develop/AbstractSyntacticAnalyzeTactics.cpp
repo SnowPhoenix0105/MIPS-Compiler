@@ -1258,6 +1258,13 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 	parameter_value_list_analyze(env);							// 值参数表
 
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
+	
+	if (id_info != nullptr)
+	{
+		env.ir_buffer().push_back(env.ir().call(id_info->ir_id));
+		res = env.elem().alloc_tmp();
+		env.ir_buffer().push_back(env.ir().add(res, env.elem().ret(), env.elem().zero()))
+	}
 
 	env.message_back("<有返回值函数调用语句>");
 }
@@ -1749,14 +1756,18 @@ void FactorAnalyze::analyze(Env& env)
 {
 	if (env.peek() == SymbolType::character)
 	{
-		env.dequeue_and_message_back();							// charactor
+		token_ptr token = env.dequeue_and_message_back();							// charactor
 		type = BaseType::type_char;
+		char value = dynamic_pointer_cast<CharToken>(token)->char_content;
+		res = env.elem().alloc_imm(value);
 	}
 	else if (in_branch_of<IntegerAnalyze>(env))
 	{
 		IntegerAnalyze integer_analyze;
 		integer_analyze(env);									// 整数
 		type = BaseType::type_int;
+		int value = integer_analyze.get_value();
+		res = env.elem().alloc_imm(value);
 	}
 	else if (env.peek() == SymbolType::left_paren)
 	{
@@ -1769,12 +1780,14 @@ void FactorAnalyze::analyze(Env& env)
 		expression_analyze(env);								// 表达式
 		type = BaseType::type_int;
 		env.dequeue_certain_and_message_back(SymbolType::right_paren);// right_paren
+		res = expression_analyze.get_res();
 	}
 	else if (in_branch_of<CallReturnFunctionStatementAnalyze>(env))
 	{
 		CallReturnFunctionStatementAnalyze call_return_function_statement_analyze;
 		call_return_function_statement_analyze(env);				// 有返回值函数调用语句
 		type = call_return_function_statement_analyze.get_type();
+		// TODO
 	}
 	else
 	{

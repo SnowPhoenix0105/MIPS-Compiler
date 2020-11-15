@@ -267,11 +267,19 @@ private:
 	shared_ptr<IrElemAllocator> allocator_ptr;
 	IrFactory factory;
 	IrTableBuilder builder;
+	IrTableBuilder buffer;
 public:
 	IrCodeEnvironment() : allocator_ptr(make_shared<IrElemAllocator>()), factory(allocator_ptr) { }
 	IrElemAllocator& elem() const { return *allocator_ptr; }
 	const IrFactory& ir() const { return factory; }
 	IrTableBuilder& global_ir_table() { return builder; }
+	IrTableBuilder& ir_buffer() { return buffer; }
+	shared_ptr<IrTable> fresh_ir_buffer()
+	{
+		shared_ptr<IrTable> ret = buffer.build();
+		buffer.clear();
+		return ret;
+	}
 	shared_ptr<IrElemAllocator> get_allocator_ptr() { return allocator_ptr; }
 };
 

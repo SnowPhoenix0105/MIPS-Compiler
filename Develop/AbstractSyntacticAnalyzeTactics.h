@@ -329,10 +329,12 @@ struct FactorAnalyze : AbstractSyntacticAnalyzeTactics
 	{
 		return type;
 	}
+	irelem_t get_res() { return res; }
 protected:
 	virtual void analyze(Env& env);
 private:
 	BaseType type;
+	irelem_t res;
 };
 
 // 项
@@ -346,10 +348,12 @@ struct TermAnalyze : AbstractSyntacticAnalyzeTactics
 	{
 		return type;
 	}
+	irelem_t get_res() { return res; }
 protected:
 	virtual void analyze(Env& env);
 private:
 	BaseType type;
+	irelem_t res;
 };
 
 // 表达式
@@ -363,10 +367,12 @@ struct ExpressionAnalyze : AbstractSyntacticAnalyzeTactics
 	{
 		return type;
 	}
+	irelem_t get_res() { return res; }
 protected:
 	virtual void analyze(Env& env);
 private:
 	BaseType type;
+	irelem_t res;
 };
 
 // 返回语句
@@ -548,10 +554,12 @@ struct CallReturnFunctionStatementAnalyze : AbstractSyntacticAnalyzeTactics
 	{
 		return type;
 	}
+	irelem_t get_res() { return res; }
 protected:
 	virtual void analyze(Env& env);
 private:
 	BaseType type;
+	irelem_t res;
 };
 
 // 条件
