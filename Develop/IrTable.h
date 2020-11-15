@@ -25,7 +25,7 @@ enum class IrHead
 {
 	label,		// 	<label>
 
-	gvar,		//  <var> [<imm>]
+	gvar,		//  <var> 
 	arr,		// 	<arr> <type> <imm>
 	init,		//  <imm>
 
@@ -122,7 +122,6 @@ public:
 class VarAllocator
 {
 private:
-	static const shared_ptr<const string> __global;
 	vector<shared_ptr<const string>> tmps;
 	vector<pair<shared_ptr<const string>, shared_ptr<const string>>> nameds;
 	shared_ptr<const string> current_func;
@@ -132,6 +131,7 @@ private:
 	irelem_t _zero;
 	unordered_set<irelem_t> _reserved_var;
 public:
+	static const shared_ptr<const string> __global;
 	VarAllocator();
 	VarAllocator& set_function(shared_ptr<const string> func_name)
 	{
@@ -156,7 +156,6 @@ public:
 class CstAllocator
 {
 private:
-	static const shared_ptr<const string> __global;
 	vector<int> imms;
 	unordered_map<int, irelem_t> imm_cache;
 	vector<pair<shared_ptr<const string>, shared_ptr<const string>>> arrs;
@@ -165,7 +164,7 @@ private:
 	shared_ptr<const string> current_func;
 
 public:
-	CstAllocator() : imms(), imm_cache(), arrs(), incalculate_cst(), arr_value(), current_func(__global) { }
+	CstAllocator() : imms(), imm_cache(), arrs(), incalculate_cst(), arr_value(), current_func(VarAllocator::__global) { }
 	CstAllocator& set_function(shared_ptr<const string> func_name)
 	{
 		current_func = func_name;
@@ -211,7 +210,19 @@ struct Ir
 	irelem_t elem[3] = { IrType::NIL, IrType::NIL, IrType::NIL };
 };
 
-struct IrTable;
+
+struct IrTable
+{
+	IrTable(const vector<Ir>& table) : table(table) { }
+
+	const Ir& operator[](size_t index) { return table.at(index); }
+	const Ir& at(size_t index) const { return table.at(index); }
+	vector<Ir>::const_iterator begin() const { return table.cbegin(); }
+	vector<Ir>::const_iterator end() const { return table.cend(); }
+	size_t size() const { return table.size(); }
+private:
+	const vector<Ir> table;
+};
 
 struct IrTableBuilder : vector<Ir>
 {
@@ -233,195 +244,185 @@ struct IrTableBuilder : vector<Ir>
 			vector<Ir>::push_back(ir);
 		}
 	}
-};
 
-struct IrTable
-{
-	IrTable(const vector<Ir>& table) : table(table) { }
-
-	const Ir& operator[](size_t index) { return table.at(index); }
-	const Ir& at(size_t index) const { return table.at(index); }
-	vector<Ir>::const_iterator begin() const { return table.cbegin(); }
-	vector<Ir>::const_iterator end() const { return table.cend(); }
-	size_t size() const { return table.size(); }
-private:
-	const vector<Ir> table;
+	void push_pack_all(const IrTable& ir_table) 
+	{
+		for (const auto& ir : ir_table)
+		{
+			push_back(ir);
+		}
+	}
 };
 
 struct IrFactory
 {
 	IrFactory(shared_ptr<IrElemAllocator> allocator_ptr) : allocator_ptr(allocator_ptr) { }
 	shared_ptr<IrElemAllocator> allocator_ptr;
-	IrElemAllocator& allocator() { return *allocator_ptr; }
+	IrElemAllocator& allocator()  const { return *allocator_ptr; }
 
 	static constexpr irelem_t nil() { return IrType::NIL; }
 
-	Ir label(irelem_t label)
+	Ir label(irelem_t label) const
 	{
 		return Ir{ IrHead::label, {label, nil(), nil()} };
 	}
 
-	Ir gvar(irelem_t var)
+	Ir gvar(irelem_t var) const
 	{
 		return Ir{ IrHead::gvar, {var, nil(), nil()} };
 	}
 
-	Ir gvar(irelem_t var, int imm)
-	{
-		return Ir{ IrHead::gvar, {var, allocator().alloc_imm(imm), nil()} };
-	}
-
-	Ir arr(irelem_t arr, irelem_t type, int size)
+	Ir arr(irelem_t arr, irelem_t type, int size) const
 	{
 		return Ir{ IrHead::arr, {arr, type, allocator().alloc_imm(size)} };
 	}
 
-	Ir init(int imm)
+	Ir init(int imm) const
 	{
 		return Ir{ IrHead::init, {allocator().alloc_imm(imm), nil(), nil()} };
 	}
 
-	Ir func(irelem_t type)
+	Ir func(irelem_t type) const
 	{
 		return Ir{ IrHead::func, {type, nil(), nil()} };
 	}
 
-	Ir param(irelem_t var)
+	Ir param(irelem_t var) const
 	{
 		return Ir{ IrHead::func, {var, nil(), nil()} };
 	}
 
-	Ir add(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir add(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::add, {var, val1, val2} };
 	}
 
-	Ir sub(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir sub(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::sub, {var, val1, val2} };
 	}
 
-	Ir mult(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir mult(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::mult, {var, val1, val2} };
 	}
 
-	Ir div(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir div(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::div, {var, val1, val2} };
 	}
 
-	Ir _and(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir _and(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::_and, {var, val1, val2} };
 	}
 
-	Ir _or(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir _or(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::_or, {var, val1, val2} };
 	}
 
-	Ir _nor(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir _nor(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::_nor, {var, val1, val2} };
 	}
 
-	Ir _xor(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir _xor(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::_xor, {var, val1, val2} };
 	}
 
-	Ir sl(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir sl(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::sl, {var, val1, val2} };
 	}
 
-	Ir sr(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir sr(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::sr, {var, val1, val2} };
 	}
 
-	Ir less(irelem_t var, irelem_t val1, irelem_t val2)
+	Ir less(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
 		return Ir{ IrHead::less, {var, val1, val2} };
 	}
 
-	Ir lw(irelem_t var, irelem_t base, irelem_t off)
+	Ir lw(irelem_t var, irelem_t base, irelem_t off) const
 	{
 		return Ir{ IrHead::lw, {var, base, off} };
 	}
 
-	Ir sw(irelem_t var, irelem_t base, irelem_t off)
+	Ir sw(irelem_t var, irelem_t base, irelem_t off) const
 	{
 		return Ir{ IrHead::sw, {var, base, off} };
 	}
 
-	Ir lb(irelem_t var, irelem_t base, irelem_t off)
+	Ir lb(irelem_t var, irelem_t base, irelem_t off) const
 	{
 		return Ir{ IrHead::lb, {var, base, off} };
 	}
 
-	Ir sb(irelem_t var, irelem_t base, irelem_t off)
+	Ir sb(irelem_t var, irelem_t base, irelem_t off) const
 	{
 		return Ir{ IrHead::sb, {var, base, off} };
 	}
 
-	Ir beq(irelem_t val1, irelem_t val2, irelem_t label)
+	Ir beq(irelem_t val1, irelem_t val2, irelem_t label) const
 	{
 		return Ir{ IrHead::beq, {val1, val2, label} };
 	}
 
-	Ir bne(irelem_t val1, irelem_t val2, irelem_t label)
+	Ir bne(irelem_t val1, irelem_t val2, irelem_t label) const
 	{
 		return Ir{ IrHead::bne, {val1, val2, label} };
 	}
 
-	Ir _goto(irelem_t label)
+	Ir _goto(irelem_t label) const
 	{
 		return Ir{ IrHead::_goto, {label, nil(), nil()} };
 	}
 
-	Ir push(irelem_t val)
+	Ir push(irelem_t val) const
 	{
 		return Ir{ IrHead::push, {val, nil(), nil()} };
 	}
 
-	Ir call(irelem_t label)
+	Ir call(irelem_t label) const
 	{
 		return Ir{ IrHead::call, {label, nil(), nil()} };
 	}
 
-	Ir ret()
+	Ir ret() const
 	{
 		return Ir{ IrHead::ret, {nil(), nil(), nil()} };
 	}
 
-	Ir scanf(irelem_t var, irelem_t type)
+	Ir scanf(irelem_t var, irelem_t type) const
 	{
 		return Ir{ IrHead::scanf, {var, type, nil()} };
 	}
 
-	Ir printf(shared_ptr<const string> str)
+	Ir printf(shared_ptr<const string> str) const
 	{
 		return Ir{ IrHead::printf, {allocator().alloc_string(str), nil(), nil()} };
 	}
 
-	Ir printf(const string& str)
+	Ir printf(const string& str) const
 	{
 		return Ir{ IrHead::printf, {allocator().alloc_string(str), nil(), nil()} };
 	}
 
-	Ir printf(irelem_t var, irelem_t type)
+	Ir printf(irelem_t var, irelem_t type) const
 	{
 		return Ir{ IrHead::printf, {nil(), var, type} };
 	}
 
-	Ir printf(shared_ptr<const string> str, irelem_t var, irelem_t type)
+	Ir printf(shared_ptr<const string> str, irelem_t var, irelem_t type) const
 	{
 		return Ir{ IrHead::printf, {allocator().alloc_string(str), var, type} };
 	}
 
-	Ir printf(const string& str, irelem_t var, irelem_t type)
+	Ir printf(const string& str, irelem_t var, irelem_t type) const
 	{
 		return Ir{ IrHead::printf, {allocator().alloc_string(str), var, type} };
 	}

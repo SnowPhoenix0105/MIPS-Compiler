@@ -160,7 +160,7 @@ public:
 		auto token = env.peek_info();
 		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 		auto id_info = env.get_identifier_info(id);
-		return id_info == nullptr || id_info->return_type->base_type != BaseType::type_void;
+		return id_info.first == nullptr || id_info.first->return_type->base_type != BaseType::type_void;
 	}
 
 	template<>
@@ -177,7 +177,7 @@ public:
 		auto token = env.peek_info();
 		auto id = dynamic_pointer_cast<const IdentifierToken>(token)->id_name_content;
 		auto id_info = env.get_identifier_info(id);
-		return id_info != nullptr && id_info->return_type->base_type == BaseType::type_void;
+		return id_info.first != nullptr && id_info.first->return_type->base_type == BaseType::type_void;
 	}
 
 	template<>

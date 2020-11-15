@@ -17,6 +17,7 @@
 #include "SymbolToken.h"
 #include "IdentifierTable.h"
 #include "ErrorType.h"
+#include "IrTable.h"
 #undef max
 
 using std::exception;
@@ -260,7 +261,21 @@ public:
 };
 
 
-class SymbolTableEnvironment
+class IrCodeEnvironment
+{
+private:
+	shared_ptr<IrElemAllocator> allocator_ptr;
+	IrFactory factory;
+	IrTableBuilder builder;
+public:
+	IrCodeEnvironment() : allocator_ptr(make_shared<IrElemAllocator>()), factory(allocator_ptr) { }
+	IrElemAllocator& elem() const { return *allocator_ptr; }
+	const IrFactory& ir() const { return factory; }
+	IrTableBuilder& global_ir_table() { return builder; }
+	shared_ptr<IrElemAllocator> get_allocator_ptr() { return allocator_ptr; }
+};
+
+class SymbolTableEnvironment : public IrCodeEnvironment
 {
 private:
 	IdentifierTable global_table;
@@ -270,6 +285,8 @@ public:
 	BaseType current_return_type;
 	int return_count = 0;
 	virtual ~SymbolTableEnvironment() = default;
+
+	bool is_using_global_table() { return using_global_table; }
 
 	void change_to_local_table()
 	{
@@ -282,8 +299,43 @@ public:
 		using_global_table = true;
 	}
 
-	void insert_identifier(shared_ptr<const IdentifierInfo> id)
+	irelem_t insert_identifier(shared_ptr<IdentifierInfo> id)
 	{
+		if (id->return_type->is_one_from(ExternType::l_array, ExternType::d_array))
+		{
+			shared_ptr<const ArrayIdentifierType> arr_type = dynamic_pointer_cast<const ArrayIdentifierType>(id->return_type);
+			int size = arr_type->total_size();
+			irelem_t arr = elem().alloc_arr(id->id);
+			id->ir_id = arr;
+			irelem_t type = arr_type->base_type == BaseType::type_char ? IrType::_char : IrType::_int;
+			global_ir_table().push_back(ir().arr(arr, type, size));
+		}
+		else if (id->return_type->is_one_from(ExternType::constant))
+		{
+			shared_ptr<ConstantIdentifierInfo> const_id = dynamic_pointer_cast<ConstantIdentifierInfo>(id);
+			irelem_t imm = elem().alloc_imm(const_id->get_value());
+			id->ir_id = imm;
+		}
+		else if (id->return_type->is_one_from(ExternType::variable))
+		{
+			irelem_t var = elem().alloc_named(id->id);
+			id->ir_id = var;
+			if (using_global_table)
+			{
+				global_ir_table().push_back(ir().gvar(var));
+			}
+		}
+		else if (id->return_type->is_one_from(ExternType::function))
+		{
+			shared_ptr<FunctionIdentifierInfo> func_type = dynamic_pointer_cast<FunctionIdentifierInfo>(id);
+			irelem_t ret_type = func_type->return_type->base_type == BaseType::type_char ? IrType::_char : IrType::_int;
+			id->ir_id = elem().alloc_func(id->id).beg();
+			func_type->mid_label = elem().mid();
+			func_type->end_label = elem().end();
+			global_ir_table().push_back(ir().func(ret_type));
+			// TODO param 声明
+		}
+
 		if (using_global_table)
 		{
 			global_table.insert_identifier(id);
@@ -292,6 +344,7 @@ public:
 		{
 			local_table.insert_identifier(id);
 		}
+		return id->ir_id;
 	}
 
 	void remove_identifier(shared_ptr<const IdentifierInfo> id)
@@ -306,8 +359,9 @@ public:
 		}
 	}
 
+	// true 表示存在于当前作用域
 	template<typename T>
-	shared_ptr<const IdentifierInfo> get_identifier_info(T id, bool all = true)
+	pair<shared_ptr<const IdentifierInfo>, bool> get_identifier_info(T id)
 	{
 		shared_ptr<const IdentifierInfo> ret;
 		if (!using_global_table)
@@ -315,15 +369,9 @@ public:
 			try
 			{
 				ret = local_table.get_identifier(id);
-				return ret;
+				return make_pair(ret, true);
 			}
-			catch (const std::out_of_range&)
-			{
-				if (!all)
-				{
-					return nullptr;
-				}
-			}
+			catch (const std::out_of_range&) { }
 		}
 		try
 		{
@@ -331,9 +379,9 @@ public:
 		}
 		catch (const std::out_of_range&)
 		{
-			return nullptr;
+			return make_pair(nullptr, false);
 		}
-		return ret;
+		return make_pair(ret, using_global_table);
 	}
 };
 

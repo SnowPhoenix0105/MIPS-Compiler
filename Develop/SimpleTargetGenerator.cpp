@@ -53,13 +53,13 @@ void SimpleCodeGenerator::init_global()
 			offset += 4;
 			//buffer << var_label << ":\t.word";
 			buffer << ".word";
-			if (code.elem[1] == IrType::NIL)
+			if (ir_table.at(i + 1).head == IrHead::init)
 			{
-				buffer << endl;
+				buffer << '\t' << allocator.imm_to_value(ir_table.at(++i).elem[0]) << endl;
 			}
 			else
 			{
-				buffer << '\t' << allocator.imm_to_value(code.elem[1]) << endl;
+				buffer << endl;
 			}
 			break;
 		}

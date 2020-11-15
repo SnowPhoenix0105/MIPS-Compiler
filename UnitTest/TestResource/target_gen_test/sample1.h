@@ -34,7 +34,8 @@ inline pair<shared_ptr<IrElemAllocator>, shared_ptr<IrTable>> get_sample1()
             ir.init('d'),
             ir.init('e'),
             ir.arr(garr2, IrType::_int, 4),
-            ir.gvar(gvar2, 18231045),
+            ir.gvar(gvar2),
+            ir.init(18231045),
         }
     );
     allocator.set_function(to_ptr("main"));
