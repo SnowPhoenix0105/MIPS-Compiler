@@ -66,10 +66,10 @@ using irelem_t = uint32_t;
 
 struct IrType
 {
-	static const irelem_t NIL = 0xE000'0000;
-	static const irelem_t _int = 0xE000'0001;
-	static const irelem_t _char = 0xE000'0002;
-	static const irelem_t _void = 0xE000'0003;
+	static const irelem_t NIL = 0xE0000000;
+	static const irelem_t _int = 0xE0000001;
+	static const irelem_t _char = 0xE0000002;
+	static const irelem_t _void = 0xE0000003;
 	static bool is_val(irelem_t v) { return (v >> 31) == 0b1; }
 	static bool is_var(irelem_t v) { return (v >> 29) == 0b101; }
 	static bool is_tmp(irelem_t v) { return (v >> 28) == 0b1010; }
@@ -87,11 +87,11 @@ struct IrType
 	static bool is_switch(irelem_t v) { return (v >> 28) == 0b0011; }
 	static bool is_for(irelem_t v) { return (v >> 28) == 0b0100; }
 	static bool is_while(irelem_t v) { return (v >> 28) == 0b0101; }
-	static bool is_beg(irelem_t v) { return (v & 0x8C00'0000) == 0x0000'0000; }
-	static bool is_start(irelem_t v) { return (v & 0x8C00'0000) == 0x0400'0000; }
-	static bool is_mid(irelem_t v) { return (v & 0x8C00'0000) == 0x0800'0000; }
-	static bool is_end(irelem_t v) { return (v & 0x8C00'0000) == 0x0C00'0000; }
-	static uint32_t  get_ord(irelem_t v) { return  v & 0x03FF'FFFF; }
+	static bool is_beg(irelem_t v) { return (v & 0x8C000000) == 0x00000000; }
+	static bool is_start(irelem_t v) { return (v & 0x8C000000) == 0x04000000; }
+	static bool is_mid(irelem_t v) { return (v & 0x8C000000) == 0x08000000; }
+	static bool is_end(irelem_t v) { return (v & 0x8C000000) == 0x0C000000; }
+	static uint32_t  get_ord(irelem_t v) { return  v & 0x03FFFFFF; }
 };
 
 class LabelAllocator
@@ -189,7 +189,7 @@ private:
 public:
 	irelem_t alloc_string(shared_ptr<const string> str);
 	irelem_t alloc_string(const string& str);
-	const unordered_map<string, irelem_t>& get_map() const { return map; }
+	const unordered_map<string, irelem_t>& get_string_map() const { return map; }
 };
 
 struct IrElemAllocator
@@ -207,6 +207,14 @@ struct Ir
 {
 	IrHead head;
 	irelem_t elem[3] = { IrType::NIL, IrType::NIL, IrType::NIL };
+
+	Ir(IrHead head, irelem_t elem1, irelem_t elem2, irelem_t elem3)
+		: head(head)
+	{
+		elem[0] = elem1;
+		elem[1] = elem2;
+		elem[2] = elem3;
+	}
 };
 
 
@@ -233,7 +241,7 @@ struct IrTableBuilder : vector<Ir>
 
 	void push_back(IrHead head, irelem_t elem1 = IrType::NIL, irelem_t elem2 = IrType::NIL, irelem_t elem3 = IrType::NIL)
 	{
-		vector<Ir>::push_back(Ir{ head, {elem1, elem2, elem3} });
+		vector<Ir>::push_back(Ir(head,  elem1, elem2, elem3));
 	}
 
 	void push_back_all(std::initializer_list<Ir> list)
@@ -263,167 +271,167 @@ struct IrFactory
 
 	Ir label(irelem_t label) const
 	{
-		return Ir{ IrHead::label, {label, nil(), nil()} };
+		return Ir( IrHead::label, label, nil(), nil());
 	}
 
 	Ir gvar(irelem_t var) const
 	{
-		return Ir{ IrHead::gvar, {var, nil(), nil()} };
+		return Ir( IrHead::gvar, var, nil(), nil());
 	}
 
 	Ir arr(irelem_t arr, irelem_t type, int space) const
 	{
-		return Ir{ IrHead::arr, {arr, type, allocator().alloc_imm(space)} };
+		return Ir( IrHead::arr, arr, type, allocator().alloc_imm(space));
 	}
 
 	Ir init(int imm) const
 	{
-		return Ir{ IrHead::init, {allocator().alloc_imm(imm), nil(), nil()} };
+		return Ir( IrHead::init, allocator().alloc_imm(imm), nil(), nil());
 	}
 
 	Ir func(irelem_t type) const
 	{
-		return Ir{ IrHead::func, {type, nil(), nil()} };
+		return Ir( IrHead::func, type, nil(), nil());
 	}
 
 	Ir param(irelem_t var) const
 	{
-		return Ir{ IrHead::func, {var, nil(), nil()} };
+		return Ir( IrHead::func, var, nil(), nil());
 	}
 
 	Ir add(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::add, {var, val1, val2} };
+		return Ir( IrHead::add, var, val1, val2);
 	}
 
 	Ir sub(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::sub, {var, val1, val2} };
+		return Ir( IrHead::sub, var, val1, val2);
 	}
 
 	Ir mult(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::mult, {var, val1, val2} };
+		return Ir( IrHead::mult, var, val1, val2);
 	}
 
 	Ir div(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::div, {var, val1, val2} };
+		return Ir( IrHead::div, var, val1, val2);
 	}
 
 	Ir _and(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::_and, {var, val1, val2} };
+		return Ir( IrHead::_and, var, val1, val2);
 	}
 
 	Ir _or(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::_or, {var, val1, val2} };
+		return Ir( IrHead::_or, var, val1, val2);
 	}
 
 	Ir _nor(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::_nor, {var, val1, val2} };
+		return Ir( IrHead::_nor, var, val1, val2);
 	}
 
 	Ir _xor(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::_xor, {var, val1, val2} };
+		return Ir( IrHead::_xor, var, val1, val2);
 	}
 
 	Ir sl(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::sl, {var, val1, val2} };
+		return Ir( IrHead::sl, var, val1, val2);
 	}
 
 	Ir sr(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::sr, {var, val1, val2} };
+		return Ir( IrHead::sr, var, val1, val2);
 	}
 
 	Ir less(irelem_t var, irelem_t val1, irelem_t val2) const
 	{
-		return Ir{ IrHead::less, {var, val1, val2} };
+		return Ir( IrHead::less, var, val1, val2);
 	}
 
 	Ir lw(irelem_t var, irelem_t base, irelem_t off) const
 	{
-		return Ir{ IrHead::lw, {var, base, off} };
+		return Ir( IrHead::lw, var, base, off);
 	}
 
 	Ir sw(irelem_t var, irelem_t base, irelem_t off) const
 	{
-		return Ir{ IrHead::sw, {var, base, off} };
+		return Ir( IrHead::sw, var, base, off);
 	}
 
 	Ir lb(irelem_t var, irelem_t base, irelem_t off) const
 	{
-		return Ir{ IrHead::lb, {var, base, off} };
+		return Ir( IrHead::lb, var, base, off);
 	}
 
 	Ir sb(irelem_t var, irelem_t base, irelem_t off) const
 	{
-		return Ir{ IrHead::sb, {var, base, off} };
+		return Ir( IrHead::sb, var, base, off);
 	}
 
 	Ir beq(irelem_t val1, irelem_t val2, irelem_t label) const
 	{
-		return Ir{ IrHead::beq, {val1, val2, label} };
+		return Ir( IrHead::beq, val1, val2, label);
 	}
 
 	Ir bne(irelem_t val1, irelem_t val2, irelem_t label) const
 	{
-		return Ir{ IrHead::bne, {val1, val2, label} };
+		return Ir( IrHead::bne, val1, val2, label);
 	}
 
 	Ir _goto(irelem_t label) const
 	{
-		return Ir{ IrHead::_goto, {label, nil(), nil()} };
+		return Ir( IrHead::_goto, label, nil(), nil());
 	}
 
 	Ir push(irelem_t val) const
 	{
-		return Ir{ IrHead::push, {val, nil(), nil()} };
+		return Ir( IrHead::push, val, nil(), nil());
 	}
 
 	Ir call(irelem_t label) const
 	{
-		return Ir{ IrHead::call, {label, nil(), nil()} };
+		return Ir( IrHead::call, label, nil(), nil());
 	}
 
 	Ir ret() const
 	{
-		return Ir{ IrHead::ret, {nil(), nil(), nil()} };
+		return Ir( IrHead::ret, nil(), nil(), nil());
 	}
 
 	Ir scanf(irelem_t var, irelem_t type) const
 	{
-		return Ir{ IrHead::scanf, {var, type, nil()} };
+		return Ir( IrHead::scanf, var, type, nil());
 	}
 
 	Ir printf(shared_ptr<const string> str) const
 	{
-		return Ir{ IrHead::printf, {allocator().alloc_string(str), nil(), nil()} };
+		return Ir( IrHead::printf, allocator().alloc_string(str), nil(), nil());
 	}
 
 	Ir printf(const string& str) const
 	{
-		return Ir{ IrHead::printf, {allocator().alloc_string(str), nil(), nil()} };
+		return Ir( IrHead::printf, allocator().alloc_string(str), nil(), nil());
 	}
 
 	Ir printf(irelem_t var, irelem_t type) const
 	{
-		return Ir{ IrHead::printf, {nil(), var, type} };
+		return Ir( IrHead::printf, nil(), var, type);
 	}
 
 	Ir printf(shared_ptr<const string> str, irelem_t var, irelem_t type) const
 	{
-		return Ir{ IrHead::printf, {allocator().alloc_string(str), var, type} };
+		return Ir( IrHead::printf, allocator().alloc_string(str), var, type);
 	}
 
 	Ir printf(const string& str, irelem_t var, irelem_t type) const
 	{
-		return Ir{ IrHead::printf, {allocator().alloc_string(str), var, type} };
+		return Ir( IrHead::printf, allocator().alloc_string(str), var, type);
 	}
 };
 

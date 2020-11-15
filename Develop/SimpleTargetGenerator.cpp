@@ -106,7 +106,7 @@ void SimpleCodeGenerator::init_global()
 		}
 	}
 	int str_count = 0;
-	for (const auto& p : allocator.get_map())
+	for (const auto& p : allocator.get_string_map())
 	{
 		string l = "string_";
 		l += to_string(str_count++);

@@ -16,7 +16,7 @@ using std::to_string;
 
 struct ITargetCodeGenerator
 {
-	virtual ~ITargetCodeGenerator() = 0 { };
+	virtual ~ITargetCodeGenerator() = default;
 	virtual void translate(ostream& os) = 0;
 };
 

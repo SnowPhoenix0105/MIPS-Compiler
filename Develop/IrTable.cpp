@@ -1,4 +1,8 @@
 #include "IrTable.h"
+#include <sstream>
+
+using std::ostringstream;
+using std::endl;
 
 string LabelAllocator::label_to_string(irelem_t label) const
 {
@@ -70,32 +74,32 @@ string LabelAllocator::func_name(irelem_t label) const
 
 LabelAllocator& LabelAllocator::alloc_func(const string& name)
 {
-	stored = funcs.size() | 0x1000'0000;
+	stored = funcs.size() | 0x10000000;
 	funcs.push_back(name);
 	return *this;
 }
 
 LabelAllocator& LabelAllocator::alloc_if()
 {
-	stored = if_count++ | 0x2000'0000;
+	stored = if_count++ | 0x20000000;
 	return *this;
 }
 
 LabelAllocator& LabelAllocator::alloc_switch()
 {
-	stored = switch_count++ | 0x3000'0000;
+	stored = switch_count++ | 0x30000000;
 	return *this;
 }
 
 LabelAllocator& LabelAllocator::alloc_for()
 {
-	stored =for_count++ | 0x4000'0000;
+	stored =for_count++ | 0x40000000;
 	return *this;
 }
 
 LabelAllocator& LabelAllocator::alloc_while()
 {
-	stored = while_count++ | 0x5000'0000;
+	stored = while_count++ | 0x50000000;
 	return *this;
 }
 
@@ -106,17 +110,17 @@ irelem_t LabelAllocator::beg() const
 
 irelem_t LabelAllocator::start() const
 {
-	return stored | 0x0400'0000;
+	return stored | 0x04000000;
 }
 
 irelem_t LabelAllocator::mid() const
 {
-	return stored | 0x0800'0000;
+	return stored | 0x08000000;
 }
 
 irelem_t LabelAllocator::end() const
 {
-	return stored | 0x0C00'0000;
+	return stored | 0x0C000000;
 }
 
 const shared_ptr<const string> VarAllocator::__global = make_shared<const string>("__global");
@@ -135,14 +139,14 @@ VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global), _reserv
 
 irelem_t VarAllocator::alloc_tmp()
 {
-	irelem_t ret = tmps.size() | 0xA000'0000;
+	irelem_t ret = tmps.size() | 0xA0000000;
 	tmps.push_back(current_func);
 	return ret;
 }
 
 irelem_t VarAllocator::alloc_named(shared_ptr<const string> name)
 {
-	irelem_t ret = nameds.size() | 0xB000'0000;
+	irelem_t ret = nameds.size() | 0xB0000000;
 	nameds.push_back(make_pair(current_func, name));
 	return ret;
 }
@@ -210,7 +214,7 @@ irelem_t CstAllocator::alloc_imm(int imm)
 		return idx->second;
 	}
 	size_t ord = imms.size();
-	irelem_t ret = 0x8000'0000 | ord;
+	irelem_t ret = 0x80000000 | ord;
 	imms.push_back(imm);
 	imm_cache.insert(make_pair(imm, ret));
 	return ret;
@@ -219,7 +223,7 @@ irelem_t CstAllocator::alloc_imm(int imm)
 irelem_t CstAllocator::alloc_arr(shared_ptr<const string> arr)
 {
 	size_t ord = arrs.size();
-	irelem_t ret = 0x9000'0000 | ord;
+	irelem_t ret = 0x90000000 | ord;
 	arrs.push_back(make_pair(current_func, arr));
 	return ret;
 }
@@ -234,7 +238,7 @@ irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
 		return alloc_imm(val);
 	}
 	size_t ord = incalculate_cst.size();
-	irelem_t ret = 0x9800'0000 | ord;
+	irelem_t ret = 0x98000000 | ord;
 	incalculate_cst.push_back(make_pair(cst_1, cst_2));
 	return ret;
 }
@@ -264,6 +268,27 @@ int CstAllocator::cst_to_value(irelem_t cst) const
 	return val1 + val2;
 }
 
+string CstAllocator::cst_to_string(irelem_t cst) const
+{
+	using std::to_string;
+	ASSERT(0, IrType::is_cst(cst));
+	if (IrType::is_imm(cst))
+	{
+		return to_string(imm_to_value(cst));
+	}
+	size_t ord = IrType::get_ord(cst);
+	if (IrType::is_pure_arr(cst))
+	{
+		const auto& arr = arrs.at(ord);
+		return *(arr.first) + "__arr__" + *(arr.second);
+	}
+	const auto& pair = incalculate_cst.at(ord);
+	string val1 = cst_to_string(pair.first);
+	string val2 = cst_to_string(pair.second);
+	return "(" + val1 + " + " + val2 + ")";
+	
+}
+
 irelem_t StringAllocator::alloc_string(shared_ptr<const string> str)
 {
 	return alloc_string(*str);
@@ -271,17 +296,235 @@ irelem_t StringAllocator::alloc_string(shared_ptr<const string> str)
 
 irelem_t StringAllocator::alloc_string(const string& str)
 {
-	const auto& it = map.find(str);
-	if (it != map.end())
+	const auto& it = str_map.find(str);
+	if (it != str_map.end())
 	{
 		return it->second;
 	}
-	irelem_t ret = map.size() | 0xC000'0000;
-	map.insert(make_pair(str, ret));
+	irelem_t ret = str_map.size() | 0xC0000000;
+	str_map.insert(make_pair(str, ret));
+	elem_map.insert(make_pair(ret, str));
 	return ret;
+}
+
+string IrElemAllocator::val_to_string(irelem_t elem) const
+{
+	if (IrType::is_cst(elem))
+	{
+		return cst_to_string(elem);
+	}
+	if (IrType::is_var(elem))
+	{
+		return var_to_string(elem);
+	}
 }
 
 shared_ptr<IrTable> IrTableBuilder::build()
 {
 	return make_shared<IrTable>(*this);
+}
+
+string IrTable::to_string(const IrElemAllocator& allocator)
+{
+	ostringstream builder;
+	for (const auto& code : table)
+	{
+		switch (code.head)
+		{
+		case IrHead::label:
+			builder << allocator.label_to_string(code.elem[0]) << ':' << endl;
+			break;
+		case IrHead::gvar:
+			builder << "\tgvar\t" << allocator.var_to_string(code.elem[0]) << endl;
+			break;
+		case IrHead::arr:
+			builder << "\taar\t" << allocator.cst_to_string(code.elem[0]) << ",\t"
+				<< (code.elem[1] == IrType::_int ? "int,\t" : "char,\t")
+				<< allocator.imm_to_value(code.elem[2]) << endl;
+			break;
+		case IrHead::init:
+			builder << "\tinit\t" << allocator.imm_to_value(code.elem[0]) << endl;
+			break;
+		case IrHead::func:
+			builder << "\tfunc\t" << (code.elem[1] == IrType::_int ? "int" : "char") << endl;
+			break;
+		case IrHead::param:
+			builder << "\tparam\t" << allocator.var_to_string(code.elem[0]) << endl;
+			break;
+		case IrHead::add:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t+\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::sub:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t-\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::mult:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t*\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::div:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t/\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::_and:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t&\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::_or:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t|\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::_nor:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\tnor\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::_xor:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t^\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::sl:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t<<\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::sr:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t>>\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::less:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\t<\t"
+				<< allocator.val_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::lw:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< '['
+				<< allocator.cst_to_string(code.elem[2])
+				<< ']'
+				<< endl;
+			break;
+		case IrHead::lb:
+			builder << '\t' << allocator.var_to_string(code.elem[0])
+				<< "\t|=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< '['
+				<< allocator.cst_to_string(code.elem[2])
+				<< ']'
+				<< endl;
+			break;
+		case IrHead::sw:
+			builder << '\t' << allocator.val_to_string(code.elem[1])
+				<< '['
+				<< allocator.cst_to_string(code.elem[2])
+				<< ']'
+				<< "\t=\t"
+				<< allocator.val_to_string(code.elem[0])
+				<< endl;
+			break;
+		case IrHead::sb:
+			builder << '\t' << allocator.val_to_string(code.elem[1])
+				<< '['
+				<< allocator.cst_to_string(code.elem[2])
+				<< ']'
+				<< "\t|=\t"
+				<< allocator.val_to_string(code.elem[0])
+				<< endl;
+			break;
+		case IrHead::beq:
+			builder << "\tif" << allocator.val_to_string(code.elem[0])
+				<< "\t==\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\tgoto\t"
+				<< allocator.label_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::bne:
+			builder << "\tif" << allocator.val_to_string(code.elem[0])
+				<< "\t!=\t"
+				<< allocator.val_to_string(code.elem[1])
+				<< "\tgoto\t"
+				<< allocator.label_to_string(code.elem[2])
+				<< endl;
+			break;
+		case IrHead::_goto:
+			builder << "\tgoto\t"
+				<< allocator.label_to_string(code.elem[0])
+				<< endl;
+			break;
+		case IrHead::push:
+			builder << "\tpush\t" << allocator.val_to_string(code.elem[0]) << endl;
+			break;
+		case IrHead::call:
+			builder << "\tcall\t"
+				<< allocator.label_to_string(code.elem[0])
+				<< endl;
+			break;
+		case IrHead::ret:
+			builder << "\tret" << endl;
+			break;
+		case IrHead::scanf:
+			builder << "\tscanf\t" << allocator.var_to_string(code.elem[0])
+				<< ",\t"
+				<< (code.elem[1] == IrType::_int ? "int" : "char")
+				<< endl;
+			break;
+		case IrHead::printf:
+			builder << "\tprintf\t" 
+				<< (code.elem[0] == IrType::NIL ? "NIL" : allocator.str_to_string(code.elem[0]))
+				<< ",\t"
+				<< (code.elem[1] == IrType::NIL ? "NIL" : allocator.val_to_string(code.elem[1]))
+				<< ",\t"
+				<< (code.elem[2] == IrType::_int ? "int" : "char")
+				<< endl;
+			break;
+		default:
+			break;
+		}
+	}
+	return builder.str();
 }

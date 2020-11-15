@@ -13,6 +13,7 @@ using std::shared_ptr;
 using std::ostringstream;
 using std::ifstream;
 using std::endl;
+using std::ofstream;
 
 
 namespace MarsTester
@@ -127,14 +128,16 @@ namespace MarsTester
 	// @param series_name: 
 	inline void test(const string& series_name)
 	{
-		string source_file_name = test_resource_path + "\\" + series_name + "_source.cl";
-		string input_file_name = test_resource_path + "\\" + series_name + "_input.txt";
-		string result_file_name = test_resource_path + "\\" + series_name + "_result.txt";
-		string expect_file_name = test_resource_path + "\\" + series_name + "_expect.txt";
-		string assembly_fule_name = test_resource_path + "\\" + series_name + "_assembly.asm";
-		start_compile(source_file_name, assembly_fule_name);
+		string source_file_name = test_resource_path + "\\" + series_name + "\\source.c";
+		string input_file_name = test_resource_path + "\\" + series_name + "\\input.txt";
+		string result_file_name = test_resource_path + "\\" + series_name + "\\result.txt";
+		string expect_file_name = test_resource_path + "\\" + series_name + "\\expect.txt";
+		string assembly_file_name = test_resource_path + "\\" + series_name + "\\assembly.asm";
+		unique_ptr<istream> source_file(new ifstream(source_file_name));
+		unique_ptr<ostream> assembly_file(new ofstream(assembly_file_name));
+		start_compile(std::move(source_file), std::move(assembly_file));
 		assembly_and_simulate(
-			assembly_fule_name,
+			assembly_file_name,
 			input_file_name,
 			result_file_name
 		);

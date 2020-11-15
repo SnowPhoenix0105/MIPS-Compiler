@@ -70,32 +70,32 @@ string LabelAllocator::func_name(irelem_t label) const
 
 LabelAllocator& LabelAllocator::alloc_func(const string& name)
 {
-	stored = funcs.size() | 0x1000'0000;
+	stored = funcs.size() | 0x10000000;
 	funcs.push_back(name);
 	return *this;
 }
 
 LabelAllocator& LabelAllocator::alloc_if()
 {
-	stored = if_count++ | 0x2000'0000;
+	stored = if_count++ | 0x20000000;
 	return *this;
 }
 
 LabelAllocator& LabelAllocator::alloc_switch()
 {
-	stored = switch_count++ | 0x3000'0000;
+	stored = switch_count++ | 0x30000000;
 	return *this;
 }
 
 LabelAllocator& LabelAllocator::alloc_for()
 {
-	stored =for_count++ | 0x4000'0000;
+	stored =for_count++ | 0x40000000;
 	return *this;
 }
 
 LabelAllocator& LabelAllocator::alloc_while()
 {
-	stored = while_count++ | 0x5000'0000;
+	stored = while_count++ | 0x50000000;
 	return *this;
 }
 
@@ -106,17 +106,17 @@ irelem_t LabelAllocator::beg() const
 
 irelem_t LabelAllocator::start() const
 {
-	return stored | 0x0400'0000;
+	return stored | 0x04000000;
 }
 
 irelem_t LabelAllocator::mid() const
 {
-	return stored | 0x0800'0000;
+	return stored | 0x08000000;
 }
 
 irelem_t LabelAllocator::end() const
 {
-	return stored | 0x0C00'0000;
+	return stored | 0x0C000000;
 }
 
 const shared_ptr<const string> VarAllocator::__global = make_shared<const string>("__global");
@@ -135,14 +135,14 @@ VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global), _reserv
 
 irelem_t VarAllocator::alloc_tmp()
 {
-	irelem_t ret = tmps.size() | 0xA000'0000;
+	irelem_t ret = tmps.size() | 0xA0000000;
 	tmps.push_back(current_func);
 	return ret;
 }
 
 irelem_t VarAllocator::alloc_named(shared_ptr<const string> name)
 {
-	irelem_t ret = nameds.size() | 0xB000'0000;
+	irelem_t ret = nameds.size() | 0xB0000000;
 	nameds.push_back(make_pair(current_func, name));
 	return ret;
 }
@@ -210,7 +210,7 @@ irelem_t CstAllocator::alloc_imm(int imm)
 		return idx->second;
 	}
 	size_t ord = imms.size();
-	irelem_t ret = 0x8000'0000 | ord;
+	irelem_t ret = 0x80000000 | ord;
 	imms.push_back(imm);
 	imm_cache.insert(make_pair(imm, ret));
 	return ret;
@@ -219,7 +219,7 @@ irelem_t CstAllocator::alloc_imm(int imm)
 irelem_t CstAllocator::alloc_arr(shared_ptr<const string> arr)
 {
 	size_t ord = arrs.size();
-	irelem_t ret = 0x9000'0000 | ord;
+	irelem_t ret = 0x90000000 | ord;
 	arrs.push_back(make_pair(current_func, arr));
 	return ret;
 }
@@ -234,7 +234,7 @@ irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
 		return alloc_imm(val);
 	}
 	size_t ord = incalculate_cst.size();
-	irelem_t ret = 0x9800'0000 | ord;
+	irelem_t ret = 0x98000000 | ord;
 	incalculate_cst.push_back(make_pair(cst_1, cst_2));
 	return ret;
 }
@@ -276,7 +276,7 @@ irelem_t StringAllocator::alloc_string(const string& str)
 	{
 		return it->second;
 	}
-	irelem_t ret = map.size() | 0xC000'0000;
+	irelem_t ret = map.size() | 0xC0000000;
 	map.insert(make_pair(str, ret));
 	return ret;
 }

@@ -35,7 +35,7 @@ public:
 	void print_all_message(ostream& os);
 	void print_all_error(ostream& os);
 	shared_ptr<IrElemAllocator> get_allocator_ptr() const { return env.get_allocator_ptr(); }
-	shared_ptr<IrTable> get_ir_table() { return env.fresh_code_builder(); }
+	shared_ptr<IrTable> get_ir_table();
 };
 
 #endif // !__SYNTACTIC_ANALYZER_H__

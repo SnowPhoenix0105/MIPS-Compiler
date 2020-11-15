@@ -45,6 +45,9 @@
     <ClCompile Include="TargetCodeGeneratorSimpleTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="BlackbocSimpleTest.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">

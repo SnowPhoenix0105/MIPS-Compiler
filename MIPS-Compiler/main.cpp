@@ -32,5 +32,13 @@ int main(int argc, char* argv[])
 	error_analyze(std::move(input_file), std::move(output_file));
 #endif // HW_2
 
+#ifdef HW_4
+	unique_ptr<istream> input_file(new ifstream("testfile.txt"));
+	unique_ptr<ostream> output_file(new ofstream("mips.txt"));
+	start_compile(std::move(input_file), std::move(output_file));
+
+#endif // HW_4
+
+
 	return 0;
 }
