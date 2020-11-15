@@ -1263,7 +1263,7 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 	{
 		env.ir_buffer().push_back(env.ir().call(id_info->ir_id));
 		res = env.elem().alloc_tmp();
-		env.ir_buffer().push_back(env.ir().add(res, env.elem().ret(), env.elem().zero()))
+		env.ir_buffer().push_back(env.ir().add(res, env.elem().ret(), env.elem().zero()));
 	}
 
 	env.message_back("<有返回值函数调用语句>");
@@ -1787,7 +1787,7 @@ void FactorAnalyze::analyze(Env& env)
 		CallReturnFunctionStatementAnalyze call_return_function_statement_analyze;
 		call_return_function_statement_analyze(env);				// 有返回值函数调用语句
 		type = call_return_function_statement_analyze.get_type();
-		// TODO
+		res = call_return_function_statement_analyze.get_res();
 	}
 	else
 	{
@@ -1821,6 +1821,7 @@ void FactorAnalyze::analyze(Env& env)
 			{
 				env.error_back(line_number, ErrorType::non_int_index_for_array);
 			}
+			irelem_t index_1 = size_1_expression_analyze.get_res();
 			env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 			if (env.peek() == SymbolType::left_square)
 			{
