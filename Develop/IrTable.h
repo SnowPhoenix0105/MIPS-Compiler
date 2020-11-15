@@ -272,9 +272,9 @@ struct IrFactory
 		return Ir{ IrHead::gvar, {var, nil(), nil()} };
 	}
 
-	Ir arr(irelem_t arr, irelem_t type, int size) const
+	Ir arr(irelem_t arr, irelem_t type, int space) const
 	{
-		return Ir{ IrHead::arr, {arr, type, allocator().alloc_imm(size)} };
+		return Ir{ IrHead::arr, {arr, type, allocator().alloc_imm(space)} };
 	}
 
 	Ir init(int imm) const

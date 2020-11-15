@@ -315,7 +315,18 @@ public:
 			int size = arr_type->total_size();
 			irelem_t arr = elem().alloc_arr(id->id);
 			id->ir_id = arr;
-			irelem_t type = arr_type->base_type == BaseType::type_char ? IrType::_char : IrType::_int;
+			int space;
+			irelem_t type;
+			if (arr_type->base_type == BaseType::type_char)
+			{
+				type = IrType::_char;
+				space = size;
+			}
+			else
+			{
+				type = IrType::_int;
+				type = size * 4;
+			}
 			global_ir_table().push_back(ir().arr(arr, type, size));
 		}
 		else if (id->return_type->is_one_from(ExternType::constant))

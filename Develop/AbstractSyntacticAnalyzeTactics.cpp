@@ -1685,6 +1685,7 @@ void ReturnStatementAnalyze::analyze(Env& env)
 void ExpressionAnalyze::analyze(Env& env)
 {
 	bool first_need_negative = false;
+	res = env.elem().zero();
 	if (env.peek() == SymbolType::plus || env.peek() == SymbolType::minus)
 	{
 		auto token = env.dequeue_and_message_back();				// + / -
@@ -1714,6 +1715,16 @@ void ExpressionAnalyze::analyze(Env& env)
 		{
 			type = BaseType::type_int;
 		}
+		irelem_t new_res = env.elem().alloc_tmp();
+		if (need_negative)
+		{
+			env.ir_buffer().push_back(env.ir().sub(new_res, res, term_analyze.get_res()));
+		}
+		else
+		{
+			env.ir_buffer().push_back(env.ir().add(new_res, res, term_analyze.get_res()));
+		}
+		res = new_res;
 		flag = true;
 	}
 	env.message_back("<表达式>");
@@ -1724,6 +1735,7 @@ void TermAnalyze::analyze(Env& env)
 {
 	bool flag = false;
 	type = BaseType::type_char;
+	res = env.elem().alloc_imm(1);
 	while (true)
 	{
 		bool is_mult = true;
@@ -1746,6 +1758,16 @@ void TermAnalyze::analyze(Env& env)
 		{
 			type = BaseType::type_int;
 		}
+		irelem_t new_res = env.elem().alloc_tmp();
+		if (is_mult)
+		{
+			env.ir_buffer().push_back(env.ir().mult(new_res, factor_analyze.get_res(), res));
+		}
+		else
+		{
+			env.ir_buffer().push_back(env.ir().div(new_res, res, factor_analyze.get_res()));
+		}
+		res = new_res;
 		flag = true;
 	}
 	env.message_back("<项>");
@@ -1758,7 +1780,7 @@ void FactorAnalyze::analyze(Env& env)
 	{
 		token_ptr token = env.dequeue_and_message_back();							// charactor
 		type = BaseType::type_char;
-		char value = dynamic_pointer_cast<CharToken>(token)->char_content;
+		char value = dynamic_pointer_cast<const CharToken>(token)->char_content;
 		res = env.elem().alloc_imm(value);
 	}
 	else if (in_branch_of<IntegerAnalyze>(env))
@@ -1833,6 +1855,7 @@ void FactorAnalyze::analyze(Env& env)
 				int line_number = env.peek_info()->line_number;
 				ExpressionAnalyze size_2_expression_analyze;
 				size_2_expression_analyze(env);						// 表达式
+				irelem_t index_2 = size_2_expression_analyze.get_res();
 				if (size_2_expression_analyze.get_type() != BaseType::type_int)
 				{
 					env.error_back(line_number, ErrorType::non_int_index_for_array);
@@ -1840,26 +1863,96 @@ void FactorAnalyze::analyze(Env& env)
 				env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 
 				// 二维数组
-				if (id_type != nullptr && id_type->extern_type != ExternType::d_array)
+				if (id_type != nullptr)
 				{
-					// TODO error
+					if (id_type->extern_type != ExternType::d_array)
+					{
+						// TODO error
+					}
+					else
+					{
+						// 取值
+						shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
+						irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_1 * (type == BaseType::type_char ? 1 : 4));
+						irelem_t base_off = env.elem().alloc_tmp();
+						env.ir_buffer().push_back(env.ir().mult(base_off, index_1, length_1));
+						irelem_t offset = env.elem().alloc_tmp();
+						if (type == BaseType::type_char)
+						{
+							env.ir_buffer().push_back(env.ir().add(offset, base_off, index_2));
+						}
+						else
+						{
+							irelem_t more_off = env.elem().alloc_tmp();
+							env.ir_buffer().push_back(env.ir().sl(more_off, index_2, env.elem().alloc_imm(2)));
+							env.ir_buffer().push_back(env.ir().add(offset, base_off, more_off));
+						}
+						irelem_t base = env.elem().alloc_tmp();
+						irelem_t base_reg = id_info.second ? env.elem().sp() : env.elem().gp();
+						env.ir_buffer().push_back(env.ir().add(base, base_reg, offset));
+						res = env.elem().alloc_tmp();
+						if (type == BaseType::type_char)
+						{
+							env.ir_buffer().push_back(env.ir().lb(res, base, id_info.first->ir_id));
+						}
+						else
+						{
+							env.ir_buffer().push_back(env.ir().lw(res, base, id_info.first->ir_id));
+						}
+					}
 				}
 			}
 			else
 			{
 				// 一维数组
-				if (id_type != nullptr && id_type->extern_type != ExternType::l_array)
+				if (id_type != nullptr)
 				{
-					// TODO error
+					if (id_type->extern_type != ExternType::l_array)
+					{
+						// TODO error
+					}
+					else
+					{
+						// 取值
+						shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
+						irelem_t base_reg = id_info.second ? env.elem().sp() : env.elem().gp();
+						irelem_t base = env.elem().alloc_tmp();
+						if (type == BaseType::type_char)
+						{
+							env.ir_buffer().push_back(env.ir().add(base, base_reg, index_1));
+						}
+						else
+						{
+							irelem_t offset = env.elem().alloc_tmp();
+							env.ir_buffer().push_back(env.ir().sl(offset, index_1, env.elem().alloc_imm(2)));
+							env.ir_buffer().push_back(env.ir().add(base, base_reg, offset));
+						}
+						res = env.elem().alloc_tmp();
+						if (type == BaseType::type_char)
+						{
+							env.ir_buffer().push_back(env.ir().lb(res, base, id_info.first->ir_id));
+						}
+						else
+						{
+							env.ir_buffer().push_back(env.ir().lw(res, base, id_info.first->ir_id));
+						}
+					}
 				}
 			}
 		}
 		else
 		{
-			// 普通变量
-			if (id_type != nullptr && id_type->extern_type != ExternType::variable)
+			// 普通变量 / 常量
+			if (id_type != nullptr)
 			{
-				// TODO error
+				if (id_type->is_one_from(ExternType::variable, ExternType::constant))
+				{
+					res = id_info.first->ir_id;
+				}
+				else
+				{
+					// TODO error
+				}
 			}
 		}
 	}
