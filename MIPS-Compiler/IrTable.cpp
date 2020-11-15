@@ -202,8 +202,6 @@ string VarAllocator::var_to_string(irelem_t var) const
 	return *pair.first + "_var_" + *pair.second;
 }
 
-const shared_ptr<const string> CstAllocator::__global = make_shared<const string>("__global");
-
 irelem_t CstAllocator::alloc_imm(int imm)
 {
 	auto idx = imm_cache.find(imm);

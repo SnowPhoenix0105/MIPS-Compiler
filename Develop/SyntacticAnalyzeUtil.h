@@ -272,15 +272,14 @@ public:
 	IrCodeEnvironment() : allocator_ptr(make_shared<IrElemAllocator>()), factory(allocator_ptr) { }
 	IrElemAllocator& elem() const { return *allocator_ptr; }
 	const IrFactory& ir() const { return factory; }
-	IrTableBuilder& global_ir_table() { return builder; }
-	IrTableBuilder& ir_buffer() { return buffer; }
-	shared_ptr<IrTable> fresh_ir_buffer()
+	IrTableBuilder& code_builder() { return buffer; }
+	shared_ptr<IrTable> fresh_code_builder()
 	{
 		shared_ptr<IrTable> ret = buffer.build();
 		buffer.clear();
 		return ret;
 	}
-	shared_ptr<IrElemAllocator> get_allocator_ptr() { return allocator_ptr; }
+	shared_ptr<IrElemAllocator> get_allocator_ptr() const { return allocator_ptr; }
 };
 
 class SymbolTableEnvironment : public IrCodeEnvironment
@@ -296,15 +295,17 @@ public:
 
 	bool is_using_global_table() { return using_global_table; }
 
-	void change_to_local_table()
+	void change_to_local_table(shared_ptr<const string> func_name)
 	{
 		using_global_table = false;
 		local_table.clear();
+		elem().set_function(func_name);
 	}
 
 	void change_to_global_table()
 	{
 		using_global_table = true;
+		elem().set_function(IrElemAllocator::__global);
 	}
 
 	irelem_t insert_identifier(shared_ptr<IdentifierInfo> id)
@@ -327,7 +328,7 @@ public:
 				type = IrType::_int;
 				type = size * 4;
 			}
-			global_ir_table().push_back(ir().arr(arr, type, size));
+			code_builder().push_back(ir().arr(arr, type, size));
 		}
 		else if (id->return_type->is_one_from(ExternType::constant))
 		{
@@ -341,7 +342,7 @@ public:
 			id->ir_id = var;
 			if (using_global_table)
 			{
-				global_ir_table().push_back(ir().gvar(var));
+				code_builder().push_back(ir().gvar(var));
 			}
 		}
 		else if (id->return_type->is_one_from(ExternType::function))
@@ -351,7 +352,7 @@ public:
 			id->ir_id = elem().alloc_func(id->id).beg();
 			func_type->mid_label = elem().mid();
 			func_type->end_label = elem().end();
-			global_ir_table().push_back(ir().func(ret_type));
+			code_builder().push_back(ir().func(ret_type));
 			// TODO param ÉùÃ÷
 		}
 

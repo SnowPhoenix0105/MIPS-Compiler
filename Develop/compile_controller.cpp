@@ -12,10 +12,27 @@ using std::endl;
 using std::istream;
 using std::ostream;
 
-void start_compile(const std::string& input_file_name, const std::string& output_file_name)
+unique_ptr<ostream> start_compile(unique_ptr<istream> input_file, unique_ptr<ostream> output_file)
 {
-	// TODO: main process of compiling
-	cout << "start compile" << endl;
+	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
+	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
+	try
+	{
+		syntactic_analyzer.parse();
+		shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
+		shared_ptr<IrTable> ir_table_ptr = syntactic_analyzer.get_ir_table();
+		unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
+		target_code_generator->translate(*output_file);
+	}
+	catch (const std::exception& e)
+	{
+		*output_file << "1 " << e.what() << endl;
+	}
+	catch (...)
+	{
+
+	}
+	return output_file;
 }
 
 string formated_content(LexicalAnalyzer& analyzer)

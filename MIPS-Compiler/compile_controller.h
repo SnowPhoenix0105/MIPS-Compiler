@@ -6,11 +6,13 @@
 #include <fstream>
 #include "LexicalAnalyzer.h"
 #include "SyntacticAnalyzer.h"
+#include "TargetCodeGenerator.h"
+#include "SimpleTargetGenerator.h"
 
 
 
 
-void start_compile(const std::string& input_file_name, const std::string& output_file_name);
+unique_ptr<ostream> start_compile(unique_ptr<istream> input_file, unique_ptr<ostream> output_file);
 
 string formated_content(LexicalAnalyzer& analyzer);
 

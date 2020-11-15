@@ -245,7 +245,7 @@ struct IrTableBuilder : vector<Ir>
 		}
 	}
 
-	void push_pack_all(const IrTable& ir_table) 
+	void push_back_all(const IrTable& ir_table)
 	{
 		for (const auto& ir : ir_table)
 		{

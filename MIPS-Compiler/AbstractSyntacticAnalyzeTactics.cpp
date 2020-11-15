@@ -129,7 +129,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 			{
 				auto token = env.dequeue_and_message_back();		// identifier
 				id = dynamic_pointer_cast<const IdentifierToken>(token);
-				if (env.get_identifier_info(id->id_name_content, false) != nullptr)
+				if (env.get_identifier_info(id->id_name_content).second)
 				{
 					env.error_back(token->line_number, ErrorType::duplicated_identifier);
 				}
@@ -160,6 +160,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 					auto tk = env.dequeue_and_message_back();		// charactor
 					shared_ptr<CharactorIdentifierInfo> info = make_shared<CharactorIdentifierInfo>();
 					info->value = dynamic_pointer_cast<const CharToken>(tk)->char_content;
+					//info->ir_id = env.elem().alloc_imm(info->value);
 					id_info = info;
 				}
 			}
@@ -183,6 +184,7 @@ void ConstantDefinationAnalyze::analyze(Env& env)
 					integer_analyze(env);
 					shared_ptr<IntegerIdentifierInfo> info = make_shared<IntegerIdentifierInfo>();
 					info->value = integer_analyze.get_value();
+					//info->ir_id = env.elem().alloc_imm(info->value);
 					id_info = info;
 				}
 			}
@@ -300,7 +302,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 			{
 				auto token = env.dequeue_and_message_back();				// identifier
 				id = dynamic_pointer_cast<const IdentifierToken>(token);
-				if (env.get_identifier_info(id->id_name_content, false) != nullptr)
+				if (env.get_identifier_info(id->id_name_content).second)
 				{
 					env.error_back(token->line_number, ErrorType::duplicated_identifier);
 				}
@@ -308,6 +310,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 
 			shared_ptr<IdentifierType> return_type;
 			ConstantAnalyze constant_analyze;
+			vector<int> init_vec;
 			if (env.peek() == SymbolType::left_square)
 			{
 				env.dequeue_and_message_back();						// left_square
@@ -328,8 +331,6 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					int line_number = env.dequeue_and_message_back()->line_number;			// assigin
 
 					auto rlt = analyze_initialize_list(env);
-					vector<char> char_vec;
-					vector<int> int_vec;
 					if (rlt != nullptr)
 					{
 						auto list_1 = dynamic_pointer_cast<InitializeList>(rlt);
@@ -374,7 +375,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 											}
 											else
 											{
-												char_vec.push_back(ch->content);
+												init_vec.push_back(ch->content);
 											}
 										}
 										else
@@ -387,7 +388,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 											}
 											else
 											{
-												int_vec.push_back(in->content);
+												init_vec.push_back(in->content);
 											}
 										}
 									}
@@ -399,8 +400,6 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					{
 						env.error_back(line_number, ErrorType::unknown_error);
 					}
-
-					// 赋值
 
 					// 插入符号表
 					shared_ptr<DoubleDimensionalArrayIdentifierType> id_type = make_shared<DoubleDimensionalArrayIdentifierType>();
@@ -415,8 +414,6 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					int line_number = env.dequeue_and_message_back()->line_number;			// assigin
 
 					auto rlt = analyze_initialize_list(env);
-					vector<char> char_vec;
-					vector<int> int_vec;
 					if (rlt != nullptr)
 					{
 						auto list = dynamic_pointer_cast<InitializeList>(rlt);
@@ -447,7 +444,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 									}
 									else
 									{
-										char_vec.push_back(ch->content);
+										init_vec.push_back(ch->content);
 									}
 								}
 								else
@@ -460,7 +457,7 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 									}
 									else
 									{
-										int_vec.push_back(in->content);
+										init_vec.push_back(in->content);
 									}
 								}
 							}
@@ -470,8 +467,6 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					{
 						env.error_back(line_number, ErrorType::unknown_error);
 					}
-
-					// 赋值
 
 					// 插入符号表
 					shared_ptr<LinearArrayIdentifierType> id_type = make_shared<LinearArrayIdentifierType>();
@@ -492,8 +487,11 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 					{
 						env.error_back(line_number, ErrorType::constant_type_mismatching);
 					}
-
-					// TODO 赋值
+					else
+					{
+						int value = base_type == BaseType::type_char ? constant_analyze.get_char() : constant_analyze.get_int();
+						init_vec.push_back(value);
+					}
 				}
 
 				// 插入符号表
@@ -508,7 +506,22 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				info->id = id->id_name_content;
 				info->return_type = return_type;
 				new_ids.push_back(info);
-				env.insert_identifier(info);
+				irelem_t elem = env.insert_identifier(info);
+				if (info->return_type->is_one_from(ExternType::variable))
+				{
+					for (int ini : init_vec)
+					{
+						env.code_builder().push_back(env.ir().add(elem, env.elem().zero(), env.elem().alloc_imm(ini)));
+						break;
+					}
+				}
+				else
+				{
+					for (int ini : init_vec)
+					{
+						env.code_builder().push_back(env.ir().init(ini));
+					}
+				}
 			}
 			++count;
 		}
@@ -549,7 +562,7 @@ void VariableDefinationNoInitializationAnalyze::analyze(Env& env)
 			{
 				auto token = env.dequeue_and_message_back();				// identifier
 				id = dynamic_pointer_cast<const IdentifierToken>(token);
-				if (env.get_identifier_info(id->id_name_content, false) != nullptr)
+				if (env.get_identifier_info(id->id_name_content).second)
 				{
 					env.error_back(token->line_number, ErrorType::duplicated_identifier);
 				}
@@ -686,9 +699,10 @@ void UnsignedIntegerAnalyze::analyze(Env& env)
 
 int analyze_inner_block(
 	AbstractSyntacticAnalyzeTactics::Env& env, 
-	shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list)
+	shared_ptr<const vector<shared_ptr<IdentifierInfo>>> param_list, 
+	shared_ptr<const string> func_name)
 {
-	env.change_to_local_table();
+	env.change_to_local_table(func_name);
 
 	for (auto param : *param_list)
 	{
@@ -719,7 +733,7 @@ int analyze_function(
 	const char* information)
 {
 	bool need_insert = true;
-	if (env.get_identifier_info(function_id, false) != nullptr)
+	if (env.get_identifier_info(function_id).second)
 	{
 		need_insert = false;
 		env.error_back(line_number, ErrorType::duplicated_identifier);
@@ -745,7 +759,7 @@ int analyze_function(
 	id_type->base_type = return_type;
 	id_type->extern_type = ExternType::function;
 	id_type->param_type_list = param_type_list;
-	shared_ptr<IdentifierInfo> function_info = make_shared<IdentifierInfo>();
+	shared_ptr<IdentifierInfo> function_info = make_shared<FunctionIdentifierInfo>();
 	function_info->return_type = id_type;
 	function_info->id = function_id;
 	if (need_insert)
@@ -755,7 +769,7 @@ int analyze_function(
 
 	try
 	{
-		int line_number = analyze_inner_block(env, param_list);
+		int line_number = analyze_inner_block(env, param_list, function_id);
 		env.message_back(information);
 		return line_number;
 	}
@@ -820,7 +834,7 @@ void MainFunctionAnalyze::analyze(Env& env)
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 	env.current_return_type = BaseType::type_void;
 	env.return_count = 0;
-	analyze_inner_block(env, make_shared<const vector<shared_ptr<IdentifierInfo>>>());
+	analyze_inner_block(env, make_shared<const vector<shared_ptr<IdentifierInfo>>>(), make_shared<string>("main"));
 	env.message_back("<主函数>");
 }
 
@@ -1059,7 +1073,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		{
 			auto init_token = env.dequeue_and_message_back();			// identifier
 			auto init_id_token = dynamic_pointer_cast<const IdentifierToken>(init_token);
-			auto init_id_info = env.get_identifier_info(init_id_token->id_name_content);
+			auto init_id_info = env.get_identifier_info(init_id_token->id_name_content).first;
 			if (init_id_info == nullptr)
 			{
 				env.error_back(init_token->line_number, ErrorType::undefined_identifier);
@@ -1090,7 +1104,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 		{
 			auto delta_left_token = env.dequeue_and_message_back();		// identifier
 			auto delta_left_id_token = dynamic_pointer_cast<const IdentifierToken>(delta_left_token);
-			auto delta_left_id_info = env.get_identifier_info(delta_left_id_token->id_name_content);
+			auto delta_left_id_info = env.get_identifier_info(delta_left_id_token->id_name_content).first;
 			if (delta_left_id_info == nullptr)
 			{
 				env.error_back(delta_left_token->line_number, ErrorType::undefined_identifier);
@@ -1107,7 +1121,7 @@ void LoopStatementAnalyze::analyze(Env& env)
 			{
 				auto delta_right_token = env.dequeue_and_message_back();	// identifier
 				auto delta_right_id_token = dynamic_pointer_cast<const IdentifierToken>(delta_right_token);
-				auto delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content);
+				auto delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content).first;
 				if (delta_right_id_info == nullptr)
 				{
 					env.error_back(delta_right_token->line_number, ErrorType::undefined_identifier);
@@ -1221,7 +1235,7 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 {
 	auto token = env.dequeue_and_message_back();				// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
-	auto id_info = env.get_identifier_info(id_token->id_name_content);
+	auto id_info = env.get_identifier_info(id_token->id_name_content).first;
 	shared_ptr<const vector<BaseType>> parameter_table;
 	if (id_info == nullptr)
 	{
@@ -1245,6 +1259,13 @@ void CallReturnFunctionStatementAnalyze::analyze(Env& env)
 	parameter_value_list_analyze(env);							// 值参数表
 
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
+	
+	if (id_info != nullptr)
+	{
+		env.code_builder().push_back(env.ir().call(id_info->ir_id));
+		res = env.elem().alloc_tmp();
+		env.code_builder().push_back(env.ir().add(res, env.elem().ret(), env.elem().zero()));
+	}
 
 	env.message_back("<有返回值函数调用语句>");
 }
@@ -1254,7 +1275,7 @@ void CallVoidFunctionStatementAnalyze::analyze(Env& env)
 {
 	auto token = env.dequeue_and_message_back();				// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
-	auto id_info = env.get_identifier_info(id_token->id_name_content);
+	auto id_info = env.get_identifier_info(id_token->id_name_content).first;
 	shared_ptr<const vector<BaseType>> parameter_table;
 	if (id_info == nullptr)
 	{
@@ -1339,13 +1360,19 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 	shared_ptr<const IdentifierType> id_type;
 	auto id_info = env.get_identifier_info(id_token->id_name_content);
-	if (id_info == nullptr)
+
+	shared_ptr<const IrTable> front_codes = env.fresh_code_builder();
+
+	// expr写入buffer， assign从buffer读取
+	irelem_t buffer = env.elem().alloc_tmp();
+
+	if (id_info.first == nullptr)
 	{
 		env.error_back(token->line_number, ErrorType::undefined_identifier);
 	}
 	else
 	{
-		id_type = id_info->return_type;
+		id_type = id_info.first->return_type;
 		if (id_type->extern_type == ExternType::constant)
 		{
 			env.error_back(token->line_number, ErrorType::try_change_const_value);
@@ -1363,6 +1390,7 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 		}
 		ExpressionAnalyze expression_analyze_1;
 		expression_analyze_1(env);										// 表达式
+		irelem_t index_1 = expression_analyze_1.get_res();
 		if (expression_analyze_1.get_type() != BaseType::type_int)
 		{
 			env.error_back(line_number, ErrorType::non_int_index_for_array);
@@ -1378,34 +1406,109 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 			}
 			ExpressionAnalyze expression_analyze_2;
 			expression_analyze_2(env);										// 表达式
+			irelem_t index_2 = expression_analyze_2.get_res();
 			if (expression_analyze_2.get_type() != BaseType::type_int)
 			{
 				env.error_back(line_number, ErrorType::non_int_index_for_array);
 			}
 			env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 
-			if (id_type != nullptr && id_type->extern_type != ExternType::d_array)
+			if (id_type != nullptr && id_info.first != nullptr)
 			{
-				// TODO error
+				if (id_type->extern_type != ExternType::d_array)
+				{
+					// TODO error
+				}
+				else
+				{
+					// 赋值
+					BaseType type = id_type->base_type;
+					shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
+					irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_1 * (type == BaseType::type_char ? 1 : 4));
+					irelem_t base_off = env.elem().alloc_tmp();
+					env.code_builder().push_back(env.ir().mult(base_off, index_1, length_1));
+					irelem_t offset = env.elem().alloc_tmp();
+					if (type == BaseType::type_char)
+					{
+						env.code_builder().push_back(env.ir().add(offset, base_off, index_2));
+					}
+					else
+					{
+						irelem_t more_off = env.elem().alloc_tmp();
+						env.code_builder().push_back(env.ir().sl(more_off, index_2, env.elem().alloc_imm(2)));
+						env.code_builder().push_back(env.ir().add(offset, base_off, more_off));
+					}
+					irelem_t base = env.elem().alloc_tmp();
+					irelem_t base_reg = id_info.second ? env.elem().sp() : env.elem().gp();
+					env.code_builder().push_back(env.ir().add(base, base_reg, offset));
+					if (type == BaseType::type_char)
+					{
+						env.code_builder().push_back(env.ir().sb(buffer, base, id_info.first->ir_id));
+					}
+					else
+					{
+						env.code_builder().push_back(env.ir().sw(buffer, base, id_info.first->ir_id));
+					}
+				}
 			}
 		}
 		else
 		{
 			// 一维数组
-			if (id_type != nullptr && id_type->extern_type != ExternType::l_array)
+			if (id_type != nullptr && id_info.first != nullptr)
 			{
-				// TODO error
+				if (id_type->extern_type != ExternType::l_array)
+				{
+					// TODO error
+				}
+				else
+				{
+					// 赋值
+					BaseType type = id_type->base_type;
+					shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
+					irelem_t base_reg = id_info.second ? env.elem().sp() : env.elem().gp();
+					irelem_t base = env.elem().alloc_tmp();
+					if (type == BaseType::type_char)
+					{
+						env.code_builder().push_back(env.ir().add(base, base_reg, index_1));
+					}
+					else
+					{
+						irelem_t offset = env.elem().alloc_tmp();
+						env.code_builder().push_back(env.ir().sl(offset, index_1, env.elem().alloc_imm(2)));
+						env.code_builder().push_back(env.ir().add(base, base_reg, offset));
+					}
+					if (type == BaseType::type_char)
+					{
+						env.code_builder().push_back(env.ir().sb(buffer, base, id_info.first->ir_id));
+					}
+					else
+					{
+						env.code_builder().push_back(env.ir().sw(buffer, base, id_info.first->ir_id));
+					}
+				}
 			}
 		}
 	}
 	else
 	{
 		// 普通变量
-		if (id_type != nullptr && id_type->extern_type != ExternType::variable)
+		if (id_type != nullptr && id_info.first != nullptr)
 		{
-			// TODO error
+			if (id_type->extern_type != ExternType::variable)
+			{
+				// TODO error
+			}
+			else
+			{
+				// 赋值
+				env.code_builder().push_back(env.ir().add(id_info.first->ir_id, buffer, env.elem().zero()));
+			}
 		}
 	}
+
+	shared_ptr<const IrTable> assign_codes = env.fresh_code_builder();
+	env.code_builder().push_back_all(*front_codes);
 	
 	if (env.peek() != SymbolType::assign)
 	{
@@ -1419,6 +1522,11 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 	}
 	ExpressionAnalyze left_expression_analyze;
 	left_expression_analyze(env);									// 表达式
+
+	env.code_builder().push_back(env.ir().add(buffer, left_expression_analyze.get_res(), env.elem().zero()));
+
+	env.code_builder().push_back_all(*assign_codes);
+
 	
 	env.message_back("<赋值语句>");
 }
@@ -1439,12 +1547,25 @@ void ReadStatementAnalyze::analyze(Env& env)
 	}
 	auto token = env.dequeue_and_message_back();				// identifier
 	auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
-	auto id_type = env.get_identifier_info(id_token->id_name_content)->return_type;
-	if (id_type->extern_type != ExternType::variable)
+	auto id_info = env.get_identifier_info(id_token->id_name_content).first;
+	if (id_info == nullptr)
 	{
-		env.error_back(token->line_number, ErrorType::try_change_const_value);
+		env.error_back(token->line_number, ErrorType::undefined_identifier);
 	}
-	// 读取
+	else
+	{
+		auto id_type = id_info->return_type;
+		if (id_type->extern_type != ExternType::variable)
+		{
+			env.error_back(token->line_number, ErrorType::try_change_const_value);
+		}
+		else
+		{
+			// 读取
+			irelem_t type = id_type->base_type == BaseType::type_char ? IrType::_char : IrType::_int;
+			env.code_builder().push_back(env.ir().scanf(id_info->ir_id, type));
+		}
+	}
 
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 	env.message_back("<读语句>");
@@ -1474,10 +1595,14 @@ void WriteStatementAnalyze::analyze(Env& env)
 			}
 			ExpressionAnalyze expression_analyze;
 			expression_analyze(env);
+			// 字符串 + 表达式
+			irelem_t type = expression_analyze.get_type() == BaseType::type_char ? IrType::_char : IrType::_int;
+			env.code_builder().push_back(env.ir().printf(str_token->string_content, expression_analyze.get_res(), type));
 		}
 		else
 		{
 			// TODO 仅字符串
+			env.code_builder().push_back(env.ir().printf(str_token->string_content));
 		}
 	}
 	else
@@ -1489,6 +1614,8 @@ void WriteStatementAnalyze::analyze(Env& env)
 		}
 		ExpressionAnalyze expression_analyze;
 		expression_analyze(env);
+		irelem_t type = expression_analyze.get_type() == BaseType::type_char ? IrType::_char : IrType::_int;
+		env.code_builder().push_back(env.ir().printf(expression_analyze.get_res(), type));
 	}
 
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
@@ -1630,6 +1757,7 @@ void ReturnStatementAnalyze::analyze(Env& env)
 		{
 			env.error_back(line_number, ErrorType::wrong_return_in_return_function);
 		}
+		env.code_builder().push_back(env.ir().ret());
 		env.message_back("<返回语句>");
 		return;
 	}
@@ -1654,10 +1782,12 @@ void ReturnStatementAnalyze::analyze(Env& env)
 		{
 			env.error_back(line_number, ErrorType::wrong_return_in_return_function);
 		}
+		env.code_builder().push_back(env.ir().add(env.elem().ret(), expression_analyze.get_res(), env.elem().zero()));
 	}
 
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
+	env.code_builder().push_back(env.ir().ret());
 	env.message_back("<返回语句>");
 }
 
@@ -1665,6 +1795,7 @@ void ReturnStatementAnalyze::analyze(Env& env)
 void ExpressionAnalyze::analyze(Env& env)
 {
 	bool first_need_negative = false;
+	res = env.elem().zero();
 	if (env.peek() == SymbolType::plus || env.peek() == SymbolType::minus)
 	{
 		auto token = env.dequeue_and_message_back();				// + / -
@@ -1694,6 +1825,16 @@ void ExpressionAnalyze::analyze(Env& env)
 		{
 			type = BaseType::type_int;
 		}
+		irelem_t new_res = env.elem().alloc_tmp();
+		if (need_negative)
+		{
+			env.code_builder().push_back(env.ir().sub(new_res, res, term_analyze.get_res()));
+		}
+		else
+		{
+			env.code_builder().push_back(env.ir().add(new_res, res, term_analyze.get_res()));
+		}
+		res = new_res;
 		flag = true;
 	}
 	env.message_back("<表达式>");
@@ -1704,6 +1845,7 @@ void TermAnalyze::analyze(Env& env)
 {
 	bool flag = false;
 	type = BaseType::type_char;
+	res = env.elem().alloc_imm(1);
 	while (true)
 	{
 		bool is_mult = true;
@@ -1726,6 +1868,16 @@ void TermAnalyze::analyze(Env& env)
 		{
 			type = BaseType::type_int;
 		}
+		irelem_t new_res = env.elem().alloc_tmp();
+		if (is_mult)
+		{
+			env.code_builder().push_back(env.ir().mult(new_res, factor_analyze.get_res(), res));
+		}
+		else
+		{
+			env.code_builder().push_back(env.ir().div(new_res, res, factor_analyze.get_res()));
+		}
+		res = new_res;
 		flag = true;
 	}
 	env.message_back("<项>");
@@ -1736,14 +1888,18 @@ void FactorAnalyze::analyze(Env& env)
 {
 	if (env.peek() == SymbolType::character)
 	{
-		env.dequeue_and_message_back();							// charactor
+		token_ptr token = env.dequeue_and_message_back();							// charactor
 		type = BaseType::type_char;
+		char value = dynamic_pointer_cast<const CharToken>(token)->char_content;
+		res = env.elem().alloc_imm(value);
 	}
 	else if (in_branch_of<IntegerAnalyze>(env))
 	{
 		IntegerAnalyze integer_analyze;
 		integer_analyze(env);									// 整数
 		type = BaseType::type_int;
+		int value = integer_analyze.get_value();
+		res = env.elem().alloc_imm(value);
 	}
 	else if (env.peek() == SymbolType::left_paren)
 	{
@@ -1756,12 +1912,14 @@ void FactorAnalyze::analyze(Env& env)
 		expression_analyze(env);								// 表达式
 		type = BaseType::type_int;
 		env.dequeue_certain_and_message_back(SymbolType::right_paren);// right_paren
+		res = expression_analyze.get_res();
 	}
 	else if (in_branch_of<CallReturnFunctionStatementAnalyze>(env))
 	{
 		CallReturnFunctionStatementAnalyze call_return_function_statement_analyze;
 		call_return_function_statement_analyze(env);				// 有返回值函数调用语句
 		type = call_return_function_statement_analyze.get_type();
+		res = call_return_function_statement_analyze.get_res();
 	}
 	else
 	{
@@ -1770,14 +1928,14 @@ void FactorAnalyze::analyze(Env& env)
 		auto id_token = dynamic_pointer_cast<const IdentifierToken>(token);
 		shared_ptr<const IdentifierType> id_type;
 		auto id_info = env.get_identifier_info(id_token->id_name_content);
-		if (id_info == nullptr)
+		if (id_info.first == nullptr)
 		{
 			env.error_back(token->line_number, ErrorType::undefined_identifier);
 			type = BaseType::type_char;
 		}
 		else
 		{
-			id_type = id_info->return_type;
+			id_type = id_info.first->return_type;
 			type = id_type->base_type;
 		}
 
@@ -1795,6 +1953,7 @@ void FactorAnalyze::analyze(Env& env)
 			{
 				env.error_back(line_number, ErrorType::non_int_index_for_array);
 			}
+			irelem_t index_1 = size_1_expression_analyze.get_res();
 			env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 			if (env.peek() == SymbolType::left_square)
 			{
@@ -1806,6 +1965,7 @@ void FactorAnalyze::analyze(Env& env)
 				int line_number = env.peek_info()->line_number;
 				ExpressionAnalyze size_2_expression_analyze;
 				size_2_expression_analyze(env);						// 表达式
+				irelem_t index_2 = size_2_expression_analyze.get_res();
 				if (size_2_expression_analyze.get_type() != BaseType::type_int)
 				{
 					env.error_back(line_number, ErrorType::non_int_index_for_array);
@@ -1813,26 +1973,96 @@ void FactorAnalyze::analyze(Env& env)
 				env.dequeue_certain_and_message_back(SymbolType::right_square);		// right_square
 
 				// 二维数组
-				if (id_type != nullptr && id_type->extern_type != ExternType::d_array)
+				if (id_type != nullptr && id_info.first != nullptr)
 				{
-					// TODO error
+					if (id_type->extern_type != ExternType::d_array)
+					{
+						// TODO error
+					}
+					else
+					{
+						// 取值
+						shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
+						irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_1 * (type == BaseType::type_char ? 1 : 4));
+						irelem_t base_off = env.elem().alloc_tmp();
+						env.code_builder().push_back(env.ir().mult(base_off, index_1, length_1));
+						irelem_t offset = env.elem().alloc_tmp();
+						if (type == BaseType::type_char)
+						{
+							env.code_builder().push_back(env.ir().add(offset, base_off, index_2));
+						}
+						else
+						{
+							irelem_t more_off = env.elem().alloc_tmp();
+							env.code_builder().push_back(env.ir().sl(more_off, index_2, env.elem().alloc_imm(2)));
+							env.code_builder().push_back(env.ir().add(offset, base_off, more_off));
+						}
+						irelem_t base = env.elem().alloc_tmp();
+						irelem_t base_reg = id_info.second ? env.elem().sp() : env.elem().gp();
+						env.code_builder().push_back(env.ir().add(base, base_reg, offset));
+						res = env.elem().alloc_tmp();
+						if (type == BaseType::type_char)
+						{
+							env.code_builder().push_back(env.ir().lb(res, base, id_info.first->ir_id));
+						}
+						else
+						{
+							env.code_builder().push_back(env.ir().lw(res, base, id_info.first->ir_id));
+						}
+					}
 				}
 			}
 			else
 			{
 				// 一维数组
-				if (id_type != nullptr && id_type->extern_type != ExternType::l_array)
+				if (id_type != nullptr && id_info.first != nullptr)
 				{
-					// TODO error
+					if (id_type->extern_type != ExternType::l_array)
+					{
+						// TODO error
+					}
+					else
+					{
+						// 取值
+						shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
+						irelem_t base_reg = id_info.second ? env.elem().sp() : env.elem().gp();
+						irelem_t base = env.elem().alloc_tmp();
+						if (type == BaseType::type_char)
+						{
+							env.code_builder().push_back(env.ir().add(base, base_reg, index_1));
+						}
+						else
+						{
+							irelem_t offset = env.elem().alloc_tmp();
+							env.code_builder().push_back(env.ir().sl(offset, index_1, env.elem().alloc_imm(2)));
+							env.code_builder().push_back(env.ir().add(base, base_reg, offset));
+						}
+						res = env.elem().alloc_tmp();
+						if (type == BaseType::type_char)
+						{
+							env.code_builder().push_back(env.ir().lb(res, base, id_info.first->ir_id));
+						}
+						else
+						{
+							env.code_builder().push_back(env.ir().lw(res, base, id_info.first->ir_id));
+						}
+					}
 				}
 			}
 		}
 		else
 		{
-			// 普通变量
-			if (id_type != nullptr && id_type->extern_type != ExternType::variable)
+			// 普通变量 / 常量
+			if (id_type != nullptr && id_info.first != nullptr)
 			{
-				// TODO error
+				if (id_type->is_one_from(ExternType::variable, ExternType::constant))
+				{
+					res = id_info.first->ir_id;
+				}
+				else
+				{
+					// TODO error
+				}
 			}
 		}
 	}

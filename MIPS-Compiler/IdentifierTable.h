@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include "IrTable.h"
 
 using std::shared_ptr;
 using std::string;
@@ -59,19 +60,27 @@ struct IdentifierType
 	virtual ~IdentifierType() = default;
 };
 
+// extern_type == l_array or d_array
+struct ArrayIdentifierType : IdentifierType
+{
+	virtual int total_size() const = 0;
+	virtual ~ArrayIdentifierType() = default;
+};
+
 // extern_type == l_array
-struct LinearArrayIdentifierType : IdentifierType
+struct LinearArrayIdentifierType : ArrayIdentifierType
 {
 	unsigned size;
+	virtual int total_size() const { return size; }
 	virtual ~LinearArrayIdentifierType() = default;
 };
 
 // extern_type == d_array
-struct DoubleDimensionalArrayIdentifierType : IdentifierType
+struct DoubleDimensionalArrayIdentifierType : ArrayIdentifierType
 {
 	unsigned size_1;
 	unsigned size_2;
-	int total_size()
+	virtual int total_size() const
 	{
 		return size_1 * size_2;
 	}
@@ -90,12 +99,14 @@ struct IdentifierInfo
 {
 	shared_ptr<const string> id;
 	shared_ptr<const IdentifierType> return_type;
+	irelem_t ir_id;
 	virtual ~IdentifierInfo() = default;
 };
 
 // extern_type == constant
 struct ConstantIdentifierInfo : IdentifierInfo
 {
+	virtual int get_value() const = 0;
 	virtual ~ConstantIdentifierInfo() = default;
 };
 
@@ -103,6 +114,9 @@ struct ConstantIdentifierInfo : IdentifierInfo
 struct IntegerIdentifierInfo : ConstantIdentifierInfo
 {
 	unsigned long value;
+	virtual int get_value() const {
+		return static_cast<int>(value);
+	}
 	virtual ~IntegerIdentifierInfo() = default;
 };
 
@@ -110,7 +124,18 @@ struct IntegerIdentifierInfo : ConstantIdentifierInfo
 struct CharactorIdentifierInfo : ConstantIdentifierInfo
 {
 	char value;
+	virtual int get_value() const {
+		return static_cast<int>(value);
+	}
 	virtual ~CharactorIdentifierInfo() = default;
+};
+
+// extern_type == function
+struct FunctionIdentifierInfo : IdentifierInfo
+{
+	irelem_t mid_label;
+	irelem_t end_label;
+	virtual ~FunctionIdentifierInfo() = default;
 };
 
 class IdentifierTable
