@@ -41,6 +41,10 @@ namespace BlackboxTest
 		}
 
 		TEST_CASE(sample1)
+
+		TEST_CASE(sample2)
+
+		TEST_CASE(sample3)
 	};
 
 	const string BlackboxSimpleTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\blackbox_simple_test");

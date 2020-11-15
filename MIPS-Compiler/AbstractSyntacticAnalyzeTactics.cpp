@@ -511,7 +511,14 @@ void VariableDefinationWithInitializationAnalyze::analyze(Env& env)
 				{
 					for (int ini : init_vec)
 					{
-						env.code_builder().push_back(env.ir().add(elem, env.elem().zero(), env.elem().alloc_imm(ini)));
+						if (env.is_using_global_table())
+						{
+							env.code_builder().push_back(env.ir().init(ini));
+						}
+						else
+						{
+							env.code_builder().push_back(env.ir().add(elem, env.elem().zero(), env.elem().alloc_imm(ini)));
+						}
 						break;
 					}
 				}
@@ -834,7 +841,18 @@ void MainFunctionAnalyze::analyze(Env& env)
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 	env.current_return_type = BaseType::type_void;
 	env.return_count = 0;
+
+	irelem_t beg = env.elem().alloc_func("main").beg();
+	irelem_t mid = env.elem().mid();
+	irelem_t end = env.elem().end();
+	env.code_builder().push_back(env.ir().label(beg));
+	env.code_builder().push_back(env.ir().func(IrType::_void));
+
 	analyze_inner_block(env, make_shared<const vector<shared_ptr<IdentifierInfo>>>(), make_shared<string>("main"));
+
+	env.code_builder().push_back(env.ir().label(mid));
+	env.code_builder().push_back(env.ir().label(end));
+
 	env.message_back("<主函数>");
 }
 
@@ -1424,7 +1442,7 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 					// 赋值
 					BaseType type = id_type->base_type;
 					shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
-					irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_1 * (type == BaseType::type_char ? 1 : 4));
+					irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_2 * (type == BaseType::type_char ? 1 : 4));
 					irelem_t base_off = env.elem().alloc_tmp();
 					env.code_builder().push_back(env.ir().mult(base_off, index_1, length_1));
 					irelem_t offset = env.elem().alloc_tmp();
@@ -1983,7 +2001,7 @@ void FactorAnalyze::analyze(Env& env)
 					{
 						// 取值
 						shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
-						irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_1 * (type == BaseType::type_char ? 1 : 4));
+						irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_2 * (type == BaseType::type_char ? 1 : 4));
 						irelem_t base_off = env.elem().alloc_tmp();
 						env.code_builder().push_back(env.ir().mult(base_off, index_1, length_1));
 						irelem_t offset = env.elem().alloc_tmp();

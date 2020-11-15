@@ -16,7 +16,7 @@ unique_ptr<ostream> start_compile(unique_ptr<istream> input_file, unique_ptr<ost
 {
 	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
 	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
-	// try
+	try
 	{
 		syntactic_analyzer.parse();
 		shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
@@ -28,14 +28,14 @@ unique_ptr<ostream> start_compile(unique_ptr<istream> input_file, unique_ptr<ost
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
 		target_code_generator->translate(*output_file);
 	}
-	//catch (const std::exception& e)
-	//{
-	//	*output_file << "1 " << e.what() << endl;
-	//}
-	//catch (...)
-	//{
+	catch (const std::exception& e)
+	{
+		// *output_file << "1 " << e.what() << endl;
+	}
+	catch (...)
+	{
 
-	//}
+	}
 	return output_file;
 }
 

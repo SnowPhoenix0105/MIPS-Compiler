@@ -69,7 +69,7 @@ inline pair<shared_ptr<IrElemAllocator>, shared_ptr<IrTable>> get_sample1()
             ir.sw(var2, allocator.sp(), allocator.alloc_imm(8)),
             ir.add(tmp2, allocator.sp(), allocator.alloc_imm(8)),
             ir.lw(tmp2, tmp2, allocator.alloc_imm(0)),
-            ir.printf(to_ptr("your input is\t"), tmp2, IrType::_int),
+            ir.printf(to_ptr("\"your input is\t\""), tmp2, IrType::_int),
             ir.label(allocator.alloc_func("main").end()),
         }
     );

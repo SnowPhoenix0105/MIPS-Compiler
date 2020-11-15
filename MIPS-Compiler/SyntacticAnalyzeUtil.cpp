@@ -74,6 +74,65 @@ TokenEnvironment::token_ptr TokenEnvironment::dequeue_certain_and_message_back(S
 	return nullptr;
 }
 
+irelem_t SymbolTableEnvironment::insert_identifier(shared_ptr<IdentifierInfo> id)
+{
+	if (id->return_type->is_one_from(ExternType::l_array, ExternType::d_array))
+	{
+		shared_ptr<const ArrayIdentifierType> arr_type = dynamic_pointer_cast<const ArrayIdentifierType>(id->return_type);
+		int size = arr_type->total_size();
+		irelem_t arr = elem().alloc_arr(id->id);
+		id->ir_id = arr;
+		int space;
+		irelem_t type;
+		if (arr_type->base_type == BaseType::type_char)
+		{
+			type = IrType::_char;
+			space = size;
+		}
+		else
+		{
+			type = IrType::_int;
+			type = size * 4;
+		}
+		code_builder().push_back(ir().arr(arr, type, size));
+	}
+	else if (id->return_type->is_one_from(ExternType::constant))
+	{
+		shared_ptr<ConstantIdentifierInfo> const_id = dynamic_pointer_cast<ConstantIdentifierInfo>(id);
+		irelem_t imm = elem().alloc_imm(const_id->get_value());
+		id->ir_id = imm;
+	}
+	else if (id->return_type->is_one_from(ExternType::variable))
+	{
+		irelem_t var = elem().alloc_named(id->id);
+		id->ir_id = var;
+		if (using_global_table)
+		{
+			code_builder().push_back(ir().gvar(var));
+		}
+	}
+	else if (id->return_type->is_one_from(ExternType::function))
+	{
+		shared_ptr<FunctionIdentifierInfo> func_type = dynamic_pointer_cast<FunctionIdentifierInfo>(id);
+		irelem_t ret_type = func_type->return_type->base_type == BaseType::type_char ? IrType::_char : IrType::_int;
+		id->ir_id = elem().alloc_func(id->id).beg();
+		func_type->mid_label = elem().mid();
+		func_type->end_label = elem().end();
+		code_builder().push_back(ir().func(ret_type));
+		// TODO param 声明
+	}
+
+	if (using_global_table)
+	{
+		global_table.insert_identifier(id);
+	}
+	else
+	{
+		local_table.insert_identifier(id);
+	}
+	return id->ir_id;
+}
+
 bool SyntacticAnalyzerEnvironment::ensure_func(
 	function<bool(SyntacticAnalyzerEnvironment&)> success_condition,
 	function<bool(SyntacticAnalyzerEnvironment&)> next_condition,

@@ -112,7 +112,7 @@ void SimpleCodeGenerator::init_global()
 		l += to_string(str_count++);
 		string_label_table.insert(make_pair(p.second, l));
 		buffer << mips.label(l) << endl;
-		buffer << ".asciiz \"" << p.first << '\"' << endl;
+		buffer << ".asciiz " << p.first << endl;
 	}
 	buffer << "\n\n\n\n\n.text" << endl;
 	buffer << mips.j("func_beg_main") << endl;
@@ -311,7 +311,7 @@ void SimpleCodeGenerator::func_body()
 			break;
 		CASE(add, addu);
 		CASE(sub, subu);
-		CASE(mult, mulo);
+		CASE(mult, mul);
 		CASE(div, div);
 		CASE(_and, _and);
 		CASE(_or, _or);

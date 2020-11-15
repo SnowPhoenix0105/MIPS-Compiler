@@ -1442,7 +1442,7 @@ void AssignmentStatementAnalyze::analyze(Env& env)
 					// ¸³Öµ
 					BaseType type = id_type->base_type;
 					shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
-					irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_1 * (type == BaseType::type_char ? 1 : 4));
+					irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_2 * (type == BaseType::type_char ? 1 : 4));
 					irelem_t base_off = env.elem().alloc_tmp();
 					env.code_builder().push_back(env.ir().mult(base_off, index_1, length_1));
 					irelem_t offset = env.elem().alloc_tmp();
@@ -2001,7 +2001,7 @@ void FactorAnalyze::analyze(Env& env)
 					{
 						// È¡Öµ
 						shared_ptr<const DoubleDimensionalArrayIdentifierType> d_array_type = dynamic_pointer_cast<const DoubleDimensionalArrayIdentifierType>(id_type);
-						irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_1 * (type == BaseType::type_char ? 1 : 4));
+						irelem_t length_1 = env.elem().alloc_imm(d_array_type->size_2 * (type == BaseType::type_char ? 1 : 4));
 						irelem_t base_off = env.elem().alloc_tmp();
 						env.code_builder().push_back(env.ir().mult(base_off, index_1, length_1));
 						irelem_t offset = env.elem().alloc_tmp();

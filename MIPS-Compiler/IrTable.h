@@ -180,16 +180,19 @@ public:
 	}
 	int imm_to_value(irelem_t imm) const;
 	int cst_to_value(irelem_t cst) const;
+	string cst_to_string(irelem_t cst) const;
 };
 
 class StringAllocator
 {
 private:
-	unordered_map<string, irelem_t> map;
+	unordered_map<string, irelem_t> str_map;
+	unordered_map<irelem_t, string> elem_map;
 public:
 	irelem_t alloc_string(shared_ptr<const string> str);
 	irelem_t alloc_string(const string& str);
-	const unordered_map<string, irelem_t>& get_string_map() const { return map; }
+	const unordered_map<string, irelem_t>& get_string_map() const { return str_map; }
+	string str_to_string(irelem_t str) const { return elem_map.at(str); }
 };
 
 struct IrElemAllocator
@@ -201,6 +204,8 @@ struct IrElemAllocator
 		CstAllocator::set_function(func_name);
 		return *this;
 	}
+
+	string val_to_string(irelem_t elem) const;
 };
 
 struct Ir
@@ -227,6 +232,7 @@ struct IrTable
 	vector<Ir>::const_iterator begin() const { return table.cbegin(); }
 	vector<Ir>::const_iterator end() const { return table.cend(); }
 	size_t size() const { return table.size(); }
+	string to_string(const IrElemAllocator& allocator);
 private:
 	const vector<Ir> table;
 };
