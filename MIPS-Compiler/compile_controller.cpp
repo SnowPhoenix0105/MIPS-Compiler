@@ -12,11 +12,11 @@ using std::endl;
 using std::istream;
 using std::ostream;
 
-unique_ptr<ostream> start_compile(unique_ptr<istream> input_file, unique_ptr<ostream> output_file)
+void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 {
 	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
 	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
-	// try
+	try
 	{
 		syntactic_analyzer.parse();
 		shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
@@ -26,17 +26,42 @@ unique_ptr<ostream> start_compile(unique_ptr<istream> input_file, unique_ptr<ost
 #endif // DEBUG_LEVEL
 
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
-		target_code_generator->translate(*output_file);
+		target_code_generator->translate(output_file);
 	}
-	//catch (const std::exception& e)
-	//{
-	//	*output_file << "1 " << e.what() << endl;
-	//}
-	//catch (...)
-	//{
+	catch (const std::exception& e)
+	{
+		// *output_file << "1 " << e.what() << endl;
+	}
+	catch (...)
+	{
 
-	//}
-	return output_file;
+	}
+}
+
+void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream& target_file)
+{
+	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
+	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
+	try
+	{
+		syntactic_analyzer.parse();
+		shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
+		shared_ptr<IrTable> ir_table_ptr = syntactic_analyzer.get_ir_table();
+
+		ir_file << ir_table_ptr->to_string(*allocator_ptr) << endl;
+
+		unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
+		target_code_generator->translate(target_file);
+	}
+	catch (const std::exception& e)
+	{
+		// *output_file << "1 " << e.what() << endl;
+		std::cout << "WRONG" << e.what() << endl;
+	}
+	catch (...)
+	{
+
+	}
 }
 
 string formated_content(LexicalAnalyzer& analyzer)

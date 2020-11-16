@@ -41,26 +41,6 @@ namespace MarsTester
 		std::system(ccmd);
 	}
 
-	/// <summary>
-	/// 依照一个汇编源文件, 进行仿真运行, 将输入与输出按照指定的文件进行重定向
-	/// </summary>
-	/// <param name="assembly_file">汇编源文件的文件名</param>
-	/// <param name="input_file_name">输入内容所在文件的文件名</param>
-	/// <param name="output_file_name">输出目标的文件名</param>
-	inline void assembly_and_simulate(
-		const string& assembly_file,
-		const string& input_file_name,
-		const string& output_file_name)
-	{
-		ostringstream commond;
-		commond
-			<< "java "
-			<< "-jar " << test_resource_path << "\\blackbox_test\\MARS-JDK7-RE.jar"
-			<< ' '//<< " db "
-			<< assembly_file;
-		execute_cmd(commond.str(), input_file_name, output_file_name);
-	}
-
 	inline shared_ptr<string> read_file(const string& file_name)
 	{
 		ifstream file(file_name);
@@ -77,6 +57,27 @@ namespace MarsTester
 		}
 		Logger::WriteMessage(("cannot open file:" + file_name).c_str());
 		Assert::Fail();
+	}
+
+	/// <summary>
+	/// 依照一个汇编源文件, 进行仿真运行, 将输入与输出按照指定的文件进行重定向
+	/// </summary>
+	/// <param name="assembly_file">汇编源文件的文件名</param>
+	/// <param name="input_file_name">输入内容所在文件的文件名</param>
+	/// <param name="output_file_name">输出目标的文件名</param>
+	inline void assembly_and_simulate(
+		const string& assembly_file,
+		const string& input_file_name,
+		const string& output_file_name)
+	{
+		ostringstream commond;
+		Logger::WriteMessage(read_file(assembly_file)->c_str());
+		commond
+			<< "java "
+			<< "-jar " << test_resource_path << "\\blackbox_test\\MARS-JDK7-RE.jar"
+			<< ' '//<< " db "
+			<< assembly_file;
+		execute_cmd(commond.str(), input_file_name, output_file_name);
 	}
 
 	inline string remove_tab_and_multispace(const string& str)
@@ -133,9 +134,13 @@ namespace MarsTester
 		string result_file_name = test_resource_path + "\\" + series_name + "\\result.txt";
 		string expect_file_name = test_resource_path + "\\" + series_name + "\\expect.txt";
 		string assembly_file_name = test_resource_path + "\\" + series_name + "\\assembly.asm";
+		string ir_file_name = test_resource_path + "\\" + series_name + "\\ir.asm";
 		unique_ptr<istream> source_file(new ifstream(source_file_name));
-		unique_ptr<ostream> assembly_file(new ofstream(assembly_file_name));
-		start_compile(std::move(source_file), std::move(assembly_file));
+		ofstream assembly_file(assembly_file_name);
+		ofstream ir_file(ir_file_name);
+		get_ir_and_target(std::move(source_file), ir_file, assembly_file);
+		ir_file.close();
+		assembly_file.close();
 		assembly_and_simulate(
 			assembly_file_name,
 			input_file_name,

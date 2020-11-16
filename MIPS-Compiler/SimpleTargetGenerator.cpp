@@ -4,7 +4,7 @@ void SimpleCodeGenerator::next_function_info()
 	const IrElemAllocator& allocator = *allocator_ptr;
 	const Ir* code;
 	irelem_t label;
-	func_beg_index = func_end_index;
+	func_beg_index = func_end_index - 1;
 	do
 	{
 		code = &(ir_table_ptr->at(++func_beg_index));
@@ -311,7 +311,7 @@ void SimpleCodeGenerator::func_body()
 			break;
 		CASE(add, addu);
 		CASE(sub, subu);
-		CASE(mult, mulo);
+		CASE(mult, mul);
 		CASE(div, div);
 		CASE(_and, _and);
 		CASE(_or, _or);

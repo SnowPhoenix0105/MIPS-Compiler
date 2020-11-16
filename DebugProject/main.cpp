@@ -5,6 +5,8 @@
 
 # define DEBUG_003
 
+using std::ostringstream;
+
 
 int main(int argc, char* argv[])
 {
@@ -50,15 +52,11 @@ int main(int argc, char* argv[])
 		std::cout << line << endl;
 	}
 	unique_ptr<istream> input_stream(new std::ifstream(source_file));
-	unique_ptr<ostringstream> output_ostream(new std::ostringstream());
+	ostringstream target_ostream;
 
-	output_ostream.reset(
-		dynamic_cast<ostringstream*>(
-			start_compile(std::move(input_stream), std::move(output_ostream)).release()
-			)
-	);
+	get_ir_and_target(std::move(input_stream), std::cout, target_ostream);
 
-	std::cout << output_ostream->str() << std::endl;
+	std::cout << target_ostream.str() << std::endl;
 
 
 #ifdef DEBUG_003

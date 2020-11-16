@@ -12,7 +12,9 @@
 
 
 
-unique_ptr<ostream> start_compile(unique_ptr<istream> input_file, unique_ptr<ostream> output_file);
+void start_compile(unique_ptr<istream> input_file, ostream& output_file);
+
+void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream& target_file);
 
 string formated_content(LexicalAnalyzer& analyzer);
 

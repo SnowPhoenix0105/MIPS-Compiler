@@ -163,12 +163,12 @@ struct MipsInstructionFormatter
 
 	string mul(const string& target, const string& source1, string source2) const
 	{
-		return quaternary("mulo", target, source1, source2);
+		return quaternary("mul", target, source1, source2);
 	}
 
 	string mul(const string& target, const string& source1, int source2) const
 	{
-		return quaternary("mulo", target, source1, to_string(source2));
+		return quaternary("mul", target, source1, to_string(source2));
 	}
 
 	string div(const string& target, const string& source1, string source2) const
