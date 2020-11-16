@@ -18,7 +18,7 @@ email：1595763343@qq.com
 
 ## 环境
 
-使用 `Visual Studio 2019 Community` 开发，需要C++桌面开发相关组件，需要安装可选组件中的clang编译器支持, 采用 `Microsoft CppUnitTest` 进行单元测试和整体黑箱测试，整体黑箱测试依赖于MARS4.5，请从[MARS官网](http://courses.missouristate.edu/kenvollmar/mars/)下载 `Mars4_5.jar` 并将其置于 `Test\TestResource\blackbox_test` 文件夹下。
+使用 `Visual Studio 2019 Community` 开发，需要C++桌面开发相关组件，需要安装可选组件中的clang编译器支持, 采用 `Microsoft CppUnitTest` 进行单元测试和整体黑箱测试，整体黑箱测试依赖于MARS4.5，请从[MARS官网](http://courses.missouristate.edu/kenvollmar/mars/)下载 `Mars4_5.jar` 并将其置于 `Test\TestResource\blackbox_test` 文件夹下。(后改为课程组下发的MARS)
 
 ## 结构安排
 
@@ -31,5 +31,9 @@ email：1595763343@qq.com
 
 使用`prepare_to_release.py`将`Develop`下的源文件和头文件拷贝至`MIPS-Compiler`文件夹, 并打包zip至`Zips`文件夹.
 
-`Develop`与`Test`两个项目采用`gbk`编码, 使用MSVC编译, `MIPS-Compiler`项目采用`utf-8`编码并使用clang编译.
+`Develop`与`Test`两个项目采用`gbk`编码, 使用MSVC编译, `MIPS-Compiler`项目采用`utf-8`编码并使用clang编译, 二者之间通过`prepare_to_release.py`自动转码.
+
+## 测试注意
+
+注意测试工程中测试资源路径都是写死的, 请先进行修改.
 

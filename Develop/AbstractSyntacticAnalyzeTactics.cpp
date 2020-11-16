@@ -1843,16 +1843,23 @@ void ExpressionAnalyze::analyze(Env& env)
 		{
 			type = BaseType::type_int;
 		}
-		irelem_t new_res = env.elem().alloc_tmp();
-		if (need_negative)
+		if (flag || need_negative)
 		{
-			env.code_builder().push_back(env.ir().sub(new_res, res, term_analyze.get_res()));
+			irelem_t new_res = env.elem().alloc_tmp();
+			if (need_negative)
+			{
+				env.code_builder().push_back(env.ir().sub(new_res, res, term_analyze.get_res()));
+			}
+			else
+			{
+				env.code_builder().push_back(env.ir().add(new_res, res, term_analyze.get_res()));
+			}
+			res = new_res;
 		}
 		else
 		{
-			env.code_builder().push_back(env.ir().add(new_res, res, term_analyze.get_res()));
+			res = term_analyze.get_res();
 		}
-		res = new_res;
 		flag = true;
 	}
 	env.message_back("<表达式>");
@@ -1886,16 +1893,23 @@ void TermAnalyze::analyze(Env& env)
 		{
 			type = BaseType::type_int;
 		}
-		irelem_t new_res = env.elem().alloc_tmp();
-		if (is_mult)
+		if (flag)
 		{
-			env.code_builder().push_back(env.ir().mult(new_res, factor_analyze.get_res(), res));
+			irelem_t new_res = env.elem().alloc_tmp();
+			if (is_mult)
+			{
+				env.code_builder().push_back(env.ir().mult(new_res, factor_analyze.get_res(), res));
+			}
+			else
+			{
+				env.code_builder().push_back(env.ir().div(new_res, res, factor_analyze.get_res()));
+			}
+			res = new_res;
 		}
 		else
 		{
-			env.code_builder().push_back(env.ir().div(new_res, res, factor_analyze.get_res()));
+			res = factor_analyze.get_res();
 		}
-		res = new_res;
 		flag = true;
 	}
 	env.message_back("<项>");

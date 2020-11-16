@@ -49,9 +49,9 @@ func_mid_main:
 	sw	$t0,32($sp)
 	lw	$t1,32($sp)
 	lb	$t0,1($t1)
-	sw	$t0,36($sp)
+	sw	$t0,40($sp)
 	sw	$v0,48($sp)
-	lw	$a0,36($sp)
+	lw	$a0,40($sp)
 	li	$v0,11
 	syscall
 	li	$a0,10
@@ -61,23 +61,23 @@ func_mid_main:
 	sw	$v0,48($sp)
 	li	$v0,5
 	syscall
-	sw	$v0,40($sp)
+	sw	$v0,44($sp)
 	lw	$v0,48($sp)
-	lw	$t0,40($sp)
+	lw	$t0,44($sp)
 	addu	$t1,$0,$sp
 	sw	$t0,8($t1)
 	addu	$t1,$0,$sp
 	li	$t2,8
 	addu	$t0,$t1,$t2
-	sw	$t0,44($sp)
-	lw	$t1,44($sp)
+	sw	$t0,36($sp)
+	lw	$t1,36($sp)
 	lw	$t0,0($t1)
-	sw	$t0,44($sp)
+	sw	$t0,36($sp)
 	sw	$v0,48($sp)
 	la	$a0,string_0
 	li	$v0,4
 	syscall
-	lw	$a0,44($sp)
+	lw	$a0,36($sp)
 	li	$v0,1
 	syscall
 	li	$a0,10

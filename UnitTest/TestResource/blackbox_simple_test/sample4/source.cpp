@@ -62,25 +62,17 @@ void main(){
 	int a9 = 9; 
 	int a10 = 10; 
 	int a11 = 11;
-
-	scanf(a3);
-	printf(a3);
+	a3 = 1;
 	a3 = a3 * ((-'3') * (3));
-	printf(a3);
-	scanf(a6);
+	a6 = 1;
 	a7 = 18;
-	scanf(a7);
-	scanf(c1);
-	scanf(c7);
+	a7 = 1;
+	c1 = '1';
+	c7 = '1';
 	a3 = -a2;
-	printf(a3);
 	a3 = a3*a3;
-	printf(a3);
 	a3 = a3;
-	printf(a3);
 	a3 = -d3-(-d3-(-d3))-d4*(b2/2)+b3*(a1+b1);
-	printf(a3);
-	printf(3+4+5+6-7-8-9*4*4/3/2*(2+3));
 	c8 = c10;
 	c4 = c1;
 	a1 = 12;
@@ -93,36 +85,8 @@ void main(){
 	a9 = 20 + a9;
 	a10 = a1 + 21;
 	a11 = a1 +a10;
-	printf('a');
-	printf(a1);
-	printf(a1+'a');
-	printf(-5*(-5));
-	printf("a4",a4);
-	printf(3);
-	printf("18231217",18231217);
-	printf(d1);
-	printf(d2);
-	printf(-d1-d2*a3+b1*(-3)+(3-4+2-'4'+60)*4/1/1/1);
-	printf(a1);
-	printf(a2);
-	printf(a3);
-	printf(a8);
-	printf(a9);
-	printf(a10);
-	printf(a11);
-	printf("134214321432143214321");
-	printf(-a11 * (a3- a1*(-a2+a5)/(a2+a1+2)-a1*(-a1)+3*5+a6)+a3*(-a4+a2)+a7);
 	a1 = -('a'*(a4+(d5+c9*a6)-3*(a9*'2'-10*(b2*d1)/4)*(-1*45-(a1+a2)-(23*3-(c1+a4)*(c3+a9)/100)*(+342-a6*(a9-b1))/4))+42)-0+4*a1;
 	printf(a1);
-	printf(a4);
-	printf(a8);
-	printf(c1);
-	a2 = a1 + a1;
-	a3 = +-36000/(a10+c3)/(+-4*(a6+(b3*(b2*(a2-4))+a4*(a6+24)/'1'*10-14+42*a2-b1*a9+c1+c2)+(a1-a3)*(a3+(a5-a2*(b2+d1)/12)+42)+0)+24*b2+(a3*a5+c1)*2)+a3*(a4-b2+a5)/(2+a2);
-	printf(a3);
-	printf("yes",a2);
-	printf(a4);
-	printf(xxx);
 }
 
 }

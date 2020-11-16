@@ -1,4 +1,8 @@
 #include "SimpleTargetGenerator.h"
+#include <set>
+
+using std::set;
+
 void SimpleCodeGenerator::next_function_info()
 {
 	const IrElemAllocator& allocator = *allocator_ptr;
@@ -124,7 +128,7 @@ void SimpleCodeGenerator::init_func()
 	const IrTable& ir_table = *ir_table_ptr;
 
 	// 遍历 mid -> end , 统计局部var数量
-	unordered_set<irelem_t> var_set;
+	set<irelem_t> var_set;
 	for (size_t i = func_mid_index + 1; i != func_end_index; ++i)
 	{
 		const auto& code = ir_table.at(i);
