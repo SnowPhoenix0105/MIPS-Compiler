@@ -8,6 +8,7 @@
 # other tools
 *.bat
 *result.txt
+*ir.asm
 *assembly.asm
 *.zip
 [Zz]ips/
