@@ -92,7 +92,7 @@ irelem_t SymbolTableEnvironment::insert_identifier(shared_ptr<IdentifierInfo> id
 		else
 		{
 			type = IrType::_int;
-			type = size * 4;
+			space = size * 4;
 		}
 		code_builder().push_back(ir().arr(arr, type, size));
 	}
@@ -114,11 +114,11 @@ irelem_t SymbolTableEnvironment::insert_identifier(shared_ptr<IdentifierInfo> id
 	else if (id->return_type->is_one_from(ExternType::function))
 	{
 		shared_ptr<FunctionIdentifierInfo> func_type = dynamic_pointer_cast<FunctionIdentifierInfo>(id);
-		irelem_t ret_type = func_type->return_type->base_type == BaseType::type_char ? IrType::_char : IrType::_int;
+		// irelem_t ret_type = func_type->return_type->base_type == BaseType::type_char ? IrType::_char : IrType::_int;
 		id->ir_id = elem().alloc_func(id->id).beg();
 		func_type->mid_label = elem().mid();
 		func_type->end_label = elem().end();
-		code_builder().push_back(ir().func(ret_type));
+		// code_builder().push_back(ir().func(ret_type));
 		// TODO param 声明
 	}
 

@@ -31,7 +31,7 @@ string LabelAllocator::label_to_string(irelem_t label) const
 	else if (IrType::is_case(label))
 	{
 		ret += "case_";
-		ret += IrType::get_ord(label);
+		ret += to_string(IrType::get_ord(label));
 		return ret;
 	}
 	else
@@ -66,7 +66,7 @@ string LabelAllocator::label_to_string(irelem_t label) const
 	}
 	else
 	{
-		ret += ord;
+		ret += to_string(ord);
 	}
 
 	return ret;
@@ -338,8 +338,10 @@ shared_ptr<IrTable> IrTableBuilder::build()
 string IrTable::to_string(const IrElemAllocator& allocator)
 {
 	ostringstream builder;
+	int count = 0;
 	for (const auto& code : table)
 	{
+		++count;
 		switch (code.head)
 		{
 		case IrHead::label:
@@ -357,7 +359,7 @@ string IrTable::to_string(const IrElemAllocator& allocator)
 			builder << "\tinit\t" << allocator.imm_to_value(code.elem[0]) << endl;
 			break;
 		case IrHead::func:
-			builder << "\tfunc\t" << (code.elem[1] == IrType::_int ? "int" : code.elem[1] == IrType::_char ? "char" : "void") << endl;
+			builder << "\tfunc\t" << (code.elem[0] == IrType::_int ? "int" : code.elem[0] == IrType::_char ? "char" : "void") << endl;
 			break;
 		case IrHead::param:
 			builder << "\tparam\t" << allocator.var_to_string(code.elem[0]) << endl;
