@@ -87,6 +87,7 @@ struct IrType
 	static bool is_switch(irelem_t v) { return (v >> 28) == 0b0011; }
 	static bool is_for(irelem_t v) { return (v >> 28) == 0b0100; }
 	static bool is_while(irelem_t v) { return (v >> 28) == 0b0101; }
+	static bool is_case(irelem_t v) { return (v >> 28) == 0b0111; }
 	static bool is_beg(irelem_t v) { return (v & 0x8C000000) == 0x00000000; }
 	static bool is_start(irelem_t v) { return (v & 0x8C000000) == 0x04000000; }
 	static bool is_mid(irelem_t v) { return (v & 0x8C000000) == 0x08000000; }
@@ -101,6 +102,7 @@ private:
 	unsigned switch_count = 0;
 	unsigned for_count = 0;
 	unsigned while_count = 0;
+	unsigned case_count = 0;
 	irelem_t stored;
 	vector<string> funcs;
 public:
@@ -116,6 +118,7 @@ public:
 	irelem_t start() const;
 	irelem_t mid() const;
 	irelem_t end() const;
+	irelem_t alloc_case_label();
 };
 
 class VarAllocator

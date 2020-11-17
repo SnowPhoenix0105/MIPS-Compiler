@@ -92,7 +92,7 @@ irelem_t SymbolTableEnvironment::insert_identifier(shared_ptr<IdentifierInfo> id
 		else
 		{
 			type = IrType::_int;
-			type = size * 4;
+			space = size * 4;
 		}
 		code_builder().push_back(ir().arr(arr, type, size));
 	}

@@ -1304,7 +1304,7 @@ void ConditionAnalyze::analyze(Env& env)
 		ExpressionAnalyze right_expression_analyze;
 		right_expression_analyze(env);								// 表达式
 		BaseType e2_type = right_expression_analyze.get_type();
-		irelem_t res_r = left_expression_analyze.get_res();
+		irelem_t res_r = right_expression_analyze.get_res();
 		if (e1_type == BaseType::type_char || e2_type == BaseType::type_char)
 		{
 			env.error_back(line_number, ErrorType::illegal_type_in_condition);
@@ -1366,7 +1366,7 @@ void ConditionAnalyze::analyze(Env& env)
 		case SymbolType::greater:
 		{
 			irelem_t rst = env.elem().alloc_tmp();
-			env.code_builder().push_back(env.ir().less(rst, res_l, res_r));
+			env.code_builder().push_back(env.ir().less(rst, res_r, res_l));
 			if (success_switch)
 			{
 				env.code_builder().push_back(env.ir().bne(rst, env.elem().zero(), target));
@@ -1380,7 +1380,7 @@ void ConditionAnalyze::analyze(Env& env)
 		case SymbolType::greater_equal:
 		{
 			irelem_t rst = env.elem().alloc_tmp();
-			env.code_builder().push_back(env.ir().less(rst, res_r, res_l));
+			env.code_builder().push_back(env.ir().less(rst, res_l, res_r));
 			if (success_switch)
 			{
 				env.code_builder().push_back(env.ir().beq(rst, env.elem().zero(), target));
@@ -1535,7 +1535,7 @@ void ParameterValueListAnalyze::analyze(Env& env)
 	while (codes.size() > 0)
 	{
 		env.code_builder().push_back_all(*codes.back());
-		results.pop_back();
+		codes.pop_back();
 	}
 	while (results.size() > 0)
 	{
@@ -1862,7 +1862,7 @@ void SwitchStatementAnalyze::analyze(Env& env)
 	env.code_builder().push_back(env.ir().label(beg));
 	for (const auto& v_l : st.get_value_label_table())
 	{
-		env.code_builder().push_back(env.ir().beq(condition_value, v_l.first, v_l.second));
+		env.code_builder().push_back(env.ir().beq(condition_value, env.elem().alloc_imm(v_l.first), v_l.second));
 	}
 
 	// if (env.ensure(in_branch_of<DefaultCaseAnalyze>, SymbolType::right_brance, ErrorType::switch_no_defaule))
@@ -1895,6 +1895,7 @@ void SwitchTableAnalyze::analyze(Env& env)
 		env.code_builder().push_back(env.ir().label(target));
 		CaseStatementAnalyze case_statement_analyze(switch_type);
 		case_statement_analyze(env);								// 情况子语句
+		env.code_builder().push_back(env.ir()._goto(end_label));
 		if (value_label_table.find(case_statement_analyze.get_case_value()) != value_label_table.end())
 		{
 			// TODO error

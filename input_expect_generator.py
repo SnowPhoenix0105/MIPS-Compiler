@@ -143,7 +143,11 @@ class InputAndExpectGenerator:
         
 
 if __name__ == "__main__":
-    generator = InputAndExpectGenerator("auto_samples\\sample1")
-    generator.auto_gen(4)
-    generator = InputAndExpectGenerator("auto_samples\\sample2")
+    # generator = InputAndExpectGenerator("auto_samples\\sample1")
+    # generator.auto_gen(4)
+    # generator = InputAndExpectGenerator("auto_samples\\sample2")
+    # generator.auto_gen(4)
+    # generator = InputAndExpectGenerator("auto_samples\\sample3")
+    # generator.auto_gen(4)
+    generator = InputAndExpectGenerator("auto_samples\\sample4")
     generator.auto_gen(4)

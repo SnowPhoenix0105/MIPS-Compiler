@@ -40,8 +40,17 @@ namespace BlackboxTest
 			MarsTester::self_judge();
 		}
 
+
+		TEST_CASE(sample1, 4)
+
 		
 		TEST_CASE(sample2, 4)
+
+
+		TEST_CASE(sample3, 4)
+
+
+		TEST_CASE(sample4, 4)
 	};
 
 	const string BlackboxMultiInputTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\auto_samples");

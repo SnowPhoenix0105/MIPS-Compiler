@@ -16,8 +16,8 @@ func_beg_main:
 	init	105
 	init	106
 	init	107
-	aar	main__arr__larr2,	char,	2
-	aar	main__arr__larr3,	char,	4
+	aar	main__arr__larr2,	int,	2
+	aar	main__arr__larr3,	int,	4
 	init	18231045
 	init	10451823
 	init	1881110987

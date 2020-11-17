@@ -28,6 +28,12 @@ string LabelAllocator::label_to_string(irelem_t label) const
 	{
 		ret += "while_";
 	}
+	else if (IrType::is_case(label))
+	{
+		ret += "case_";
+		ret += IrType::get_ord(label);
+		return ret;
+	}
 	else
 	{
 		string msg = "unknown label";
@@ -101,6 +107,11 @@ LabelAllocator& LabelAllocator::alloc_while()
 {
 	stored = while_count++ | 0x50000000;
 	return *this;
+}
+
+irelem_t LabelAllocator::alloc_case_label()
+{
+	return case_count++ | 0x70000000;
 }
 
 irelem_t LabelAllocator::beg() const

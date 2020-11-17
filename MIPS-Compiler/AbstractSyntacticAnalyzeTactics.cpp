@@ -1535,7 +1535,7 @@ void ParameterValueListAnalyze::analyze(Env& env)
 	while (codes.size() > 0)
 	{
 		env.code_builder().push_back_all(*codes.back());
-		results.pop_back();
+		codes.pop_back();
 	}
 	while (results.size() > 0)
 	{
@@ -1833,6 +1833,8 @@ void SwitchStatementAnalyze::analyze(Env& env)
 	expression_analyze(env);									// 表达式
 	BaseType switch_type = expression_analyze.get_type();
 
+	irelem_t condition_value = expression_analyze.get_res();
+
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
 	if (env.peek() != SymbolType::left_brance)
@@ -1845,8 +1847,24 @@ void SwitchStatementAnalyze::analyze(Env& env)
 	{
 		// TODO error
 	}
-	SwitchTableAnalyze st(switch_type);
+	
+	irelem_t beg = env.elem().alloc_switch().beg();
+	irelem_t mid = env.elem().mid();
+	irelem_t end = env.elem().end();
+
+	auto front_code = env.fresh_code_builder();
+
+	SwitchTableAnalyze st(switch_type, end);
 	st(env);												// 情况表
+
+	auto switch_table = env.fresh_code_builder();
+	env.code_builder().push_back_all(*front_code);
+	env.code_builder().push_back(env.ir().label(beg));
+	for (const auto& v_l : st.get_value_label_table())
+	{
+		env.code_builder().push_back(env.ir().beq(condition_value, v_l.first, v_l.second));
+	}
+
 	// if (env.ensure(in_branch_of<DefaultCaseAnalyze>, SymbolType::right_brance, ErrorType::switch_no_defaule))
 	if (env.ensure(in_branch_of<DefaultCaseAnalyze>, { SymbolType::right_brance }, ErrorType::switch_no_defaule))
 	{
@@ -1857,6 +1875,12 @@ void SwitchStatementAnalyze::analyze(Env& env)
 	{
 		// TODO error
 	}
+
+	env.code_builder().push_back(env.ir()._goto(end));
+	env.code_builder().push_back(env.ir().label(mid));
+	env.code_builder().push_back_all(*switch_table);
+	env.code_builder().back() = env.ir().label(end);
+
 	env.dequeue_and_message_back();								// right_brance
 	env.message_back("<情况语句>");
 }
@@ -1865,18 +1889,19 @@ void SwitchStatementAnalyze::analyze(Env& env)
 // TODO
 void SwitchTableAnalyze::analyze(Env& env)
 {
-	unordered_set<int> used_case;
 	while (in_branch_of<CaseStatementAnalyze>(env))
 	{
+		irelem_t target = env.elem().alloc_case_label();
+		env.code_builder().push_back(env.ir().label(target));
 		CaseStatementAnalyze case_statement_analyze(switch_type);
 		case_statement_analyze(env);								// 情况子语句
-		if (used_case.find(case_statement_analyze.get_case_value()) != used_case.end())
+		if (value_label_table.find(case_statement_analyze.get_case_value()) != value_label_table.end())
 		{
 			// TODO error
 		}
-		used_case.insert(case_statement_analyze.get_case_value());
+		value_label_table.insert(make_pair(case_statement_analyze.get_case_value(), target));
 	}
-	if (used_case.empty())
+	if (value_label_table.empty())
 	{
 		// TODO error
 	}
