@@ -15,15 +15,16 @@ class InputAndExpectGenerator:
         self.input_type_list = []  
         self.char_table = [chr(a + i) for i in range(26) for a in map(ord, ['a', 'A'])]
         self.char_table += [str(i) for i in range(10)]
+        self.char_table += ['+', '-', '*', '/']
 
 
     def input_file_name(self, num: int)->str:
         global test_resource_dir
-        return test_resource_dir + '\\' + self.work_dir + '\\input{:d}.txt'.format(num)
+        return test_resource_dir + '\\' + self.work_dir + '\\{:d}.input'.format(num)
 
     def expect_file_name(self, num: int)->str:
         global test_resource_dir
-        return test_resource_dir + '\\' + self.work_dir + '\\expect{:d}.txt'.format(num)
+        return test_resource_dir + '\\' + self.work_dir + '\\{:d}.expect'.format(num)
 
     def source_c_file_name(self)->str:
         global test_resource_dir
@@ -108,7 +109,7 @@ class InputAndExpectGenerator:
                 for line in cf.readlines():
                     if line.lstrip()[:4] == "case" or line.lstrip()[:7] == "default":
                         cppf.write("break;\n")
-                cppf.write(line)
+                    cppf.write(line)
             cppf.write(
                 """
                 }
@@ -118,6 +119,7 @@ class InputAndExpectGenerator:
 
     def compile_cpp_to_exe(self):
         command = "g++ -m32 " + self.source_cpp_file_name() + " -o " + self.exe_file_name()
+        os.system(command)
 
     def gen_input(self, num:int):
         with open(self.input_file_name(num), 'w', encoding='utf8') as f:
@@ -125,6 +127,23 @@ class InputAndExpectGenerator:
                 if is_int:
                     f.write(str(random.randint(-512, 512)) + '\n')
                 else:
-                    f.write()
+                    f.write(self.char_table[random.randint(0, len(self.char_table) + 1)] + '\n')
 
-    
+    def run_exe_and_reencode(self, num: int):
+        command = self.exe_file_name() + " > " + self.expect_file_name(num) + " < " + self.input_file_name(num)
+        os.system(command)
+            
+    def auto_gen(self, count: int):
+        self.scan_scanfs()
+        self.format_source_from_c_to_cpp()
+        self.compile_cpp_to_exe()
+        for i in range(count):
+            self.gen_input(i)
+            self.run_exe_and_reencode(i)
+        
+
+if __name__ == "__main__":
+    generator = InputAndExpectGenerator("auto_samples\\sample1")
+    generator.auto_gen(4)
+    generator = InputAndExpectGenerator("auto_samples\\sample2")
+    generator.auto_gen(4)

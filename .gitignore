@@ -7,9 +7,6 @@
 
 # other tools
 *.bat
-*result.txt
-*ir.asm
-*assembly.asm
 *.zip
 [Zz]ips/
 *.jar
@@ -17,7 +14,12 @@
 *.log
 
 # auto-generatable test-resources
-*auto_samples/sample.*.txt
+UnitTest/TestResource/auto_samples/*/*.expect
+UnitTest/TestResource/auto_samples/*/*.input
+*result.txt
+*.result
+*ir.asm
+*assembly.asm
 
 # Prerequisites
 *.d

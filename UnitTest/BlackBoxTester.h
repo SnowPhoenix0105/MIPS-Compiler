@@ -141,9 +141,9 @@ namespace MarsTester
 
 		for (int i = 0; i < count; ++i)
 		{
-			string input_file_name = test_resource_path + "\\" + series_name + "\\input" + to_string(count) + ".txt";
-			string result_file_name = test_resource_path + "\\" + series_name + "\\result" + to_string(count) + ".txt";
-			string expect_file_name = test_resource_path + "\\" + series_name + "\\expect" + to_string(count) + ".txt"; 
+			string input_file_name = test_resource_path + "\\" + series_name + "\\" + to_string(i) + ".input";
+			string result_file_name = test_resource_path + "\\" + series_name + "\\" + to_string(i) + ".result";
+			string expect_file_name = test_resource_path + "\\" + series_name + "\\" + to_string(i) + ".expect"; 
 			assembly_and_simulate(
 				assembly_file_name,
 				input_file_name,
