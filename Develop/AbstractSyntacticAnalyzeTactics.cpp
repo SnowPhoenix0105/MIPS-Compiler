@@ -751,7 +751,8 @@ int analyze_function(
 	irelem_t mid = env.elem().mid();
 	irelem_t end = env.elem().end();
 	env.code_builder().push_back(env.ir().label(beg));
-	env.code_builder().push_back(env.ir().func(IrType::_void));
+	irelem_t ret_type = return_type == BaseType::type_char ? IrType::_char : return_type == BaseType::type_int ? IrType::_int : IrType::_void;
+	env.code_builder().push_back(env.ir().func(ret_type));
 
 	env.dequeue_certain_and_message_back(SymbolType::left_paren);					// left_paren
 
@@ -1509,7 +1510,6 @@ void ParameterValueListAnalyze::analyze(Env& env)
 		int line_number = env.peek_info()->line_number;
 		expression_analyze(env);							// ±í´ïÊ½
 		BaseType value_type = expression_analyze.get_type();
-		results.push_back(expression_analyze.get_res());
 		if (param_type_list != nullptr)
 		{
 			if (count >= param_type_list->size())

@@ -42,7 +42,7 @@ void main()
     }
     while (x < 0)
     {
-        x = x + 3
+        x = x + 3;
     }
     while (y >= 4)
     {

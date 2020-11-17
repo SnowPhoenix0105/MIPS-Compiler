@@ -342,8 +342,10 @@ void SimpleCodeGenerator::func_body()
 	const IrElemAllocator& allocator = *allocator_ptr;
 	const IrTable& ir_table = *ir_table_ptr;
 
+	bool last_is_push = false;
 	for (size_t index = func_mid_index; index < func_end_index; ++index)
 	{
+		int push_count = 0;
 		const auto& code = ir_table.at(index);
 		switch (code.head)
 		{
@@ -394,10 +396,25 @@ void SimpleCodeGenerator::func_body()
 		case IrHead::_goto:
 			buffer << mips.j(allocator.label_to_string(code.elem[0])) << endl;
 			break;
+		case IrHead::push:
+		{
+			load_val_to_reg("$t0", code.elem[0]);
+			if (last_is_push)
+			{
+				++push_count;
+			}
+			else
+			{
+				push_count = 0;
+			}
+			int offset = - 12 - push_count * 4;
+			buffer << mips.sw("$t0", "$sp", offset) << endl;
+			break;
+		}
 		case IrHead::call:
-			buffer << mips.sw("$v0", "$sp", stack_size - 8) << endl;
+			// buffer << mips.sw("$v0", "$sp", stack_size - 8) << endl;
 			buffer << mips.jal(allocator.label_to_string(code.elem[0])) << endl;
-			buffer << mips.lw("$v0", "$sp", stack_size - 8) << endl;
+			// buffer << mips.lw("$v0", "$sp", stack_size - 8) << endl;
 			break;
 		case IrHead::ret:
 			buffer << mips.j(allocator.label_to_string(ir_table.at(func_end_index).elem[0])) << endl;
@@ -436,6 +453,7 @@ void SimpleCodeGenerator::func_body()
 		default:
 			PANIC();
 		}
+		last_is_push = code.head == IrHead::push;
 	}
 }
 

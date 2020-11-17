@@ -306,7 +306,7 @@ struct IrFactory
 
 	Ir param(irelem_t var) const
 	{
-		return Ir( IrHead::func, var, nil(), nil());
+		return Ir( IrHead::param, var, nil(), nil());
 	}
 
 	Ir add(irelem_t var, irelem_t val1, irelem_t val2) const
