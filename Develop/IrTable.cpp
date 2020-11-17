@@ -313,8 +313,17 @@ irelem_t StringAllocator::alloc_string(const string& str)
 		return it->second;
 	}
 	irelem_t ret = str_map.size() | 0xC0000000;
-	str_map.insert(make_pair(str, ret));
-	elem_map.insert(make_pair(ret, str));
+	string nstr;
+	for (char c : str)
+	{
+		if (c == '\\')
+		{
+			nstr.push_back('\\');
+		}
+		nstr.push_back(c);
+	}
+	str_map.insert(make_pair(nstr, ret));
+	elem_map.insert(make_pair(ret, nstr));
 	return ret;
 }
 
