@@ -714,6 +714,7 @@ int analyze_inner_block(
 	for (auto param : *param_list)
 	{
 		env.insert_identifier(param);
+		env.code_builder().push_back(env.ir().param(param->ir_id));
 	}
 
 	env.dequeue_certain_and_message_back(SymbolType::left_brance);						// left_brance
@@ -746,6 +747,12 @@ int analyze_function(
 		env.error_back(line_number, ErrorType::duplicated_identifier);
 	}
 
+	irelem_t beg = env.elem().alloc_func(function_id).beg();
+	irelem_t mid = env.elem().mid();
+	irelem_t end = env.elem().end();
+	env.code_builder().push_back(env.ir().label(beg));
+	env.code_builder().push_back(env.ir().func(IrType::_void));
+
 	env.dequeue_certain_and_message_back(SymbolType::left_paren);					// left_paren
 
 	env.ensure(
@@ -777,6 +784,10 @@ int analyze_function(
 	try
 	{
 		int line_number = analyze_inner_block(env, param_list, function_id);
+
+		env.code_builder().push_back(env.ir().label(mid));
+		env.code_builder().push_back(env.ir().label(end));
+
 		env.message_back(information);
 		return line_number;
 	}
@@ -1072,20 +1083,41 @@ void LoopStatementAnalyze::analyze(Env& env)
 		env.dequeue_and_message_back();							// key_while
 		env.dequeue_certain_and_message_back(SymbolType::left_paren);		// left_paren
 
+		irelem_t beg = env.elem().alloc_while().beg();
+		irelem_t mid = env.elem().mid();
+		irelem_t end = env.elem().end();
+
+		env.code_builder().push_back(env.ir()._goto(mid));
+		env.code_builder().push_back(env.ir().label(beg));
+		auto front = env.fresh_code_builder();
+
+		env.code_builder().push_back(env.ir().label(mid));
 		if (env.ensure(in_branch_of<ConditionAnalyze>, { SymbolType::right_paren }))
 		{
-			ConditionAnalyze()(env);								// 条件
+			ConditionAnalyze(true, beg)(env);								// 条件
 		}
+
+		auto condition = env.fresh_code_builder();
+		env.code_builder().push_back_all(*front);
 
 		env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 		env.ensure(in_branch_of<StatementAnalyze>, Env::always_false);
+		
 		StatementAnalyze()(env);									// 语句
+
+		env.code_builder().push_back_all(*condition);
+		env.code_builder().push_back(env.ir().label(end));
 	}
 	else
 	{
 		env.dequeue_and_message_back();							// key_for
 
 		env.dequeue_certain_and_message_back(SymbolType::left_paren);				// left_paren
+
+
+		irelem_t beg = env.elem().alloc_for().beg();
+		irelem_t mid = env.elem().mid();
+		irelem_t end = env.elem().end();
 
 		if (env.ensure({ SymbolType::identifier }, { SymbolType::semicolon }))
 		{
@@ -1112,11 +1144,20 @@ void LoopStatementAnalyze::analyze(Env& env)
 		}
 		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
 
+		env.code_builder().push_back(env.ir()._goto(mid));
+		env.code_builder().push_back(env.ir().label(beg));
+		auto front_codes = env.fresh_code_builder();
+		env.code_builder().push_back(env.ir().label(mid));
+
 		if (env.ensure(in_branch_of<ConditionAnalyze>, { SymbolType::semicolon }))
 		{
-			ConditionAnalyze()(env);								// 条件
+			ConditionAnalyze(true, beg)(env);								// 条件
 		}
 		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon
+
+		auto condition_codes = env.fresh_code_builder();
+
+		shared_ptr<Ir> move_on_code;
 
 		if (env.ensure({ SymbolType::identifier }, { SymbolType::right_paren }))
 		{
@@ -1135,11 +1176,12 @@ void LoopStatementAnalyze::analyze(Env& env)
 				}
 			}
 			env.dequeue_certain_and_message_back(SymbolType::assign);		// assign
+			shared_ptr<const IdentifierInfo> delta_right_id_info;
 			if (env.peek() == SymbolType::identifier)
 			{
 				auto delta_right_token = env.dequeue_and_message_back();	// identifier
 				auto delta_right_id_token = dynamic_pointer_cast<const IdentifierToken>(delta_right_token);
-				auto delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content).first;
+				delta_right_id_info = env.get_identifier_info(delta_right_id_token->id_name_content).first;
 				if (delta_right_id_info == nullptr)
 				{
 					env.error_back(delta_right_token->line_number, ErrorType::undefined_identifier);
@@ -1167,12 +1209,32 @@ void LoopStatementAnalyze::analyze(Env& env)
 				StepLengthAnalyze step_length_analyze;
 				step_length_analyze(env);								// 步长
 				unsigned step_length = step_length_analyze.get_value();
+				if (delta_left_id_info != nullptr && delta_right_id_info != nullptr)
+				{
+					if (delta_type == SymbolType::plus)
+					{
+						move_on_code = make_shared<Ir>(IrHead::add, delta_left_id_info->ir_id, delta_right_id_info->ir_id, env.elem().alloc_imm(step_length));
+					}
+					if (delta_type == SymbolType::minus)
+					{
+						move_on_code = make_shared<Ir>(IrHead::sub, delta_left_id_info->ir_id, delta_right_id_info->ir_id, env.elem().alloc_imm(step_length));
+					}
+				}
 			}
 		}
+
+		env.code_builder().push_back_all(*front_codes);
 
 		env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 		env.ensure(in_branch_of<StatementAnalyze>, Env::always_false);
 		StatementAnalyze()(env);									// 语句
+
+		if (move_on_code != nullptr)
+		{
+			env.code_builder().push_back(*move_on_code);
+		}
+		env.code_builder().push_back_all(*condition_codes);
+		env.code_builder().push_back(env.ir().label(end));
 	}
 	env.message_back("<循环语句>");
 }
@@ -1189,12 +1251,18 @@ void StepLengthAnalyze::analyze(Env& env)
 // 条件语句
 void ConditionStatementAnalyze::analyze(Env& env)
 {
+	irelem_t beg = env.elem().alloc_if().beg();
+	irelem_t mid = env.elem().mid();
+	irelem_t end = env.elem().end();
+
 	env.dequeue_and_message_back();								// key_if
 	env.dequeue_certain_and_message_back(SymbolType::left_paren);		// left_paren
 	if (env.ensure(in_branch_of<ConditionAnalyze>, { SymbolType::right_paren }))
 	{
-		ConditionAnalyze()(env);									// 条件
+		ConditionAnalyze(false, mid)(env);									// 条件
 	}
+
+	env.code_builder().push_back(env.ir().label(beg));
 
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
 
@@ -1203,12 +1271,19 @@ void ConditionStatementAnalyze::analyze(Env& env)
 
 	if (env.peek() == SymbolType::key_else)
 	{
+		env.code_builder().push_back(env.ir()._goto(end));
+		env.code_builder().push_back(env.ir().label(mid));
 		env.dequeue_and_message_back();							// else
 		if (env.ensure(in_branch_of<StatementAnalyze>, { SymbolType::semicolon }))
 		{
 			StatementAnalyze()(env);									// 语句
 		}
 	}
+	else
+	{
+		env.code_builder().push_back(env.ir().label(mid));
+	}
+	env.code_builder().push_back(env.ir().label(end));
 
 	env.message_back("<条件语句>");
 }
@@ -1219,32 +1294,106 @@ void ConditionAnalyze::analyze(Env& env)
 	ExpressionAnalyze left_expression_analyze;
 	left_expression_analyze(env);								// 表达式
 	BaseType e1_type = left_expression_analyze.get_type();	
+	irelem_t res_l = left_expression_analyze.get_res();
 
-	switch (env.peek())
-	{
-	default:
-		env.error_back(env.peek_info()->line_number, ErrorType::unknown_error);
-		break;
-	case SymbolType::equal:
-	case SymbolType::not_equal:
-	case SymbolType::less:
-	case SymbolType::less_equal:
-	case SymbolType::greater:
-	case SymbolType::greater_equal:
-		break;
-	}
-	int line_number = env.dequeue_and_message_back()->line_number;			// 关系运算符
+	auto op = env.dequeue_and_message_back();
+	int line_number = op->line_number;			// 关系运算符
 
 	if (env.ensure(in_branch_of<ExpressionAnalyze>, { SymbolType::right_paren, SymbolType::semicolon }))
 	{
 		ExpressionAnalyze right_expression_analyze;
 		right_expression_analyze(env);								// 表达式
 		BaseType e2_type = right_expression_analyze.get_type();
+		irelem_t res_r = left_expression_analyze.get_res();
 		if (e1_type == BaseType::type_char || e2_type == BaseType::type_char)
 		{
 			env.error_back(line_number, ErrorType::illegal_type_in_condition);
 		}
+
+		switch (op->type)
+		{
+		default:
+			env.error_back(line_number, ErrorType::unknown_error);
+			break;
+		case SymbolType::equal:
+			if (success_switch)
+			{
+				env.code_builder().push_back(env.ir().beq(res_l, res_r, target));
+			}
+			else
+			{
+				env.code_builder().push_back(env.ir().bne(res_l, res_r, target));
+			}
+			break;
+		case SymbolType::not_equal:
+			if (success_switch)
+			{
+				env.code_builder().push_back(env.ir().bne(res_l, res_r, target));
+			}
+			else
+			{
+				env.code_builder().push_back(env.ir().beq(res_l, res_r, target));
+			}
+			break;
+		case SymbolType::less:
+		{
+			irelem_t rst = env.elem().alloc_tmp();
+			env.code_builder().push_back(env.ir().less(rst, res_l, res_r));
+			if (success_switch)
+			{
+				env.code_builder().push_back(env.ir().bne(rst, env.elem().zero(), target));
+			}
+			else
+			{
+				env.code_builder().push_back(env.ir().beq(rst, env.elem().zero(), target));
+			}
+			break;
+		}
+		case SymbolType::less_equal:
+		{
+			irelem_t rst = env.elem().alloc_tmp();
+			env.code_builder().push_back(env.ir().less(rst, res_r, res_l));
+			if (success_switch)
+			{
+				env.code_builder().push_back(env.ir().beq(rst, env.elem().zero(), target));
+			}
+			else
+			{
+				env.code_builder().push_back(env.ir().bne(rst, env.elem().zero(), target));
+			}
+			break;
+		}
+		case SymbolType::greater:
+		{
+			irelem_t rst = env.elem().alloc_tmp();
+			env.code_builder().push_back(env.ir().less(rst, res_l, res_r));
+			if (success_switch)
+			{
+				env.code_builder().push_back(env.ir().bne(rst, env.elem().zero(), target));
+			}
+			else
+			{
+				env.code_builder().push_back(env.ir().beq(rst, env.elem().zero(), target));
+			}
+			break;
+		}
+		case SymbolType::greater_equal:
+		{
+			irelem_t rst = env.elem().alloc_tmp();
+			env.code_builder().push_back(env.ir().less(rst, res_r, res_l));
+			if (success_switch)
+			{
+				env.code_builder().push_back(env.ir().beq(rst, env.elem().zero(), target));
+			}
+			else
+			{
+				env.code_builder().push_back(env.ir().bne(rst, env.elem().zero(), target));
+			}
+			break;
+		}
+		}
 	}
+
 	env.message_back("<条件>");
 }
 
@@ -1315,6 +1464,11 @@ void CallVoidFunctionStatementAnalyze::analyze(Env& env)
 	parameter_value_list_analyze(env);							// 值参数表
 
 	env.dequeue_certain_and_message_back(SymbolType::right_paren);	// right_paren
+	
+	if (id_info != nullptr)
+	{
+		env.code_builder().push_back(env.ir().call(id_info->ir_id));
+	}
 
 	env.message_back("<无返回值函数调用语句>");
 }
@@ -1323,7 +1477,11 @@ void CallVoidFunctionStatementAnalyze::analyze(Env& env)
 void ParameterValueListAnalyze::analyze(Env& env)
 {
 	unsigned count = 0;
+	
+	vector<irelem_t> results;
+	vector<shared_ptr<IrTable>> codes;
 	ExpressionAnalyze expression_analyze;
+	auto front_codes = env.fresh_code_builder();
 	while (true)
 	{
 		if (count != 0)
@@ -1345,6 +1503,7 @@ void ParameterValueListAnalyze::analyze(Env& env)
 		int line_number = env.peek_info()->line_number;
 		expression_analyze(env);							// 表达式
 		BaseType value_type = expression_analyze.get_type();
+		results.push_back(expression_analyze.get_res());
 		if (param_type_list != nullptr)
 		{
 			if (count >= param_type_list->size())
@@ -1361,6 +1520,9 @@ void ParameterValueListAnalyze::analyze(Env& env)
 			}
 		}
 
+		codes.push_back(env.fresh_code_builder());
+		results.push_back(expression_analyze.get_res());
+
 		++count;
 	}
 	int line_number = env.peek_info()->line_number;
@@ -1368,6 +1530,19 @@ void ParameterValueListAnalyze::analyze(Env& env)
 	{
 		env.error_back(line_number, ErrorType::parameter_count_mismatching);
 	}
+
+	env.code_builder().push_back_all(*front_codes);
+	while (codes.size() > 0)
+	{
+		env.code_builder().push_back_all(*codes.back());
+		results.pop_back();
+	}
+	while (results.size() > 0)
+	{
+		env.code_builder().push_back(env.ir().push(results.back()));
+		results.pop_back();
+	}
+
 	env.message_back("<值参数表>");
 }
 
@@ -1687,6 +1862,7 @@ void SwitchStatementAnalyze::analyze(Env& env)
 }
 
 // 情况表
+// TODO
 void SwitchTableAnalyze::analyze(Env& env)
 {
 	unordered_set<int> used_case;
@@ -1708,6 +1884,7 @@ void SwitchTableAnalyze::analyze(Env& env)
 }
 
 // 情况子语句
+// TODO
 void CaseStatementAnalyze::analyze(Env& env)
 {
 	int line_number = env.dequeue_and_message_back()->line_number;						// key_case
