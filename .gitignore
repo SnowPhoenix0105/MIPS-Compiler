@@ -16,6 +16,9 @@
 *.pdf
 *.log
 
+# auto-generatable test-resources
+*auto_samples/sample.*.txt
+
 # Prerequisites
 *.d
 

@@ -13,6 +13,8 @@ class InputAndExpectGenerator:
         self.work_dir = work_dir
          # list of bool, True means require an integer, False means require a charactor
         self.input_type_list = []  
+        self.char_table = [chr(a + i) for i in range(26) for a in map(ord, ['a', 'A'])]
+        self.char_table += [str(i) for i in range(10)]
 
 
     def input_file_name(self, num: int)->str:
@@ -103,7 +105,10 @@ class InputAndExpectGenerator:
                 """
             )
             with open(self.source_c_file_name(), 'r', encoding='utf8') as cf:
-                cppf.write(cf.read())
+                for line in cf.readlines():
+                    if line.lstrip()[:4] == "case" or line.lstrip()[:7] == "default":
+                        cppf.write("break;\n")
+                cppf.write(line)
             cppf.write(
                 """
                 }
@@ -112,6 +117,14 @@ class InputAndExpectGenerator:
             )
 
     def compile_cpp_to_exe(self):
-        pass
+        command = "g++ -m32 " + self.source_cpp_file_name() + " -o " + self.exe_file_name()
+
+    def gen_input(self, num:int):
+        with open(self.input_file_name(num), 'w', encoding='utf8') as f:
+            for is_int in self.input_type_list:
+                if is_int:
+                    f.write(str(random.randint(-512, 512)) + '\n')
+                else:
+                    f.write()
 
     
