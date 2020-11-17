@@ -1136,10 +1136,16 @@ void LoopStatementAnalyze::analyze(Env& env)
 				}
 			}
 			env.dequeue_certain_and_message_back(SymbolType::assign);		// assign
+
 			if (env.ensure(in_branch_of<ExpressionAnalyze>, { SymbolType::semicolon }))
 			{
 				ExpressionAnalyze expression_analyze;
 				expression_analyze(env);								// ±í´ïÊ½
+				if (init_id_info != nullptr)
+				{
+					env.code_builder().push_back(
+						env.ir().add(init_id_info->ir_id, env.elem().zero(), expression_analyze.get_res()));
+				}
 			}
 		}
 		env.dequeue_certain_and_message_back(SymbolType::semicolon);	// semicolon

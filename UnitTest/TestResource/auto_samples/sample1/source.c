@@ -31,12 +31,15 @@ void main()
     char result_c;
     printf("18231045");
     result = c_1 + c_2 + c_3 + c_4;
+    printf(result);
     for (i = 0; i < 3; i = i + 1)
     {
         result = result + c_array[i];
+        printf(result);
         for (j = 2; j >= 0; j = j - 1)
         {
             result = result + c_matrix[i][j];
+            printf(result);
         }
     }
     printf("char sum:");
