@@ -564,12 +564,15 @@ private:
 // 条件
 struct ConditionAnalyze : AbstractSyntacticAnalyzeTactics
 {
+	ConditionAnalyze(bool success_switch, irelem_t target) : success_switch(success_switch), target(target) { }
 	static unordered_set<SymbolType> first_set()
 	{
 		return ExpressionAnalyze::first_set();
 	};
 
 protected:
+	bool success_switch;
+	irelem_t target;
 	virtual void analyze(Env& env);
 };
 
