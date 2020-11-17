@@ -264,8 +264,8 @@ void SimpleCodeGenerator::beg_main()
 void SimpleCodeGenerator::beg_func()
 {
 	buffer << mips.label(allocator_ptr->label_to_string(ir_table_ptr->at(func_beg_index).elem[0])) << endl;
-	buffer << mips.sw("$ra", "$sp", stack_size - 4) << endl;
 	buffer << mips.subu("$sp", "$sp", stack_size) << endl;
+	buffer << mips.sw("$ra", "$sp", stack_size - 4) << endl;
 }
 
 void SimpleCodeGenerator::end_main()
