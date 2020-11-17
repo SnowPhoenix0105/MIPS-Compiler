@@ -1,6 +1,6 @@
 .data
 __GP__:
-.word
+.word	0
 .byte 97
 .byte 98
 .byte 99

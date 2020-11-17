@@ -39,6 +39,11 @@ void SimpleCodeGenerator::init_global()
 	buffer << ".data" << endl;
 	buffer << "__GP__:" << endl;
 	bool flag = true;
+#ifdef DEBUG_LEVEL
+	std::cout << "     ____GLOBAL_____" << endl;
+	std::cout << "+ - - - - - - - - - - - + 0" << endl;
+#endif // DEBUG_LEVEL
+
 	for (size_t i = 0; flag; ++i)
 	{
 		const auto& code = ir_table.at(i);
@@ -55,6 +60,10 @@ void SimpleCodeGenerator::init_global()
 			string var_label = allocator.var_to_string(var);
 			global_var_offset_table.insert(make_pair(var, offset));
 			offset += 4;
+#ifdef DEBUG_LEVEL
+			std::cout << "|\t" << allocator.val_to_string(var) << ' ' << endl;
+			std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
 			//buffer << var_label << ":\t.word";
 			buffer << ".word";
 			if (ir_table.at(i + 1).head == IrHead::init)
@@ -63,7 +72,7 @@ void SimpleCodeGenerator::init_global()
 			}
 			else
 			{
-				buffer << endl;
+				buffer << '\t' << 0 << endl;
 			}
 			break;
 		}
@@ -77,6 +86,10 @@ void SimpleCodeGenerator::init_global()
 			int space = size * (is_int ? 4 : 1);
 			space = (space + 3) & ~3;			// up tp 4*n
 			offset += space;
+#ifdef DEBUG_LEVEL
+			std::cout << "|\t" << allocator.val_to_string(arr) << ' ' << endl;
+			std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
 			// 无初始化
 			if (ir_table.at(i + 1).head != IrHead::init)
 			{
@@ -109,6 +122,10 @@ void SimpleCodeGenerator::init_global()
 			PANIC();
 		}
 	}
+#ifdef DEBUG_LEVEL
+	std::cout << "+ - - - - - - - - - + " << offset << endl;
+	std::cout << "\n\n\n\n"  << endl;
+#endif // DEBUG_LEVEL
 	int str_count = 0;
 	for (const auto& p : allocator.get_string_map())
 	{
@@ -140,6 +157,10 @@ void SimpleCodeGenerator::init_func()
 			}
 		}
 	}
+#ifdef DEBUG_LEVEL
+	std::cout << "     " << allocator.label_to_string(ir_table.at(func_beg_index).elem[0]) << endl;
+	std::cout << "+ - - - - - - - - - - - + 0" << endl;
+#endif // DEBUG_LEVEL
 	// 遍历 beg -> mid , 统计形参, 初始化数组
    	vector<irelem_t> param_list;
 	unsigned offset = 0;
@@ -166,6 +187,10 @@ void SimpleCodeGenerator::init_func()
 			space = (space + 3) & ~3;			// up tp 4*n
 			unsigned off = offset;
 			offset += space;
+#ifdef DEBUG_LEVEL
+			std::cout << "|\t" << allocator.val_to_string(arr) << ' ' << endl;
+			std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
 			// 无初始化
 			if (ir_table.at(i + 1).head != IrHead::init)
 			{
@@ -204,12 +229,24 @@ void SimpleCodeGenerator::init_func()
 	{
 		func_var_offset_table.insert(make_pair(v, offset));
 		offset += 4;
+#ifdef DEBUG_LEVEL
+		std::cout << "|\t" << allocator.val_to_string(v) << ' ' << endl;
+		std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
 	}
 	for (auto p : param_list)
 	{
 		func_var_offset_table.insert(make_pair(p, offset));
 		offset += 4;
+#ifdef DEBUG_LEVEL
+		std::cout << "|\t" << allocator.val_to_string(p) << ' ' << endl;
+		std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
 	}
+#ifdef DEBUG_LEVEL
+	std::cout << "+ - - - - - - - - - + " << offset << endl;
+	std::cout << "\n\n\n\n" << endl;
+#endif // DEBUG_LEVEL
 	func_var_offset_table.insert(make_pair(allocator.ret(), offset));
 	offset += 4;
 	// $ra
