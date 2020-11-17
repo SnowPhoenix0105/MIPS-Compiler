@@ -3,9 +3,10 @@
 #ifndef __ANSTRACT_SYNTACTIC_ANALYZER_TACTICS_H__
 #define __ANSTRACT_SYNTACTIC_ANALYZER_TACTICS_H__
 
+// #include <utility>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include "global_control.h"
 #include "ErrorType.h"
 #include "SyntacticAnalyzeUtil.h"
@@ -20,6 +21,7 @@ using std::initializer_list;
 using std::unordered_set;
 using std::make_pair;
 using std::bad_cast;
+using std::map;
 
 struct VariableDeclarationAnalyze;
 struct VariableDefinationAnalyze;
@@ -430,7 +432,7 @@ private:
 // 情况表
 struct SwitchTableAnalyze : AbstractSyntacticAnalyzeTactics
 {
-	SwitchTableAnalyze(BaseType type) : switch_type(type) { }
+	SwitchTableAnalyze(BaseType type, irelem_t end_label) : switch_type(type), end_label(end_label) { }
 	static unordered_set<SymbolType> first_set()
 	{
 		return
@@ -438,10 +440,13 @@ struct SwitchTableAnalyze : AbstractSyntacticAnalyzeTactics
 			SymbolType::key_case
 		};
 	};
+	map<int, irelem_t> get_value_label_table() { return value_label_table; }
 protected:
 	virtual void analyze(Env& env);
 private:
 	BaseType switch_type;
+	map<int, irelem_t> value_label_table;
+	irelem_t end_label;
 };
 
 // 情况语句
