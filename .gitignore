@@ -12,7 +12,6 @@
 *.jar
 *.pdf
 *.log
-hw_sample_formatter.py
 
 
 # auto-generatable test-resources

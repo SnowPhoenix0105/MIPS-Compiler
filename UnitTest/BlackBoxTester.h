@@ -177,6 +177,36 @@ namespace MarsTester
 		compare_and_judge(expect_file_name, result_file_name);
 	}
 
+	// 测试一个系列: 需求的外部资源有:源文件,输入,期望输出 
+	// @param series_name: 
+	inline void hw_test(const string& series_name, int num)
+	{
+		string source_file_name = test_resource_path + "\\" + series_name + "\\testfile.txt";
+		string input_file_name = test_resource_path + "\\" + series_name + "\\input.txt";
+		string result_file_name = test_resource_path + "\\" + series_name + "\\result.txt";
+		string expect_file_name = test_resource_path + "\\" + series_name + "\\expect.txt";
+		string assembly_file_name = test_resource_path + "\\" + series_name + "\\assembly.asm";
+		string ir_file_name = test_resource_path + "\\" + series_name + "\\ir.asm";
+
+		ifstream ifs(input_file_name);
+		if (!ifs)
+		{
+			input_file_name = "";
+		}
+		unique_ptr<istream> source_file(new ifstream(source_file_name));
+		ofstream assembly_file(assembly_file_name);
+		ofstream ir_file(ir_file_name);
+		get_ir_and_target(std::move(source_file), ir_file, assembly_file);
+		ir_file.close();
+		assembly_file.close();
+		assembly_and_simulate(
+			assembly_file_name,
+			input_file_name,
+			result_file_name
+		);
+		compare_and_judge(expect_file_name, result_file_name);
+	}
+
 	inline void init()
 	{
 		if (base_result == nullptr)

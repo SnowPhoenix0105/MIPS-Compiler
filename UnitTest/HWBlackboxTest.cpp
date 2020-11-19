@@ -7,7 +7,7 @@
 #include <string>
 #include "BlackBoxTester.h"
 
-#define TEST_CASE(series_name) TEST_METHOD(series_name) { MarsTester::test(test_resource_opposite_path + #series_name, 1); }
+#define TEST_CASE(series_name) TEST_METHOD(series_name) { MarsTester::hw_test(test_resource_opposite_path + #series_name); }
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using std::string;
@@ -57,6 +57,14 @@ namespace BlackboxTest
 		TEST_CASE(hw_2_16)
 		TEST_CASE(hw_2_17)
 		TEST_CASE(hw_2_18)
+		TEST_CASE(hw_2_21)
+		TEST_CASE(hw_2_22)
+		TEST_CASE(hw_2_23)
+		TEST_CASE(hw_2_24)
+		TEST_CASE(hw_2_25)
+		TEST_CASE(hw_2_26)
+		TEST_CASE(hw_2_27)
+		TEST_CASE(hw_2_28)
 	};
 
 	const string HWBlackboxTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\hw_samples");
