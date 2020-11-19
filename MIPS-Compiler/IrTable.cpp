@@ -239,6 +239,17 @@ irelem_t CstAllocator::alloc_arr(shared_ptr<const string> arr)
 	return ret;
 }
 
+irelem_t CstAllocator::arr_root(irelem_t arr) const
+{
+	ASSERT(4, IrType::is_arr(arr));
+	if (IrType::is_pure_arr(arr))
+	{
+		return arr;
+	}
+	auto ord = IrType::get_ord(arr);
+	return arrs_with_offset.at(ord).first;
+}
+
 irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
 {
 	ASSERT(4, IrType::is_cst(cst_1));
@@ -248,9 +259,23 @@ irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
 		int val = imm_to_value(cst_1) + imm_to_value(cst_2);
 		return alloc_imm(val);
 	}
-	size_t ord = incalculate_cst.size();
+	size_t ord = arrs_with_offset.size();
 	irelem_t ret = 0x98000000 | ord;
-	incalculate_cst.push_back(make_pair(cst_1, cst_2));
+	if (IrType::is_arr(cst_1))
+	{
+		ASSERT(4, IrType::is_imm(cst_2));
+		irelem_t root = arr_root(cst_1);
+		int offset = imm_to_value(cst_2);
+		arrs_with_offset.push_back(make_pair(root, offset));
+	}
+	else
+	{
+		ASSERT(1, IrType::is_arr(cst_2));
+		ASSERT(4, IrType::is_imm(cst_1));
+		irelem_t root = arr_root(cst_2);
+		int offset = imm_to_value(cst_1);
+		arrs_with_offset.push_back(make_pair(root, offset));
+	}
 	return ret;
 }
 
@@ -273,10 +298,10 @@ int CstAllocator::cst_to_value(irelem_t cst) const
 		return arr_value.at(cst);
 	}
 	size_t ord = IrType::get_ord(cst);
-	const auto& pair = incalculate_cst.at(ord);
-	int val1 = cst_to_value(pair.first);
-	int val2 = cst_to_value(pair.second);
-	return val1 + val2;
+	const auto& pair = arrs_with_offset.at(ord);
+	int arr = arr_value.at(pair.first);
+	int off = pair.second;
+	return arr + off;
 }
 
 string CstAllocator::cst_to_string(irelem_t cst) const
@@ -293,11 +318,10 @@ string CstAllocator::cst_to_string(irelem_t cst) const
 		const auto& arr = arrs.at(ord);
 		return *(arr.first) + "__arr__" + *(arr.second);
 	}
-	const auto& pair = incalculate_cst.at(ord);
-	string val1 = cst_to_string(pair.first);
-	string val2 = cst_to_string(pair.second);
-	return "(" + val1 + " + " + val2 + ")";
-	
+	const auto& pair = arrs_with_offset.at(ord);
+	irelem_t arr = pair.first;
+	int off = pair.second;
+	return "(" + cst_to_string(arr) + " + " + to_string(off) + ")";
 }
 
 irelem_t StringAllocator::alloc_string(shared_ptr<const string> str)

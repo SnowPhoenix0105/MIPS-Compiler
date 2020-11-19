@@ -161,12 +161,12 @@ private:
 	vector<int> imms;
 	unordered_map<int, irelem_t> imm_cache;
 	vector<pair<shared_ptr<const string>, shared_ptr<const string>>> arrs;
-	vector<pair<irelem_t, irelem_t>> incalculate_cst;
+	vector<pair<irelem_t, int>> arrs_with_offset;
 	unordered_map<irelem_t, int> arr_value;
 	shared_ptr<const string> current_func;
 
 public:
-	CstAllocator() : imms(), imm_cache(), arrs(), incalculate_cst(), arr_value(), current_func(VarAllocator::__global) { }
+	CstAllocator() : imms(), imm_cache(), arrs(), arrs_with_offset(), arr_value(), current_func(VarAllocator::__global) { }
 	CstAllocator& set_function(shared_ptr<const string> func_name)
 	{
 		current_func = func_name;
@@ -181,6 +181,7 @@ public:
 		arr_value.insert(make_pair(arr, value));
 		return *this;
 	}
+	irelem_t arr_root(irelem_t arr) const;
 	int imm_to_value(irelem_t imm) const;
 	int cst_to_value(irelem_t cst) const;
 	string cst_to_string(irelem_t cst) const;
