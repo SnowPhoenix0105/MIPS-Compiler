@@ -38,6 +38,6 @@ func_mid_main:
 	main_tmp_10	=	main_tmp_8[main__arr__larr3]
 	main_tmp_7	=	main_tmp_10	+	$0
 	main_var_tmp	=	main_tmp_7	+	$0
-	printf	"your input is\t",	main_var_tmp,	int
+	printf	"your input is ",	main_var_tmp,	int
 func_end_main:
 

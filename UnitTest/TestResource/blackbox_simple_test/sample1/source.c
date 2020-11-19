@@ -12,5 +12,5 @@ void main() {
     scanf(buffer);
     larr3[2] = buffer;
     tmp = larr3[2];
-    printf("your input is\t", tmp);
+    printf("your input is ", tmp);
 }
