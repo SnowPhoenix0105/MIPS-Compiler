@@ -343,9 +343,9 @@ void SimpleCodeGenerator::func_body()
 	const IrTable& ir_table = *ir_table_ptr;
 
 	bool last_is_push = false;
+	int push_count = 0;
 	for (size_t index = func_mid_index; index < func_end_index; ++index)
 	{
-		int push_count = 0;
 		const auto& code = ir_table.at(index);
 		switch (code.head)
 		{
