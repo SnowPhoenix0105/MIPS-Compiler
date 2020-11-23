@@ -4,6 +4,38 @@
 
 namespace IrDetectors
 {
+	shared_ptr<const unordered_set<irelem_t>> detect_unused_label(const IrTable& codes, const IrElemAllocator& elems)
+	{
+		shared_ptr<unordered_set<irelem_t>> ret = make_shared<unordered_set<irelem_t>>();
+
+		for (const auto& ir : codes)
+		{
+			switch (ir.head)
+			{
+			case IrHead::call:
+			case IrHead::_goto:
+			case IrHead::beq:
+			case IrHead::bne:
+			{
+				irelem_t label = ir.elem[2];
+				ASSERT(4, IrType::is_label(label));
+				ret->erase(label);
+			}
+			case IrHead::label:
+			{
+				irelem_t label = ir.elem[0];
+				ASSERT(4, IrType::is_label(label));
+				ret->insert(label);
+				break;
+			}
+			default:
+				break;
+			}
+		}
+		return ret;
+	}
+
+
 	shared_ptr<const BlockDetectResult> func_block_detect(const IrTable& codes, const IrElemAllocator& elems, size_t func_beg_index, const unordered_set<irelem_t>& unused_labels)
 	{
 		unordered_map<irelem_t, size_t> label_index;
@@ -71,6 +103,29 @@ namespace IrDetectors
 				init = false;
 			}
 		}
+		for (size_t i = 0; i != blocks.size(); ++i)
+		{
+			auto& block = blocks[i];
+			const auto& ir = codes.at(block.end - 1);
+			irelem_t target;
+			switch (ir.head)
+			{
+			case IrHead::beq:
+			case IrHead::bne:
+				target = ir.elem[2];
+			case IrHead::_goto:
+				target = ir.elem[0];
+			default:
+				continue;
+			}
+			ASSERT(4, IrType::is_label(target));
+			auto target_index_it = label_index.find(target);
+			ASSERT(4, target_index_it != label_index.end());
+			size_t target_index = target_index_it->second;
+			blocks[target_index].fronts.insert(i);
+			block.nexts.insert(i);
+		}
+		return ret;
 	}
 
 	shared_ptr<const DataStreamAnalyzeResult> data_stream_analyze(const IrTable& codes, const IrElemAllocator& elems, size_t func_beg_index, const BlockDetectResult& block_detect_result)
