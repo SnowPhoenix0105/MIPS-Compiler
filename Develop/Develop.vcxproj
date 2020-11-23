@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="AbstractSyntacticAnalyzeTactics.cpp" />
     <ClCompile Include="compile_controller.cpp" />
+    <ClCompile Include="Detectors.cpp" />
     <ClCompile Include="ErrorType.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
     <ClCompile Include="InitializeListAnalyze.cpp" />
@@ -155,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="AbstractSyntacticAnalyzeTactics.h" />
     <ClInclude Include="compile_controller.h" />
+    <ClInclude Include="Detectors.h" />
     <ClInclude Include="ErrorType.h" />
     <ClInclude Include="global_control.h" />
     <ClInclude Include="IdentifierTable.h" />

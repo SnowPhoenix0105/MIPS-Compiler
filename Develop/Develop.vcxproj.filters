@@ -13,87 +13,111 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="FrontEnd">
+      <UniqueIdentifier>{4201d24d-12f7-411c-a758-89d5b498eba1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FrontEnd\Headers">
+      <UniqueIdentifier>{24f4df26-51a6-4b3d-b4e6-09f0993d55e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FrontEnd\Sources">
+      <UniqueIdentifier>{d7c317d7-cf6f-48bb-b4e2-7171ed323c24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BaackEnd">
+      <UniqueIdentifier>{7f306d9c-ed78-4b91-b822-727063753f14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BaackEnd\Headers">
+      <UniqueIdentifier>{4e8726e2-3ebc-4761-a71c-ba8eccf63435}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BaackEnd\Sources">
+      <UniqueIdentifier>{6586d334-56f4-4385-815a-854b9109dfc0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LexicalAnalyzer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="SymbolType.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="compile_controller.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="SyntacticAnalyzer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="AbstractSyntacticAnalyzeTactics.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="IdentifierTable.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="SyntacticAnalyzeUtil.cpp">
-      <Filter>源文件</Filter>
+      <Filter>FrontEnd\Sources</Filter>
     </ClCompile>
     <ClCompile Include="ErrorType.cpp">
-      <Filter>源文件</Filter>
+      <Filter>FrontEnd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="IdentifierTable.cpp">
+      <Filter>FrontEnd\Sources</Filter>
     </ClCompile>
     <ClCompile Include="InitializeListAnalyze.cpp">
-      <Filter>源文件</Filter>
+      <Filter>FrontEnd\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="IrTable.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="LexicalAnalyzer.cpp">
+      <Filter>FrontEnd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="SymbolType.cpp">
+      <Filter>FrontEnd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="SyntacticAnalyzer.cpp">
+      <Filter>FrontEnd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="SyntacticAnalyzeUtil.cpp">
+      <Filter>FrontEnd\Sources</Filter>
     </ClCompile>
     <ClCompile Include="TargetCodeGenerator.cpp">
-      <Filter>源文件</Filter>
+      <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
     <ClCompile Include="SimpleTargetGenerator.cpp">
-      <Filter>源文件</Filter>
+      <Filter>BaackEnd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="IrTable.cpp">
+      <Filter>BaackEnd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Detectors.cpp">
+      <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LexicalAnalyzer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="SymbolType.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="compile_controller.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="global_control.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="SyntacticAnalyzer.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="ErrorType.h">
+      <Filter>FrontEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="AbstractSyntacticAnalyzeTactics.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="SymbolToken.h">
-      <Filter>头文件</Filter>
+      <Filter>FrontEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="IdentifierTable.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="SyntacticAnalyzeUtil.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ErrorType.h">
-      <Filter>头文件</Filter>
+      <Filter>FrontEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="InitializeListAnalyze.h">
-      <Filter>头文件</Filter>
+      <Filter>FrontEnd\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="IrTable.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="LexicalAnalyzer.h">
+      <Filter>FrontEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolToken.h">
+      <Filter>FrontEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="SymbolType.h">
+      <Filter>FrontEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="SyntacticAnalyzer.h">
+      <Filter>FrontEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="SyntacticAnalyzeUtil.h">
+      <Filter>FrontEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="TargetCodeGenerator.h">
-      <Filter>头文件</Filter>
+      <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="SimpleTargetGenerator.h">
-      <Filter>头文件</Filter>
+      <Filter>BaackEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="IrTable.h">
+      <Filter>BaackEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Detectors.h">
+      <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
