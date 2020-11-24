@@ -59,11 +59,49 @@ enum class IrHead
 	ret,		//  null
 
 	scanf,		//  <var> <type>
-	printf,		//  [<string>] [<var> <type>]		
+	printf,		//  [<string>] [<var> <type>]	
+
+	protect,	// <reg> <var>
+	reload,		// <reg> <var>
 };
 
 using irelem_t = uint32_t;
 
+enum class Reg : unsigned
+{
+	zero	= 0,
+	at		= 1,
+	v0		= 2,
+	v1		= 3,
+	a0		= 4,
+	a1		= 5,
+	a2		= 6,
+	a3		= 7,
+	t0		= 8,
+	t1		= 9,
+	t2		= 10,
+	t3		= 11,
+	t4		= 12,
+	t5		= 13,
+	t6		= 14,
+	t7		= 15,
+	s0		= 16,
+	s1		= 17,
+	s2		= 18,
+	s3		= 19,
+	s4		= 20,
+	s5		= 21,
+	s6		= 22,
+	s7		= 23,
+	t8		= 24,
+	t9		= 25,
+	k0		= 26,
+	k1		= 27,
+	gp		= 28,
+	sp		= 29,
+	fp		= 30,
+	ra		= 31
+};
 
 struct IrType
 {
@@ -81,7 +119,7 @@ struct IrType
 	static bool is_pure_arr(irelem_t v) { return (v >> 27) == 0b10010; }
 	static bool is_fix_idx(irelem_t v) { return (v >> 27) == 0b10011; }
 	static bool is_string(irelem_t v) { return (v >> 29) == 0b110; }
-	static bool is_special(irelem_t v) { return (v >> 29) == 0b111; }
+	static bool is_special(irelem_t v) { return (v >> 29) == 0b11; }
 	static bool is_label(irelem_t v) { return (v >> 31) == 0b0; }
 	static bool is_func(irelem_t v) { return (v >> 28) == 0b0001; }
 	static bool is_if(irelem_t v) { return (v >> 28) == 0b0010; }
@@ -149,6 +187,8 @@ public:
 	irelem_t ret() const noexcept { return _ret; }
 	irelem_t zero() const noexcept { return _zero; }
 	irelem_t gp() const noexcept { return _gp; }
+
+	irelem_t reg(Reg reg) const { /* TODO */}
 	bool is_reserved_var(irelem_t var) const;
 	const unordered_set<irelem_t>& reversed_var() const noexcept { return _reserved_var; }
 	bool is_global_var(irelem_t named) const;

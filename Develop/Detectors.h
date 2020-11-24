@@ -2,22 +2,13 @@
 #ifndef __DETECTORS_H__
 #define __DETECTORS_H__
 
-#include <string>
 #include <memory>
 #include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <forward_list>
 #include "global_control.h"
 #include "IrTable.h"
 
-using std::forward_list;
 using std::shared_ptr;
-using std::make_shared;
 using std::vector;
-using std::string;
-using std::unordered_map;
-using std::unordered_set;
 
 namespace IrDetectors
 {
@@ -39,31 +30,53 @@ namespace IrDetectors
 		friend shared_ptr<const BlockDetectResult> func_block_detect(const IrTable& codes, const IrElemAllocator& elems, size_t func_beg_index, const unordered_set<irelem_t>& unused_labels);
 	};
 
+	template<typename T>
 	struct StreamInfo
 	{
-		vector<unordered_set<irelem_t>> in;
-		vector<unordered_set<irelem_t>> out;
+		vector<unordered_set<T>> in;
+		vector<unordered_set<T>> out;
+	};
+
+	struct DefInfo
+	{
+		size_t block_num;
+		size_t index;
+
+		DefInfo() = default;
+		DefInfo(size_t block_num, size_t index) : block_num(block_num), index(index) { }
+
+		bool operator==(const DefInfo& other)
+		{
+			return block_num == other.block_num && index == other.index;
+		}
+
+		bool operator!=(const DefInfo& other)
+		{
+			return block_num = other.block_num || index != other.index;
+		}
 	};
 
 	class DataStreamAnalyzeResult
 	{
 	private:
-		vector<StreamInfo> blocks;
+		StreamInfo<DefInfo> infos;
 		DataStreamAnalyzeResult() = default;
 	public:
-		const vector<StreamInfo>& get_blocks() const { return blocks; }
+		const StreamInfo<DefInfo>& get_infos() const { return infos; }
 		friend shared_ptr<const DataStreamAnalyzeResult> data_stream_analyze(const IrTable& codes, const IrElemAllocator& elems, size_t func_beg_index, const BlockDetectResult& block_detect_result);
 	};
 
 	class VarActivetionAnalyzeResult
 	{
 	private:
-		vector<StreamInfo> blocks;
+		StreamInfo<irelem_t> infos;
 		VarActivetionAnalyzeResult() = default;
 	public:
-		const vector<StreamInfo>& get_blocks() const { return blocks; }
+		const StreamInfo<irelem_t>& get_infos() const { return infos; }
 		friend shared_ptr<const VarActivetionAnalyzeResult> var_activition_analyze(const IrTable& codes, const IrElemAllocator& elems, size_t func_beg_index, const BlockDetectResult& block_detect_result);
 	};
+
+	irelem_t get_redef_elem(const Ir& ir, const IrElemAllocator& elems);
 
 	shared_ptr<const unordered_set<irelem_t>> detect_unused_label(const IrTable& codes, const IrElemAllocator& elems);
 
