@@ -82,30 +82,30 @@ namespace IrDetectors
 					ASSERT(4, IrType::is_label(label));
 					if (IrType::is_func(label) && IrType::is_end(label))
 					{
-						// º¯Êı½áÊø
+						// å‡½æ•°ç»“æŸ
 						blocks.back().end = index;
 						break;
 					}
 					if (init)
 					{
-						// µ±Ç°»ù±¾¿é¶àÁËÒ»¸öÈë¿Ú±êÇ©
+						// å½“å‰åŸºæœ¬å—å¤šäº†ä¸€ä¸ªå…¥å£æ ‡ç­¾
 						label_index.insert(make_pair(label, current_block_index));
 						continue;
 					}
 					if (unused_labels.count(label) != 0)
 					{
-						// ÎŞÓÃµÄ±êÇ©, ²»»áÓĞÆäËü»ù±¾¿éÌøÈëµ½ÕâÀï
+						// æ— ç”¨çš„æ ‡ç­¾, ä¸ä¼šæœ‰å…¶å®ƒåŸºæœ¬å—è·³å…¥åˆ°è¿™é‡Œ
 						continue;
 					}
 				}
-				// TODO »ù±¾¿é½áÊø
+				// TODO åŸºæœ¬å—ç»“æŸ
 				blocks[current_block_index].end = index;
 				blocks.emplace_back();
 				blocks.back().beg = index;
 				init = true;
 				if (head != IrHead::_goto)
 				{
-					// Á¬½ÓÏàÁ¬µÄÁ½¸ö»ù±¾¿é
+					// è¿æ¥ç›¸è¿çš„ä¸¤ä¸ªåŸºæœ¬å—
 					blocks[current_block_index].nexts.insert(current_block_index + 1);
 					blocks.back().fronts.insert(current_block_index);
 				}
@@ -188,7 +188,7 @@ namespace IrDetectors
 		size_t beg_index = blocks.at(0).beg;
 		size_t end_index = blocks.back().end;
 
-		// Í³¼ÆËùÓĞ±äÁ¿¡¢Êı×é³öÏÖµÄÎ»ÖÃ
+		// ç»Ÿè®¡æ‰€æœ‰å˜é‡ã€æ•°ç»„å‡ºç°çš„ä½ç½®
 		unordered_map<irelem_t, unordered_set<DefInfo>> var_def_location;
 		for (size_t i = 0; i != blocks.size(); ++i)
 		{
@@ -224,8 +224,6 @@ namespace IrDetectors
 		{
 			auto& block = blocks[i];
 		}
-
-		throw;
 	}
 
 	void get_def_and_use_elem(
@@ -313,7 +311,7 @@ namespace IrDetectors
 		in.resize(block_count);
 		out.resize(block_count);
 
-		// ¼ÆËãuseºÍdef
+		// è®¡ç®—useå’Œdef
 		for (size_t i = 0; i != block_count; ++i)
 		{
 			const auto& block = blocks.at(i);
@@ -339,7 +337,7 @@ namespace IrDetectors
 			}
 		}
 
-		// °Ñuse¼¯¼ÓÈëµ½in¼¯ÖĞ
+		// æŠŠuseé›†åŠ å…¥åˆ°iné›†ä¸­
 		for (size_t i = 0; i != block_count; ++i)
 		{
 			for (irelem_t elem : use[i])
@@ -360,13 +358,13 @@ namespace IrDetectors
 				{
 					for (irelem_t elem : in[next])
 					{
-						// ½« in[next] ²åÈëµ½ out[current] ÖĞ
+						// å°† in[next] æ’å…¥åˆ° out[current] ä¸­
 						if (out[current].count(elem) == 0)
 						{
 							out[current].insert(elem);
 							if (def[current].count(elem) == 0)
 							{
-								// ½« in[next] - def[current] ²åÈëµ½ in[current] ÖĞ
+								// å°† in[next] - def[current] æ’å…¥åˆ° in[current] ä¸­
 								in[current].insert(elem);
 							}
 							changed = true;

@@ -488,6 +488,20 @@ struct IrFactory
 	{
 		return Ir( IrHead::printf, allocator().alloc_string(str), var, type);
 	}
+
+	Ir protect(irelem_t reg, irelem_t var)
+	{
+		ASSERT(4, IrType::is_named(reg));
+		ASSERT(4, IrType::is_var(var));
+		return Ir(IrHead::protect, reg, var, IrType::NIL);
+	}
+
+	Ir reload(irelem_t reg, irelem_t var)
+	{
+		ASSERT(4, IrType::is_named(reg));
+		ASSERT(4, IrType::is_var(var));
+		return Ir(IrHead::reload, reg, var, IrType::NIL);
+	}
 };
 
 

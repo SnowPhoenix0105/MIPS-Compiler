@@ -4,6 +4,43 @@
 using std::ostringstream;
 using std::endl;
 
+const unordered_map<Reg, string> reg_name_trans =
+{
+	{	Reg::zero	, "$zero"		},
+	{	Reg::at		, "$at"			},
+	{	Reg::v0		, "$v0"			},
+	{	Reg::v1		, "$v1"			},
+	{	Reg::a0		, "$a0"			},
+	{	Reg::a1		, "$a1"			},
+	{	Reg::a2		, "$a2"			},
+	{	Reg::a3		, "$a3"			},
+	{	Reg::t0		, "$t0"			},
+	{	Reg::t1		, "$t1"			},
+	{	Reg::t2		, "$t2"			},
+	{	Reg::t3		, "$t3"			},
+	{	Reg::t4		, "$t4"			},
+	{	Reg::t5		, "$t5"			},
+	{	Reg::t6		, "$t6"			},
+	{	Reg::t7		, "$t7"			},
+	{	Reg::s0		, "$s0"			},
+	{	Reg::s1		, "$s1"			},
+	{	Reg::s2		, "$s2"			},
+	{	Reg::s3		, "$s3"			},
+	{	Reg::s4		, "$s4"			},
+	{	Reg::s5		, "$s5"			},
+	{	Reg::s6		, "$s6"			},
+	{	Reg::s7		, "$s7"			},
+	{	Reg::t8		, "$t8"			},
+	{	Reg::t9		, "$t9"			},
+	{	Reg::k0		, "$k0"			},
+	{	Reg::k1		, "$k1"			},
+	{	Reg::gp		, "$gp"			},
+	{	Reg::sp		, "$sp"			},
+	{	Reg::fp		, "$fp"			},
+	{	Reg::ra		, "$ra"			}
+};
+
+
 string LabelAllocator::label_to_string(irelem_t label) const
 {
 	ASSERT(0, IrType::is_label(label));
@@ -136,7 +173,7 @@ irelem_t LabelAllocator::end() const
 
 const shared_ptr<const string> VarAllocator::__global = make_shared<const string>("__global");
 
-VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global), _reserved_var()
+VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global), _reserved_var(), regs()
 {
 	_sp = alloc_named(make_shared<const string>("_sp"));
 	_gp = alloc_named(make_shared<const string>("_gp"));
@@ -146,6 +183,14 @@ VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global), _reserv
 	_reserved_var.insert(_gp);
 	_reserved_var.insert(_ret);
 	_reserved_var.insert(_zero);
+	for (unsigned i = 0; i != 32; ++i)
+	{
+		Reg reg = Reg(i);
+		irelem_t code = alloc_named(make_shared<const string>("_" + reg_name_trans.at(reg)));
+		_reserved_var.insert(code);
+		regs.insert(make_pair(reg, code));
+		reg_trans.insert(make_pair(code, reg));
+	}
 }
 
 irelem_t VarAllocator::alloc_tmp()
@@ -192,21 +237,25 @@ bool VarAllocator::is_local_var(irelem_t var) const
 string VarAllocator::var_to_string(irelem_t var) const
 {
 	ASSERT(4, IrType::is_var(var));
-	if (var == _sp)
+	if (is_reserved_var(var))
 	{
-		return "$sp";
-	}
-	if (var == _gp)
-	{
-		return "$gp";
-	}
-	if (var == _ret)
-	{
-		return "$v0";
-	}
-	if (var == _zero)
-	{
-		return "$0";
+		if (var == _sp)
+		{
+			return "#sp";
+		}
+		if (var == _gp)
+		{
+			return "#gp";
+		}
+		if (var == _ret)
+		{
+			return "#ret";
+		}
+		if (var == _zero)
+		{
+			return "#zero";
+		}
+		return reg_name_trans.at(reg_trans.at(var));
 	}
 	size_t ord = IrType::get_ord(var);
 	if (IrType::is_tmp(var))
