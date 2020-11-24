@@ -103,6 +103,8 @@ enum class Reg : unsigned
 	ra		= 31
 };
 
+extern const unordered_map<Reg, string> reg_name_trans;
+
 struct IrType
 {
 	static const irelem_t NIL = 0xE0000000;
@@ -170,6 +172,8 @@ private:
 	irelem_t _gp;
 	irelem_t _ret;
 	irelem_t _zero;
+	unordered_map<Reg, irelem_t> regs;
+	unordered_map<irelem_t, Reg> reg_trans;
 	unordered_set<irelem_t> _reserved_var;
 public:
 	static const shared_ptr<const string> __global;
