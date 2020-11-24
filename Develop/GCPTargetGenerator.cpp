@@ -48,7 +48,6 @@ GCPTargetGenerator::GCPTargetGenerator(shared_ptr<IrElemAllocator> allocator, sh
 {
 }
 
-
 void GCPRegisterAllocator::init_tmp_reg_pool()
 {
 	for (irelem_t reg : tmp_regs)
@@ -57,54 +56,13 @@ void GCPRegisterAllocator::init_tmp_reg_pool()
 	}
 }
 
-void GCPRegisterAllocator::free_tmp_reg_of_var(irelem_t var)
-{
-	for (irelem_t reg : tmp_regs)
-	{
-		if (tmp_reg_pool[reg] == var)
-		{
-			tmp_reg_pool[reg] = IrType::NIL;
-		}
-	}
-}
 
-irelem_t GCPRegisterAllocator::alloc_tmp_reg_for_var(irelem_t var)
-{
-	for (irelem_t reg : tmp_regs)
-	{
-		irelem_t using_var = tmp_reg_pool[reg];
-		if (using_var == IrType::NIL)
-		{
-			tmp_reg_pool[reg] = var;
-			return reg;
-		}
-	}
-	// TODO 决策一个tmp-reg被释放
-}
-
-void GCPRegisterAllocator::protect_var(irelem_t var)
-{
-	for (irelem_t reg : tmp_regs)
-	{
-		if (tmp_reg_pool[reg] == var)
-		{
-			free_reg_and_protect_content(reg);
-		}
-	}
-}
-
-void GCPRegisterAllocator::free_reg_and_protect_content(irelem_t reg)
-{
-	irelem_t var = tmp_reg_pool[reg];
-	tmp_reg_pool[reg] = IrType::NIL;
-	buffer.push_back(ir.protect(reg, var));
-	protected_var.insert(var);
-}
 
 GCPRegisterAllocator::GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator, shared_ptr<const IrTable> ir_table)
 	:
 	allocator_ptr(allocator),
 	origin_ir_table_ptr(ir_table),
+	ir(allocator),
 	tmp_reg_pool(),
 	tmp_regs({
 		allocator->reg(Reg::t0),

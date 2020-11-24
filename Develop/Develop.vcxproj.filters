@@ -72,6 +72,9 @@
     <ClCompile Include="Detectors.cpp">
       <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="GCPTargetGenerator.cpp">
+      <Filter>BaackEnd\Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compile_controller.h">
@@ -117,6 +120,9 @@
       <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Detectors.h">
+      <Filter>BaackEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GCPTargetGenerator.h">
       <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
   </ItemGroup>

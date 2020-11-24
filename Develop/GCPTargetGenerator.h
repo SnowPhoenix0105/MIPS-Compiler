@@ -51,21 +51,26 @@ class GCPRegisterAllocator
 	IrTableBuilder buffer;
 	IrFactory ir;
 	// 临时寄存器池
-	unordered_map<irelem_t, irelem_t> tmp_reg_pool;
+	unordered_map<irelem_t, irelem_t> tmp_reg_pool;		// <reg> <var>
 	const vector<irelem_t> tmp_regs;
+	// 全局寄存器分配情况
+	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg>
 	// 目前被保存的变量
 	unordered_set<irelem_t> protected_var;
+	unordered_map<irelem_t, irelem_t> using_global;		// <g-var> <reg>
 
 
+	/// <summary>
+	/// 将临时寄存器池置空
+	/// </summary>
 	void init_tmp_reg_pool();
 
-	void free_tmp_reg_of_var(irelem_t var);
-
-	irelem_t alloc_tmp_reg_for_var(irelem_t var);
-
-	irelem_t reload_var_to_reg(irelem_t var);
-
-	void protect_var(irelem_t var);
+	/// <summary>
+	/// 确保某变量在寄存器中, 并返回保存其的寄存器
+	/// </summary>
+	/// <param name="var"> 变量 </param>
+	/// <returns>寄存器</returns>
+	irelem_t ensure_var_in_reg(irelem_t var);
 
 	void free_reg_and_protect_content(irelem_t reg);
 
