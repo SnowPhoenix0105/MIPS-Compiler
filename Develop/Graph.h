@@ -14,7 +14,6 @@ using std::out_of_range;
 using std::vector;
 using std::make_pair;
 using std::unordered_map;
-using std::move_if_noexcept;
 
 
 template<typename T>
@@ -67,7 +66,7 @@ public:
 	{
 		for (size_t i = 0; i != _capacity * _capacity; ++i)
 		{
-			new(new_data + i) T(move_if_noexcept(other.data[i]));
+			new(new_data + i) T(std::move_if_noexcept(other.data[i]));
 		}
 	}
 
@@ -85,7 +84,7 @@ public:
 		data = (T*)::operator new[](_capacity * _capacity * sizeof(T));
 		for (size_t i = 0; i != _capacity * _capacity; ++i)
 		{
-			new(new_data + i) T(move_if_noexcept(other.data[i]));
+			new(new_data + i) T(std::move_if_noexcept(other.data[i]));
 		}
 		return *this;
 	}
@@ -161,7 +160,7 @@ public:
 			size_t j = 0;
 			for (; j != _capacity; ++j)
 			{
-				new(new_data + index_of(i, j)) T(move_if_noexcept(data[index_of(i, j)]));
+				new(new_data + index_of(i, j)) T(std::move_if_noexcept(data[index_of(i, j)]));
 			}
 			for (; j != new_capacity; ++j)
 			{

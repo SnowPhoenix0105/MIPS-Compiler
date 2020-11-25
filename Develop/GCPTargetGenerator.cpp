@@ -1,4 +1,5 @@
 #include "GCPTargetGenerator.h"
+#include "Graph.h"
 
 string GCPTargetGenerator::fresh_buffer()
 {
@@ -48,11 +49,6 @@ GCPTargetGenerator::GCPTargetGenerator(shared_ptr<IrElemAllocator> allocator, sh
 {
 }
 
-void GCPRegisterAllocator::alloc_save_reg()
-{
-	// TODO
-}
-
 void GCPRegisterAllocator::init_tmp_reg_pool()
 {
 	for (irelem_t reg : tmp_regs)
@@ -94,6 +90,36 @@ void GCPRegisterAllocator::next_function_info()
 	alloc_save_reg();
 }
 
+
+void GCPRegisterAllocator::alloc_save_reg()
+{
+	const auto& codes = *origin_ir_table_ptr;
+	auto& allocator = *allocator_ptr;
+
+	// TODO 扫描当前函数, 确定全局变量集合
+	for (const auto& in_set : block_var_activition_analyze_result->get_infos().in)
+	{
+		for (irelem_t var : in_set)
+		{
+			save_reg_alloc.insert(make_pair(var, IrType::NIL));
+		}
+	}
+	for (const auto& out_set : block_var_activition_analyze_result->get_infos().in)
+	{
+		for (irelem_t var : out_set)
+		{
+			save_reg_alloc.insert(make_pair(var, IrType::NIL));
+		}
+	}
+
+	// TODO 构造全局变量冲突图
+	Graph<unsigned> graph(0);
+
+
+
+	// TODO 图着色分配寄存器
+	save_reg_alloc.clear();
+}
 
 
 void GCPRegisterAllocator::walk()
