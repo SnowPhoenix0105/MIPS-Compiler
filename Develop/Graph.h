@@ -4,8 +4,18 @@
 #define __GRAPH_H__
 #include <memory>
 #include <stdexcept>
+#include <vector>
+#include <unordered_map>
+#include <type_traits>
+#include <new>
 
 using std::swap;
+using std::out_of_range;
+using std::vector;
+using std::make_pair;
+using std::unordered_map;
+using std::move_if_noexcept;
+
 
 template<typename T>
 class GraphVisitHelper
@@ -26,29 +36,43 @@ class Graph
 public:
 	friend void swap<T>(Graph<T>& g1, Graph<T>& g2);
 	friend class GraphVisitHelper<T>;
-private:
 
+private:
 	T* data;
 	size_t _capacity;
 	size_t _size;
 	T default_value;
-public:
-	Graph(T default_value) noexcept : data(nullptr), _capacity(0), _size(0), default_value(default_value) { }
-	Graph(size_t size, T default_value) noexcept : data(nullptr), _capacity(0), _size(size), default_value(default_value)
+
+	size_t index_of(size_t x, size_t y)
 	{
-		capacity(size);
+		return x * _capacity + y;
 	}
+
+public:
+	Graph(T default_value) noexcept 
+		: data(nullptr), _capacity(0), _size(0), default_value(default_value) { }
+	
+	Graph(size_t point_num, T default_value) noexcept 
+		: data(nullptr), _capacity(0), _size(point_num), default_value(default_value)
+	{
+		capacity(point_num);
+	}
+
 	Graph(const Graph<T>& other) 
 		: 
-		data(new T[other._capacity * other._capacity]),
+		data((T*)::operator new[](other._capacity * other._capacity * sizeof(T))),
 		_capacity(other._capacity),
 		_size(other._size),
 		default_value(other.default_value)
 	{
-		memcpy(data, other.data, _capacity * _capacity * sizeof(T));
+		for (size_t i = 0; i != _capacity * _capacity; ++i)
+		{
+			new(new_data + i) T(move_if_noexcept(other.data[i]));
+		}
 	}
 
-	Graph(Graph<T>&& other) noexcept : data(nullptr), _capacity(0), _size(0), default_value(other.default_value)
+	Graph(Graph<T>&& other) noexcept 
+		: data(nullptr), _capacity(0), _size(0), default_value(other.default_value)
 	{
 		swap(*this, other);
 	}
@@ -58,8 +82,11 @@ public:
 		delete[] data;
 		capacity = other.capacity;
 		_size = other._size;
-		data = new T[capacity * capacity];
-		memcpy(data, other.data, _capacity * _capacity * sizeof(T));
+		data = (T*)::operator new[](_capacity * _capacity * sizeof(T));
+		for (size_t i = 0; i != _capacity * _capacity; ++i)
+		{
+			new(new_data + i) T(move_if_noexcept(other.data[i]));
+		}
 		return *this;
 	}
 
@@ -80,18 +107,40 @@ public:
 		}
 	}
 
-	size_t capacity() const noexcept
+	/// <summary>
+	/// 节点的数量
+	/// </summary>
+	/// <returns></returns>
+	size_t point_num() const noexcept
 	{
-		return _capacity;
+		return _size;
 	}
 
+	/// <summary>
+	/// 节点的数量
+	/// </summary>
+	/// <returns></returns>
 	size_t size() const noexcept
 	{
 		return _size;
 	}
 
+	size_t capacity() const noexcept
+	{
+		return _capacity;
+	}
+
+	/// <summary>
+	/// 调用此函数后, 保证可以在不重新分配空间的情况下, 可以将节点数扩增至 size.
+	/// </summary>
+	/// <param name="size"></param>
+	/// <returns></returns>
 	size_t capacity(size_t size)
 	{
+		if (size < _capacity)
+		{
+			return _capacity;
+		}
 		if (size > (1 << 31))
 		{
 			throw std::bad_alloc();
@@ -103,14 +152,31 @@ public:
 		new_capacity |= (new_capacity >> 8);
 		new_capacity |= (new_capacity >> 16);
 		++new_capacity;
-		T* new_data = new T[new_capacity * new_capacity];
-		memset(new_data, default_value, new_capacity * new_capacity * sizeof(T));
+
+		// 将旧值进行拷贝, 并将新增加的空间通过 default_value 初始化
+		T* new_data = (T*)::operator new[](new_capacity * new_capacity * sizeof(T));
+		size_t i = 0;
+		for (; i != _capacity; ++i)
+		{
+			size_t j = 0;
+			for (; j != _capacity; ++j)
+			{
+				new(new_data + index_of(i, j)) T(move_if_noexcept(data[index_of(i, j)]));
+			}
+			for (; j != new_capacity; ++j)
+			{
+				new(new_data + index_of(i, j)) T(default_value);
+			}
+		}
+		for (; i != new_capacity; ++i)
+		{
+			for (size_t j = 0; j != new_capacity; ++j)
+			{
+				new(new_data + index_of(i, j)) T(default_value);
+			}
+		}
 		if (_capacity != 0)
 		{
-			for (size_t i = 0; i != size; ++i)
-			{
-				memcpy(new_data + new_capacity * i, data + _capacity * i, size * sizeof(T));
-			}
 			delete[] data;
 		}
 		data = new_data;
@@ -151,9 +217,9 @@ public:
 	{
 		if (x >= _size || y >= _size)
 		{
-			throw std::out_of_range("@Graph.at(size_t, size_t):\t out of range");
+			throw out_of_range("@Graph.at(size_t, size_t):\t out of range");
 		}
-		return data[x * _capacity + y];
+		return data[index_of(x, y)];
 	}
 
 	/// <summary>
@@ -168,9 +234,9 @@ public:
 	{
 		if (x >= _size || y >= _size)
 		{
-			throw std::out_of_range("@Graph.link(size_t, size_t, T):\t out of range");
+			throw out_of_range("@Graph.link(size_t, size_t, T):\t out of range");
 		}
-		data[_capacity * x + y] = value;
+		data[index_of(x, y)] = value;
 		return *this;
 	}
 
@@ -186,10 +252,10 @@ public:
 	{
 		if (x >= _size || y >= _size)
 		{
-			throw std::out_of_range("@Graph.d_link(size_t, size_t, T):\t out of range");
+			throw out_of_range("@Graph.d_link(size_t, size_t, T):\t out of range");
 		}
-		data[_capacity * x + y] = value;
-		data[_capacity * y + x] = value;
+		data[index_of(x, y)] = value;
+		data[index_of(y, x)] = value;
 		return *this;
 	}
 };
