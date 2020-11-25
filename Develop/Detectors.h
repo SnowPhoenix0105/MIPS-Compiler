@@ -110,6 +110,11 @@ namespace IrDetectors
 		const IrTable& codes, 
 		const IrElemAllocator& elems);
 
+	shared_ptr<const BlockDetectResult> func_block_detect(
+		const IrTable& codes,
+		const IrElemAllocator& elems,
+		size_t func_beg_index);
+
 
 	shared_ptr<const BlockDetectResult> func_block_detect(
 		const IrTable& codes, 
