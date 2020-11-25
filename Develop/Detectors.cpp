@@ -212,7 +212,6 @@ namespace IrDetectors
 		}
 
 
-		unordered_map<irelem_t, unordered_set<DefInfo>> var_def_location;
 		for (size_t i = 0; i != blocks.size(); ++i)
 		{
 			auto& block = blocks[i];

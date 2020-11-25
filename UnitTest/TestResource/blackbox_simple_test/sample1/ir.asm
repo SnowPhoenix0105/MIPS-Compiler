@@ -25,19 +25,19 @@ func_beg_main:
 func_mid_main:
 	main_tmp_0	=	1	*	2
 	main_tmp_1	=	main_tmp_0	+	1
-	main_tmp_2	=	$sp	+	main_tmp_1
+	main_tmp_2	=	#sp	+	main_tmp_1
 	main_tmp_3	|=	main_tmp_2[main__arr__larr1]
 	printf	NIL,	main_tmp_3,	char
 	scanf	main_var_buffer,	int
-	main_tmp_4	=	main_var_buffer	+	$0
+	main_tmp_4	=	main_var_buffer	+	#zero
 	main_tmp_6	=	2	<<	2
-	main_tmp_5	=	$sp	+	main_tmp_6
+	main_tmp_5	=	#sp	+	main_tmp_6
 	main_tmp_5[main__arr__larr3]	=	main_tmp_4
 	main_tmp_9	=	2	<<	2
-	main_tmp_8	=	$sp	+	main_tmp_9
+	main_tmp_8	=	#sp	+	main_tmp_9
 	main_tmp_10	=	main_tmp_8[main__arr__larr3]
-	main_tmp_7	=	main_tmp_10	+	$0
-	main_var_tmp	=	main_tmp_7	+	$0
+	main_tmp_7	=	main_tmp_10	+	#zero
+	main_var_tmp	=	main_tmp_7	+	#zero
 	printf	"your input is ",	main_var_tmp,	int
 func_end_main:
 

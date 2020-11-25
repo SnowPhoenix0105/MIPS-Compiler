@@ -296,7 +296,22 @@ void SimpleCodeGenerator::load_val_to_reg(const string& reg, irelem_t val)
 	ASSERT(4, IrType::is_var(val));
 	if (allocator.is_reserved_var(val))
 	{
-		buffer << mips.addu(reg, "$0", allocator.var_to_string(val)) << endl;
+		if (val == allocator.sp())
+		{
+			buffer << mips.addu(reg, "$0", "$sp") << endl;
+		}
+		if (val == allocator.gp())
+		{
+			buffer << mips.addu(reg, "$0", "$gp") << endl;
+		}
+		if (val == allocator.ret())
+		{
+			buffer << mips.addu(reg, "$0", "$v0") << endl;
+		}
+		if (val == allocator.zero())
+		{
+			buffer << mips.addu(reg, "$0", "$0") << endl;
+		}
 		return;
 	}
 	if (allocator.is_global_var(val))

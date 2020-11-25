@@ -175,6 +175,7 @@
     <ClCompile Include="TargetCodeGeneratorSimpleTest.cpp" />
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="UnitTest.cpp" />
+    <ClCompile Include="GraphTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BlackBoxTester.h" />

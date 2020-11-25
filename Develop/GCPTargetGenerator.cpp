@@ -48,6 +48,11 @@ GCPTargetGenerator::GCPTargetGenerator(shared_ptr<IrElemAllocator> allocator, sh
 {
 }
 
+void GCPRegisterAllocator::alloc_save_reg()
+{
+	// TODO
+}
+
 void GCPRegisterAllocator::init_tmp_reg_pool()
 {
 	for (irelem_t reg : tmp_regs)
@@ -56,18 +61,6 @@ void GCPRegisterAllocator::init_tmp_reg_pool()
 	}
 }
 
-
-void GCPRegisterAllocator::init_global()
-{
-	for (const auto& code : *origin_ir_table_ptr)
-	{
-		if (code.head == IrHead::label && IrType::is_func(code.elem[0]))
-		{
-			break;
-		}
-		buffer.push_back(code);
-	}
-}
 
 void GCPRegisterAllocator::next_function_info()
 {
@@ -98,15 +91,18 @@ void GCPRegisterAllocator::next_function_info()
 	block_detect_result = IrDetectors::func_block_detect(*origin_ir_table_ptr, *allocator_ptr, func_beg_index);
 	block_var_activition_analyze_result = IrDetectors::block_var_activition_analyze(*origin_ir_table_ptr, *allocator_ptr, func_beg_index, *block_detect_result);
 	var_activition_analyze_result = IrDetectors::var_activition_analyze(*origin_ir_table_ptr, *allocator_ptr, func_beg_index, *block_detect_result, *block_var_activition_analyze_result);
+	alloc_save_reg();
 }
 
-void GCPRegisterAllocator::analyze_func()
+
+
+void GCPRegisterAllocator::walk()
 {
 	IrElemAllocator& allocator = *allocator_ptr;
 	const IrTable& codes = *origin_ir_table_ptr;
-	for (size_t i = func_beg_index; i != func_end_index; ++i)
+	for (current_index = 0; current_index != codes.size(); ++current_index)
 	{
-		const Ir& code = codes.at(i);
+		const Ir& code = codes.at(current_index);
 		switch (code.head)
 		{
 		case IrHead::param:
@@ -131,37 +127,91 @@ void GCPRegisterAllocator::analyze_func()
 		case IrHead::sr:
 		case IrHead::less:
 		{
-			irelem_t def_elem = code.elem[0];
-			irelem_t use_elem_1 = code.elem[1];
-			irelem_t use_elem_2 = code.elem[2];
 			Ir new_code = code;
-			def_elem = get_reg_of_var(def_elem);
-			if (IrType::is_var(use_elem_1))
+			new_code.elem[0] = get_reg_of_var(code.elem[0]);
+			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[2] = trans_val_to_reg_or_cst(code.elem[2]);
+			buffer.push_back(new_code);
+			break;
 		}
 		case IrHead::lw:
 		case IrHead::lb:
+		{
+			Ir new_code = code;
+			new_code.elem[0] = get_reg_of_var(code.elem[0]);
+			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[2] = code.elem[2];
+			buffer.push_back(new_code);
+			break;
+		}
 		case IrHead::sw:
 		case IrHead::sb:
-
+		{
+			Ir new_code = code;
+			new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
+			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[2] = code.elem[2];
+			buffer.push_back(new_code);
+			break;
+		}
 		case IrHead::beq:
 		case IrHead::bne:
-		case IrHead::_goto:
-
+		{
+			Ir new_code = code;
+			new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
+			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[2] = code.elem[2];
+			buffer.push_back(new_code);
+			break;
+		}
 		case IrHead::push:
-		case IrHead::call:
-		case IrHead::ret:
-
+		{
+			Ir new_code = code;
+			new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
+			new_code.elem[1] = code.elem[1];
+			new_code.elem[2] = code.elem[2];
+			buffer.push_back(new_code);
+			break;
+		}
 		case IrHead::scanf:
+		{
+			Ir new_code = code;
+			new_code.elem[0] = get_reg_of_var(code.elem[0]);
+			new_code.elem[1] = code.elem[1];
+			new_code.elem[2] = code.elem[2];
+			buffer.push_back(new_code);
+			break;
+		}
 		case IrHead::printf:
-
-		case IrHead::protect:
-		case IrHead::reload:
-
+		{
+			Ir new_code = code;
+			new_code.elem[0] = code.elem[0];
+			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[2] = code.elem[2];
+			buffer.push_back(new_code);
+			break;
+		}
+		case IrHead::label:
+		{
+			if (IrType::is_func(code.elem[0]) && IrType::is_beg(code.elem[0]))
+			{
+				next_function_info();
+			}
+		}
 		default:
 			buffer.push_back(code);
 		}
 
 	}
+}
+
+irelem_t GCPRegisterAllocator::trans_val_to_reg_or_cst(irelem_t val)
+{
+	if (IrType::is_var(val))
+	{
+		return ensure_var_in_reg(val);
+	}
+	return val;
 }
 
 

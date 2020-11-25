@@ -125,5 +125,8 @@
     <ClInclude Include="GCPTargetGenerator.h">
       <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Graph.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -161,6 +161,7 @@
     <ClInclude Include="ErrorType.h" />
     <ClInclude Include="GCPTargetGenerator.h" />
     <ClInclude Include="global_control.h" />
+    <ClInclude Include="Graph.h" />
     <ClInclude Include="IdentifierTable.h" />
     <ClInclude Include="InitializeListAnalyze.h" />
     <ClInclude Include="IrTable.h" />

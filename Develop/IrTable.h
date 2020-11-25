@@ -192,7 +192,7 @@ public:
 	irelem_t zero() const noexcept { return _zero; }
 	irelem_t gp() const noexcept { return _gp; }
 
-	irelem_t reg(Reg reg) const { /* TODO */ }
+	irelem_t reg(Reg reg) const { return regs.at(reg); }
 	bool is_reserved_var(irelem_t var) const;
 	bool is_reg(irelem_t reg) const { return reg_trans.count(reg) != 0; }
 	const unordered_set<irelem_t>& reversed_var() const noexcept { return _reserved_var; }

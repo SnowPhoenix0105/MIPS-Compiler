@@ -26,42 +26,42 @@
 func_beg_main:
 	func	void
 func_mid_main:
-	main_var_c9	=	$0	+	101
-	main_var_c10	=	$0	+	49
-	main_var_a6	=	$0	+	6
-	main_var_a7	=	$0	+	7
-	main_var_a8	=	$0	+	8
-	main_var_a9	=	$0	+	9
-	main_var_a10	=	$0	+	10
-	main_var_a11	=	$0	+	11
+	main_var_c9	=	#zero	+	101
+	main_var_c10	=	#zero	+	49
+	main_var_a6	=	#zero	+	6
+	main_var_a7	=	#zero	+	7
+	main_var_a8	=	#zero	+	8
+	main_var_a9	=	#zero	+	9
+	main_var_a10	=	#zero	+	10
+	main_var_a11	=	#zero	+	11
 	scanf	main_var_a3,	int
 	printf	NIL,	main_var_a3,	int
-	main_tmp_1	=	$0	-	51
+	main_tmp_1	=	#zero	-	51
 	main_tmp_2	=	3	*	main_tmp_1
 	main_tmp_3	=	main_tmp_2	*	main_var_a3
-	main_tmp_0	=	main_tmp_3	+	$0
-	main_var_a3	=	main_tmp_0	+	$0
+	main_tmp_0	=	main_tmp_3	+	#zero
+	main_var_a3	=	main_tmp_0	+	#zero
 	printf	NIL,	main_var_a3,	int
 	scanf	main_var_a6,	int
-	main_tmp_4	=	18	+	$0
-	main_var_a7	=	main_tmp_4	+	$0
+	main_tmp_4	=	18	+	#zero
+	main_var_a7	=	main_tmp_4	+	#zero
 	scanf	main_var_a7,	int
 	scanf	__global_var_c1,	char
 	scanf	main_var_c7,	char
-	main_tmp_6	=	$0	-	__global_var_a2
-	main_tmp_5	=	main_tmp_6	+	$0
-	main_var_a3	=	main_tmp_5	+	$0
+	main_tmp_6	=	#zero	-	__global_var_a2
+	main_tmp_5	=	main_tmp_6	+	#zero
+	main_var_a3	=	main_tmp_5	+	#zero
 	printf	NIL,	main_var_a3,	int
 	main_tmp_8	=	main_var_a3	*	main_var_a3
-	main_tmp_7	=	main_tmp_8	+	$0
-	main_var_a3	=	main_tmp_7	+	$0
+	main_tmp_7	=	main_tmp_8	+	#zero
+	main_var_a3	=	main_tmp_7	+	#zero
 	printf	NIL,	main_var_a3,	int
-	main_tmp_9	=	main_var_a3	+	$0
-	main_var_a3	=	main_tmp_9	+	$0
+	main_tmp_9	=	main_var_a3	+	#zero
+	main_var_a3	=	main_tmp_9	+	#zero
 	printf	NIL,	main_var_a3,	int
-	main_tmp_11	=	$0	-	97
-	main_tmp_12	=	$0	-	97
-	main_tmp_13	=	$0	-	97
+	main_tmp_11	=	#zero	-	97
+	main_tmp_12	=	#zero	-	97
+	main_tmp_13	=	#zero	-	97
 	main_tmp_14	=	main_tmp_12	-	main_tmp_13
 	main_tmp_15	=	main_tmp_11	-	main_tmp_14
 	main_tmp_16	=	12	/	2
@@ -70,8 +70,8 @@ func_mid_main:
 	main_tmp_19	=	__global_var_a1	+	14
 	main_tmp_20	=	main_tmp_19	*	13
 	main_tmp_21	=	main_tmp_18	+	main_tmp_20
-	main_tmp_10	=	main_tmp_21	+	$0
-	main_var_a3	=	main_tmp_10	+	$0
+	main_tmp_10	=	main_tmp_21	+	#zero
+	main_var_a3	=	main_tmp_10	+	#zero
 	printf	NIL,	main_var_a3,	int
 	main_tmp_22	=	3	+	4
 	main_tmp_23	=	main_tmp_22	+	5
@@ -86,50 +86,50 @@ func_mid_main:
 	main_tmp_32	=	main_tmp_31	*	main_tmp_30
 	main_tmp_33	=	main_tmp_26	-	main_tmp_32
 	printf	NIL,	main_tmp_33,	int
-	main_tmp_34	=	main_var_c10	+	$0
-	main_var_c8	=	main_tmp_34	+	$0
-	main_tmp_35	=	__global_var_c1	+	$0
-	main_var_c4	=	main_tmp_35	+	$0
-	main_tmp_36	=	12	+	$0
-	__global_var_a1	=	main_tmp_36	+	$0
-	main_tmp_37	=	13	+	$0
-	__global_var_a2	=	main_tmp_37	+	$0
-	main_tmp_38	=	14	+	$0
-	main_var_a3	=	main_tmp_38	+	$0
-	main_tmp_39	=	15	+	$0
-	main_var_a4	=	main_tmp_39	+	$0
-	main_tmp_40	=	16	+	$0
-	__global_var_a5	=	main_tmp_40	+	$0
-	main_tmp_41	=	17	+	$0
-	main_var_a6	=	main_tmp_41	+	$0
-	main_tmp_42	=	19	+	$0
-	main_var_a8	=	main_tmp_42	+	$0
+	main_tmp_34	=	main_var_c10	+	#zero
+	main_var_c8	=	main_tmp_34	+	#zero
+	main_tmp_35	=	__global_var_c1	+	#zero
+	main_var_c4	=	main_tmp_35	+	#zero
+	main_tmp_36	=	12	+	#zero
+	__global_var_a1	=	main_tmp_36	+	#zero
+	main_tmp_37	=	13	+	#zero
+	__global_var_a2	=	main_tmp_37	+	#zero
+	main_tmp_38	=	14	+	#zero
+	main_var_a3	=	main_tmp_38	+	#zero
+	main_tmp_39	=	15	+	#zero
+	main_var_a4	=	main_tmp_39	+	#zero
+	main_tmp_40	=	16	+	#zero
+	__global_var_a5	=	main_tmp_40	+	#zero
+	main_tmp_41	=	17	+	#zero
+	main_var_a6	=	main_tmp_41	+	#zero
+	main_tmp_42	=	19	+	#zero
+	main_var_a8	=	main_tmp_42	+	#zero
 	main_tmp_44	=	20	+	main_var_a9
-	main_tmp_43	=	main_tmp_44	+	$0
-	main_var_a9	=	main_tmp_43	+	$0
+	main_tmp_43	=	main_tmp_44	+	#zero
+	main_var_a9	=	main_tmp_43	+	#zero
 	main_tmp_46	=	__global_var_a1	+	21
-	main_tmp_45	=	main_tmp_46	+	$0
-	main_var_a10	=	main_tmp_45	+	$0
+	main_tmp_45	=	main_tmp_46	+	#zero
+	main_var_a10	=	main_tmp_45	+	#zero
 	main_tmp_48	=	__global_var_a1	+	main_var_a10
-	main_tmp_47	=	main_tmp_48	+	$0
-	main_var_a11	=	main_tmp_47	+	$0
+	main_tmp_47	=	main_tmp_48	+	#zero
+	main_var_a11	=	main_tmp_47	+	#zero
 	printf	NIL,	97,	char
 	printf	NIL,	__global_var_a1,	int
 	main_tmp_49	=	__global_var_a1	+	97
 	printf	NIL,	main_tmp_49,	int
-	main_tmp_50	=	$0	-	5
+	main_tmp_50	=	#zero	-	5
 	main_tmp_51	=	main_tmp_50	*	5
-	main_tmp_52	=	$0	-	main_tmp_51
+	main_tmp_52	=	#zero	-	main_tmp_51
 	printf	NIL,	main_tmp_52,	int
 	printf	"a4",	main_var_a4,	int
 	printf	NIL,	3,	int
 	printf	"18231217",	18231217,	int
 	printf	NIL,	49,	char
 	printf	NIL,	57,	char
-	main_tmp_53	=	$0	-	49
+	main_tmp_53	=	#zero	-	49
 	main_tmp_54	=	main_var_a3	*	57
 	main_tmp_55	=	main_tmp_53	-	main_tmp_54
-	main_tmp_56	=	$0	-	3
+	main_tmp_56	=	#zero	-	3
 	main_tmp_57	=	main_tmp_56	*	14
 	main_tmp_58	=	main_tmp_55	+	main_tmp_57
 	main_tmp_59	=	3	-	4
@@ -150,22 +150,22 @@ func_mid_main:
 	printf	NIL,	main_var_a10,	int
 	printf	NIL,	main_var_a11,	int
 	printf	"134214321432143214321",	NIL,	char
-	main_tmp_68	=	$0	-	__global_var_a2
+	main_tmp_68	=	#zero	-	__global_var_a2
 	main_tmp_69	=	main_tmp_68	+	__global_var_a5
 	main_tmp_70	=	main_tmp_69	*	__global_var_a1
 	main_tmp_71	=	__global_var_a2	+	__global_var_a1
 	main_tmp_72	=	main_tmp_71	+	2
 	main_tmp_73	=	main_tmp_70	/	main_tmp_72
 	main_tmp_74	=	main_var_a3	-	main_tmp_73
-	main_tmp_75	=	$0	-	__global_var_a1
+	main_tmp_75	=	#zero	-	__global_var_a1
 	main_tmp_76	=	main_tmp_75	*	__global_var_a1
 	main_tmp_77	=	main_tmp_74	-	main_tmp_76
 	main_tmp_78	=	5	*	3
 	main_tmp_79	=	main_tmp_77	+	main_tmp_78
 	main_tmp_80	=	main_tmp_79	+	main_var_a6
 	main_tmp_81	=	main_tmp_80	*	main_var_a11
-	main_tmp_82	=	$0	-	main_tmp_81
-	main_tmp_83	=	$0	-	main_var_a4
+	main_tmp_82	=	#zero	-	main_tmp_81
+	main_tmp_83	=	#zero	-	main_var_a4
 	main_tmp_84	=	main_tmp_83	+	__global_var_a2
 	main_tmp_85	=	main_tmp_84	*	main_var_a3
 	main_tmp_86	=	main_tmp_82	+	main_tmp_85
@@ -181,7 +181,7 @@ func_mid_main:
 	main_tmp_96	=	main_tmp_92	-	main_tmp_95
 	main_tmp_97	=	main_tmp_96	*	3
 	main_tmp_98	=	45	*	1
-	main_tmp_99	=	$0	-	main_tmp_98
+	main_tmp_99	=	#zero	-	main_tmp_98
 	main_tmp_100	=	__global_var_a1	+	__global_var_a2
 	main_tmp_101	=	main_tmp_99	-	main_tmp_100
 	main_tmp_102	=	3	*	23
@@ -200,19 +200,19 @@ func_mid_main:
 	main_tmp_115	=	main_tmp_91	-	main_tmp_114
 	main_tmp_116	=	main_tmp_115	*	97
 	main_tmp_117	=	main_tmp_116	+	42
-	main_tmp_118	=	$0	-	main_tmp_117
+	main_tmp_118	=	#zero	-	main_tmp_117
 	main_tmp_119	=	main_tmp_118	-	0
 	main_tmp_120	=	__global_var_a1	*	4
 	main_tmp_121	=	main_tmp_119	+	main_tmp_120
-	main_tmp_88	=	main_tmp_121	+	$0
-	__global_var_a1	=	main_tmp_88	+	$0
+	main_tmp_88	=	main_tmp_121	+	#zero
+	__global_var_a1	=	main_tmp_88	+	#zero
 	printf	NIL,	__global_var_a1,	int
 	printf	NIL,	main_var_a4,	int
 	printf	NIL,	main_var_a8,	int
 	printf	NIL,	__global_var_c1,	char
 	main_tmp_123	=	__global_var_a1	+	__global_var_a1
-	main_tmp_122	=	main_tmp_123	+	$0
-	__global_var_a2	=	main_tmp_122	+	$0
+	main_tmp_122	=	main_tmp_123	+	#zero
+	__global_var_a2	=	main_tmp_122	+	#zero
 	main_tmp_125	=	main_var_a10	+	__global_var_c3
 	main_tmp_126	=	-36000	/	main_tmp_125
 	main_tmp_127	=	__global_var_a2	-	4
@@ -255,8 +255,8 @@ func_mid_main:
 	main_tmp_164	=	2	+	__global_var_a2
 	main_tmp_165	=	main_tmp_163	/	main_tmp_164
 	main_tmp_166	=	main_tmp_160	+	main_tmp_165
-	main_tmp_124	=	main_tmp_166	+	$0
-	main_var_a3	=	main_tmp_124	+	$0
+	main_tmp_124	=	main_tmp_166	+	#zero
+	main_var_a3	=	main_tmp_124	+	#zero
 	printf	NIL,	main_var_a3,	int
 	printf	"yes",	__global_var_a2,	int
 	printf	NIL,	main_var_a4,	int

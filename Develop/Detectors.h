@@ -24,7 +24,6 @@ namespace IrDetectors
 	{
 	private:
 		vector<BlockInfo> blocks;
-		BlockDetectResult() = default;
 	public:
 		const vector<BlockInfo>& get_blocks() const { return blocks; }
 		friend shared_ptr<const BlockDetectResult> func_block_detect(const IrTable& codes, const IrElemAllocator& elems, size_t func_beg_index, const unordered_set<irelem_t>& unused_labels);
@@ -45,14 +44,14 @@ namespace IrDetectors
 		DefInfo() = default;
 		DefInfo(size_t block_num, size_t index) : block_num(block_num), index(index) { }
 
-		bool operator==(const DefInfo& other)
+		bool operator==(const DefInfo& other) const noexcept
 		{
 			return block_num == other.block_num && index == other.index;
 		}
 
-		bool operator!=(const DefInfo& other)
+		bool operator!=(const DefInfo& other) const noexcept
 		{
-			return block_num = other.block_num || index != other.index;
+			return block_num != other.block_num || index != other.index;
 		}
 	};
 
@@ -60,7 +59,6 @@ namespace IrDetectors
 	{
 	private:
 		StreamInfo<DefInfo> infos;
-		DataStreamAnalyzeResult() = default;
 	public:
 		const StreamInfo<DefInfo>& get_infos() const { return infos; }
 		friend shared_ptr<const DataStreamAnalyzeResult> data_stream_analyze(const IrTable& codes, const IrElemAllocator& elems, size_t func_beg_index, const BlockDetectResult& block_detect_result);
@@ -70,7 +68,6 @@ namespace IrDetectors
 	{
 	private:
 		StreamInfo<irelem_t> infos;
-		BlockVarActivetionAnalyzeResult() = default;
 	public:
 		const StreamInfo<irelem_t>& get_infos() const { return infos; }
 		friend shared_ptr<const BlockVarActivetionAnalyzeResult> block_var_activition_analyze(
@@ -85,7 +82,6 @@ namespace IrDetectors
 	private:
 		StreamInfo<irelem_t> infos;
 		size_t base_index;
-		VarActivetionAnalyzeResult() = default;
 	public:
 		const unordered_set<irelem_t>& get_in(size_t index) const { return infos.in.at(index - base_index); }
 		const unordered_set<irelem_t>& get_out(size_t index) const { return infos.out.at(index - base_index); }
@@ -145,5 +141,16 @@ namespace IrDetectors
 		const BlockVarActivetionAnalyzeResult& block_var_activition_analyze_result);
 }
 
+namespace std
+{
+	template<>
+	struct hash<IrDetectors::DefInfo>
+	{
+		size_t operator()(const IrDetectors::DefInfo& info) const noexcept
+		{
+			return info.index ^ info.block_num;
+		}
+	};
+}
 
 #endif // !__DETECTORS_H__
