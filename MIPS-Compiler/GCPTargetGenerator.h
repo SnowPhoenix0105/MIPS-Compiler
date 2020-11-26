@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef __GCP_TARGET_GENERATOR_H__
 #define __GCP_TARGET_GENERATOR_H__
@@ -16,31 +15,31 @@ using IrDetectors::BlockVarActivetionAnalyzeResult;
 class GCPTargetGenerator : public ITargetCodeGenerator
 {
 private:
-	// ·Ö±ğÖ¸ÏòÍ¬Ò»¸öº¯ÊıµÄ¶ÔÓ¦label
+	// åˆ†åˆ«æŒ‡å‘åŒä¸€ä¸ªå‡½æ•°çš„å¯¹åº”label
 	size_t func_beg_index = 0;
 	size_t func_mid_index = 0;
 	size_t func_end_index = 0;
-	// ÆäËüµ±Ç°º¯ÊıĞÅÏ¢
+	// å…¶å®ƒå½“å‰å‡½æ•°ä¿¡æ¯
 	size_t stack_size = 0;
 	string func_name = "__global";
-	// IRĞÅÏ¢
+	// IRä¿¡æ¯
 	shared_ptr<IrElemAllocator> allocator_ptr;
 	shared_ptr<const IrTable> ir_table_ptr;
-	// ±äÁ¿Æ«ÒÆ±í
+	// å˜é‡åç§»è¡¨
 	unordered_map<irelem_t, unsigned> global_var_offset_table;
 	unordered_map<irelem_t, unsigned> func_var_offset_table;
 	unordered_map<irelem_t, string> string_label_table;
 	// mips
-	ostringstream buffer;	// Ä¿±ê´úÂëµÄbuffer
+	ostringstream buffer;	// ç›®æ ‡ä»£ç çš„buffer
 	MipsInstructionFormatter mips;
 
 	/// <summary>
-	/// Çå¿Õ»º³åÇø, ·µ»Ø»º³åÇøÖĞÔ­ÏÈµÄÄÚÈİ.
+	/// æ¸…ç©ºç¼“å†²åŒº, è¿”å›ç¼“å†²åŒºä¸­åŸå…ˆçš„å†…å®¹.
 	/// </summary>
 	string fresh_buffer();
 
 	/// <summary>
-	/// ¸üĞÂfunc_beg_index, func_mid_index, func_end_index, func_name.
+	/// æ›´æ–°func_beg_index, func_mid_index, func_end_index, func_name.
 	/// </summary>
 	void next_function_info();
 
@@ -53,82 +52,83 @@ public:
 class GCPRegisterAllocator
 {
 	size_t current_index = 0;
-	// ·Ö±ğÖ¸ÏòÍ¬Ò»¸öº¯ÊıµÄ¶ÔÓ¦label
+	// åˆ†åˆ«æŒ‡å‘åŒä¸€ä¸ªå‡½æ•°çš„å¯¹åº”label
 	size_t func_beg_index = 0;
 	size_t func_mid_index = 0;
 	size_t func_end_index = 0;
-	// ÆäËüµ±Ç°º¯ÊıĞÅÏ¢
+	// å…¶å®ƒå½“å‰å‡½æ•°ä¿¡æ¯
+	string func_name = "__global";
 	shared_ptr<const BlockDetectResult> block_detect_result;
 	shared_ptr<const BlockVarActivetionAnalyzeResult> block_var_activition_analyze_result;
 	shared_ptr<const VarActivetionAnalyzeResult> var_activition_analyze_result;
-	// IRĞÅÏ¢
+	// IRä¿¡æ¯
 	shared_ptr<IrElemAllocator> allocator_ptr;
 	shared_ptr<const IrTable> origin_ir_table_ptr;
 	IrTableBuilder buffer;
 	IrFactory ir;
-	// ÁÙÊ±¼Ä´æÆ÷³Ø
+	// ä¸´æ—¶å¯„å­˜å™¨æ± 
 	unordered_map<irelem_t, irelem_t> tmp_reg_pool;		// <reg> <var>
 	const vector<irelem_t> tmp_regs;
 	const vector<irelem_t> save_regs;
-	// È«¾Ö¼Ä´æÆ÷·ÖÅäÇé¿ö
-	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg> ËùÓĞÈ«¾Ö¼Ä´æÆ÷¶¼±ØĞëÔÚkeysÖĞ, Î´·ÖÅä¼Ä´æÆ÷µÄ±äÁ¿µÄÖµÎªNIL
-	// Ä¿Ç°±»±£´æµÄ±äÁ¿
+	// å…¨å±€å¯„å­˜å™¨åˆ†é…æƒ…å†µ
+	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg> æ‰€æœ‰å…¨å±€å¯„å­˜å™¨éƒ½å¿…é¡»åœ¨keysä¸­, æœªåˆ†é…å¯„å­˜å™¨çš„å˜é‡çš„å€¼ä¸ºNIL
+	// ç›®å‰è¢«ä¿å­˜çš„å˜é‡
 	unordered_set<irelem_t> protected_var;
 	unordered_map<irelem_t, irelem_t> using_global;		// <g-var> <reg>
 
 	/// <summary>
-	/// ¸üĞÂ
+	/// æ›´æ–°
 	/// func_beg_index, func_mid_index, func_end_index, func_name, 
 	/// block_detect_result, block_var_activition_analyze_result, var_activition_analyze_result.
-	/// ²¢½øĞĞÈ«¾Ö±äÁ¿¼Ä´æÆ÷·ÖÅä.
+	/// å¹¶è¿›è¡Œå…¨å±€å˜é‡å¯„å­˜å™¨åˆ†é….
 	/// </summary>
 	void next_function_info();
 
 
 	/// <summary>
-	/// É¨Ãè²¢·ÖÅäÈ«¾Ö¼Ä´æÆ÷.
-	/// º¯Êı²ÎÊı°´ÕÕ³£¹æ±äÁ¿´¦Àí, ¼´$a0~$a3ÖĞµÄÖµ»áÖ±½Ó±£´æµ½Õ»ÖĞ»òÆäËü¼Ä´æÆ÷ÖĞ.
+	/// æ‰«æå¹¶åˆ†é…å…¨å±€å¯„å­˜å™¨.
+	/// å‡½æ•°å‚æ•°æŒ‰ç…§å¸¸è§„å˜é‡å¤„ç†, å³$a0~$a3ä¸­çš„å€¼ä¼šç›´æ¥ä¿å­˜åˆ°æ ˆä¸­æˆ–å…¶å®ƒå¯„å­˜å™¨ä¸­.
 	/// </summary>
 	void alloc_save_reg();
 
 	/// <summary>
-	/// ½«ÁÙÊ±¼Ä´æÆ÷³ØÖÃ¿Õ
+	/// å°†ä¸´æ—¶å¯„å­˜å™¨æ± ç½®ç©º
 	/// </summary>
 	void init_tmp_reg_pool();
 
 	/// <summary>
-	/// var×ª»»Îª±£´æÆäµÄ¼Ä´æÆ÷, cst±£³ÖÔ­ÑùÊä³ö.
+	/// varè½¬æ¢ä¸ºä¿å­˜å…¶çš„å¯„å­˜å™¨, cstä¿æŒåŸæ ·è¾“å‡º.
 	/// </summary>
 	/// <param name="val"></param>
 	/// <returns></returns>
 	irelem_t trans_val_to_reg_or_cst(irelem_t val);
 
 	/// <summary>
-	/// ±éÀúorigin_ir_table²¢½«ËùÓĞ·Çprotect/reloadÓï¾äÖĞµÄ±äÁ¿ÃûÌæ»»Îª¼Ä´æÆ÷Ãû.
+	/// éå†origin_ir_tableå¹¶å°†æ‰€æœ‰éprotect/reloadè¯­å¥ä¸­çš„å˜é‡åæ›¿æ¢ä¸ºå¯„å­˜å™¨å.
 	/// </summary>
 	void walk();
 
 	/// <summary>
-	/// »ñÈ¡·ÖÅä¸øÄ³±äÁ¿µÄ¼Ä´æÆ÷, Èôµ±Ç°±äÁ¿Î´±»·ÖÅä¼Ä´æÆ÷, ÔòÎªÆä·ÖÅäÒ»¸ö²¢·µ»Ø.
-	/// ²»»á±£Ö¤¼Ä´æÆ÷ÖĞµÄÖµÎª±äÁ¿µÄÖµ.
-	/// $sp, $gp, $ret, $zero»á·µ»ØÏàÓ¦µÄ¼Ä´æÆ÷.
-	/// ½«¸Ã±äÁ¿´Óprotect¼¯ÖĞÉ¾³ı.
+	/// è·å–åˆ†é…ç»™æŸå˜é‡çš„å¯„å­˜å™¨, è‹¥å½“å‰å˜é‡æœªè¢«åˆ†é…å¯„å­˜å™¨, åˆ™ä¸ºå…¶åˆ†é…ä¸€ä¸ªå¹¶è¿”å›.
+	/// ä¸ä¼šä¿è¯å¯„å­˜å™¨ä¸­çš„å€¼ä¸ºå˜é‡çš„å€¼.
+	/// $sp, $gp, $ret, $zeroä¼šè¿”å›ç›¸åº”çš„å¯„å­˜å™¨.
+	/// å°†è¯¥å˜é‡ä»protecté›†ä¸­åˆ é™¤.
 	/// </summary>
 	/// <param name="var"></param>
 	/// <returns></returns>
 	irelem_t get_reg_of_var(irelem_t var);
 
 	/// <summary>
-	/// È·±£Ä³±äÁ¿ÔÚ¼Ä´æÆ÷ÖĞ, ²¢·µ»Ø±£´æÆäµÄ¼Ä´æÆ÷.
-	/// $sp, $gp, $ret, $zero»á·µ»ØÏàÓ¦µÄ¼Ä´æÆ÷.
-	/// ½«¸Ã±äÁ¿´Óprotect¼¯ÖĞÉ¾³ı.
+	/// ç¡®ä¿æŸå˜é‡åœ¨å¯„å­˜å™¨ä¸­, å¹¶è¿”å›ä¿å­˜å…¶çš„å¯„å­˜å™¨.
+	/// $sp, $gp, $ret, $zeroä¼šè¿”å›ç›¸åº”çš„å¯„å­˜å™¨.
+	/// å°†è¯¥å˜é‡ä»protecté›†ä¸­åˆ é™¤.
 	/// </summary>
-	/// <param name="var"> ±äÁ¿ </param>
-	/// <returns>¼Ä´æÆ÷</returns>
+	/// <param name="var"> å˜é‡ </param>
+	/// <returns>å¯„å­˜å™¨</returns>
 	irelem_t ensure_var_in_reg(irelem_t var);
 
 	/// <summary>
-	/// ½«Ä³¸ötmp¼Ä´æÆ÷ÖØĞÂ±ê¼ÇÎª¿ÉÓÃ, ²¢½«ÄÚÈİÍ¨¹ıprotectÓï¾ä±£´æµ½Õ»ÖĞ, ²¢½«±äÁ¿Ìí¼Óµ½protect¼¯ÖĞ.
+	/// å°†æŸä¸ªtmpå¯„å­˜å™¨é‡æ–°æ ‡è®°ä¸ºå¯ç”¨, å¹¶å°†å†…å®¹é€šè¿‡protectè¯­å¥ä¿å­˜åˆ°æ ˆä¸­, å¹¶å°†å˜é‡æ·»åŠ åˆ°protecté›†ä¸­.
 	/// </summary>
 	/// <param name="reg"></param>
 	void free_reg_and_protect_content(irelem_t reg);

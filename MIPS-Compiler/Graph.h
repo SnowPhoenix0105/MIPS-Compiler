@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef __GRAPH_H__
 #define __GRAPH_H__
@@ -107,7 +106,7 @@ public:
 	}
 
 	/// <summary>
-	/// ½ÚµãµÄÊıÁ¿
+	/// èŠ‚ç‚¹çš„æ•°é‡
 	/// </summary>
 	/// <returns></returns>
 	size_t point_num() const noexcept
@@ -116,7 +115,7 @@ public:
 	}
 
 	/// <summary>
-	/// ½ÚµãµÄÊıÁ¿
+	/// èŠ‚ç‚¹çš„æ•°é‡
 	/// </summary>
 	/// <returns></returns>
 	size_t size() const noexcept
@@ -130,7 +129,7 @@ public:
 	}
 
 	/// <summary>
-	/// µ÷ÓÃ´Ëº¯Êıºó, ±£Ö¤¿ÉÒÔÔÚ²»ÖØĞÂ·ÖÅä¿Õ¼äµÄÇé¿öÏÂ, ¿ÉÒÔ½«½ÚµãÊıÀ©ÔöÖÁ size.
+	/// è°ƒç”¨æ­¤å‡½æ•°å, ä¿è¯å¯ä»¥åœ¨ä¸é‡æ–°åˆ†é…ç©ºé—´çš„æƒ…å†µä¸‹, å¯ä»¥å°†èŠ‚ç‚¹æ•°æ‰©å¢è‡³ size.
 	/// </summary>
 	/// <param name="size"></param>
 	/// <returns></returns>
@@ -152,7 +151,7 @@ public:
 		new_capacity |= (new_capacity >> 16);
 		++new_capacity;
 
-		// ½«¾ÉÖµ½øĞĞ¿½±´, ²¢½«ĞÂÔö¼ÓµÄ¿Õ¼äÍ¨¹ı default_value ³õÊ¼»¯
+		// å°†æ—§å€¼è¿›è¡Œæ‹·è´, å¹¶å°†æ–°å¢åŠ çš„ç©ºé—´é€šè¿‡ default_value åˆå§‹åŒ–
 		T* new_data = (T*)::operator new[](new_capacity * new_capacity * sizeof(T));
 		size_t i = 0;
 		for (; i != _capacity; ++i)
@@ -184,7 +183,7 @@ public:
 	}
 
 	/// <summary>
-	/// Ôö¼ÓÈô¸É½Úµã, ·µ»ØÔö¼Óºó×îºóÒ»¸ö½ÚµãµÄ±àºÅ
+	/// å¢åŠ è‹¥å¹²èŠ‚ç‚¹, è¿”å›å¢åŠ åæœ€åä¸€ä¸ªèŠ‚ç‚¹çš„ç¼–å·
 	/// </summary>
 	/// <returns></returns>
 	size_t alloc_point(size_t num = 1)
@@ -195,8 +194,8 @@ public:
 	}
 
 	/// <summary>
-	/// Í¨¹ı [x][y] ·ÃÎÊÄ³¸ö±ßµÄÈ¨Öµ.
-	/// ²»»á¼ì²é±ß½ç.
+	/// é€šè¿‡ [x][y] è®¿é—®æŸä¸ªè¾¹çš„æƒå€¼.
+	/// ä¸ä¼šæ£€æŸ¥è¾¹ç•Œ.
 	/// </summary>
 	/// <param name="x"></param>
 	/// <returns></returns>
@@ -206,8 +205,8 @@ public:
 	}
 
 	/// <summary>
-	/// Í¨¹ı x, y ·ÃÎÊÄ³¸ö±ßµÄÈ¨Öµ.
-	/// ÈôÔ½½ç»á´¥·¢ out_of_range Òì³£.
+	/// é€šè¿‡ x, y è®¿é—®æŸä¸ªè¾¹çš„æƒå€¼.
+	/// è‹¥è¶Šç•Œä¼šè§¦å‘ out_of_range å¼‚å¸¸.
 	/// </summary>
 	/// <param name="x"></param>
 	/// <param name="y"></param>
@@ -222,12 +221,12 @@ public:
 	}
 
 	/// <summary>
-	/// Á¬½Ó±ß <x, y>;
-	/// Èô x, y Ô½½ç»á´¥·¢ out_of_range Òì³£.
+	/// è¿æ¥è¾¹ <x, y>;
+	/// è‹¥ x, y è¶Šç•Œä¼šè§¦å‘ out_of_range å¼‚å¸¸.
 	/// </summary>
 	/// <param name="x"></param>
 	/// <param name="y"></param>
-	/// <param name="value">±ßµÄÈ¨ÖØ</param>
+	/// <param name="value">è¾¹çš„æƒé‡</param>
 	/// <returns></returns>
 	Graph<T>& link(size_t x, size_t y, T value)
 	{
@@ -240,12 +239,12 @@ public:
 	}
 
 	/// <summary>
-	/// Á¬½Ó±ß <x, y> <y, x>;
-	/// Èô x, y Ô½½ç»á´¥·¢ out_of_range Òì³£.
+	/// è¿æ¥è¾¹ <x, y> <y, x>;
+	/// è‹¥ x, y è¶Šç•Œä¼šè§¦å‘ out_of_range å¼‚å¸¸.
 	/// </summary>
 	/// <param name="x"></param>
 	/// <param name="y"></param>
-	/// <param name="value">±ßµÄÈ¨ÖØ</param>
+	/// <param name="value">è¾¹çš„æƒé‡</param>
 	/// <returns></returns>
 	Graph<T>& d_link(size_t x, size_t y, T value)
 	{

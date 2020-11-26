@@ -104,7 +104,7 @@ void GCPRegisterAllocator::alloc_save_reg()
 	auto& allocator = *allocator_ptr;
 	save_reg_alloc.clear();
 
-	// TODO É¨Ãèµ±Ç°º¯Êı, È·¶¨È«¾Ö±äÁ¿¼¯ºÏ
+	// TODO æ‰«æå½“å‰å‡½æ•°, ç¡®å®šå…¨å±€å˜é‡é›†åˆ
 	for (const auto& in_set : block_var_activition_analyze_result->get_infos().in)
 	{
 		for (irelem_t var : in_set)
@@ -120,7 +120,7 @@ void GCPRegisterAllocator::alloc_save_reg()
 		}
 	}
 
-	// TODO ¹¹ÔìÈ«¾Ö±äÁ¿³åÍ»Í¼
+	// TODO æ„é€ å…¨å±€å˜é‡å†²çªå›¾
 	Graph<bool> graph(save_reg_alloc.size(), true);
 	unordered_map<irelem_t, unsigned> ord;
 	int count = 0;
@@ -148,13 +148,13 @@ void GCPRegisterAllocator::alloc_save_reg()
 			}
 		}
 	}
-	// ½«½ÚµãÓë×ÔÉíµÄ±ßÉ¾È¥
+	// å°†èŠ‚ç‚¹ä¸è‡ªèº«çš„è¾¹åˆ å»
 	for (size_t i = 0; i != ord.size(); ++i)
 	{
 		graph[i][i] = false;
 	}
 
-	// TODO Í¼×ÅÉ«·ÖÅä¼Ä´æÆ÷
+	// TODO å›¾ç€è‰²åˆ†é…å¯„å­˜å™¨
 	stack<size_t> stack;
 	unordered_set<size_t> untracked_points;
 	for (size_t i = 0; i != ord.size(); ++i)

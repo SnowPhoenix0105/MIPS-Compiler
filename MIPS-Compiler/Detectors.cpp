@@ -47,6 +47,13 @@ namespace IrDetectors
 		return ret;
 	}
 
+	shared_ptr<const BlockDetectResult> func_block_detect(
+		const IrTable& codes,
+		const IrElemAllocator& elems,
+		size_t func_beg_index)
+	{
+		return func_block_detect(codes, elems, func_beg_index, *detect_unused_label(codes, elems));
+	}
 
 	shared_ptr<const BlockDetectResult> func_block_detect(const IrTable& codes, const IrElemAllocator& elems, size_t func_beg_index, const unordered_set<irelem_t>& unused_labels)
 	{
@@ -205,7 +212,6 @@ namespace IrDetectors
 		}
 
 
-		unordered_map<irelem_t, unordered_set<DefInfo>> var_def_location;
 		for (size_t i = 0; i != blocks.size(); ++i)
 		{
 			auto& block = blocks[i];
@@ -224,6 +230,8 @@ namespace IrDetectors
 		{
 			auto& block = blocks[i];
 		}
+
+		throw;
 	}
 
 	void get_def_and_use_elem(

@@ -57,6 +57,12 @@
     <ClCompile Include="TargetCodeGenerator.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Detectors.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GCPTargetGenerator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compile_controller.h">
@@ -96,6 +102,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="TargetCodeGenerator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Detectors.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GCPTargetGenerator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Graph.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -83,6 +83,8 @@ namespace IrDetectors
 		StreamInfo<irelem_t> infos;
 		size_t base_index;
 	public:
+		const StreamInfo<irelem_t>& get_infos() const { return infos; }
+		size_t get_base_index() const { return base_index; }
 		const unordered_set<irelem_t>& get_in(size_t index) const { return infos.in.at(index - base_index); }
 		const unordered_set<irelem_t>& get_out(size_t index) const { return infos.out.at(index - base_index); }
 		friend shared_ptr<const VarActivetionAnalyzeResult> var_activition_analyze(
