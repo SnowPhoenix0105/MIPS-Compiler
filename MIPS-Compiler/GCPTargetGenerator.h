@@ -57,7 +57,6 @@ class GCPRegisterAllocator
 	size_t func_mid_index = 0;
 	size_t func_end_index = 0;
 	// 其它当前函数信息
-	string func_name = "__global";
 	shared_ptr<const BlockDetectResult> block_detect_result;
 	shared_ptr<const BlockVarActivetionAnalyzeResult> block_var_activition_analyze_result;
 	shared_ptr<const VarActivetionAnalyzeResult> var_activition_analyze_result;

@@ -16,6 +16,7 @@ using std::make_pair;
 using std::unordered_map;
 
 
+
 template<typename T>
 class GraphVisitHelper
 {
@@ -33,7 +34,6 @@ template<typename T>
 class Graph
 {
 public:
-	friend void swap<T>(Graph<T>& g1, Graph<T>& g2);
 	friend class GraphVisitHelper<T>;
 
 private:
@@ -66,14 +66,14 @@ public:
 	{
 		for (size_t i = 0; i != _capacity * _capacity; ++i)
 		{
-			new(new_data + i) T(std::move_if_noexcept(other.data[i]));
+			new(data + i) T(std::move_if_noexcept(other.data[i]));
 		}
 	}
 
 	Graph(Graph<T>&& other) noexcept 
 		: data(nullptr), _capacity(0), _size(0), default_value(other.default_value)
 	{
-		swap(*this, other);
+		swap(other);
 	}
 
 	Graph& operator=(const Graph<T>& other)
@@ -84,7 +84,7 @@ public:
 		data = (T*)::operator new[](_capacity * _capacity * sizeof(T));
 		for (size_t i = 0; i != _capacity * _capacity; ++i)
 		{
-			new(new_data + i) T(std::move_if_noexcept(other.data[i]));
+			new(data + i) T(std::move_if_noexcept(other.data[i]));
 		}
 		return *this;
 	}
@@ -94,7 +94,7 @@ public:
 		delete[] data;
 		_capacity = 0;
 		_size = 0;
-		swap(*this, other);
+		swap(other);
 		return *this;
 	}
 
@@ -257,16 +257,20 @@ public:
 		data[index_of(y, x)] = value;
 		return *this;
 	}
+
+	void swap(Graph<T>& g2)
+	{
+		std::swap(data, g2.data);
+		std::swap(_capacity, g2._capacity);
+		std::swap(_size, g2._size);
+		std::swap(default_value, g2.default_value);
+	}
+
+	static void swap(Graph<T>& g1, Graph<T>& g2)
+	{
+		g1.swap(g2);
+	}
 };
 
-
-template<typename T>
-void swap(Graph<T>& g1, Graph<T>& g2)
-{
-	swap(g1.data, g2.data);
-	swap(g1._capacity, g2._capacity);
-	swap(g1._size, g2._size);
-	swap(g1.default_value, g2.default_value);
-}
 
 #endif // !__GRAPH_H__
