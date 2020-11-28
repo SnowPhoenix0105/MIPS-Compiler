@@ -374,7 +374,7 @@ void GCPRegisterAllocator::walk()
 		}
 		case IrHead::push:
 		{
-			// 保护$a0-$a3
+			// TODO 保护$a0-$a3
 			Ir new_code = code;
 			new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
 			new_code.elem[1] = code.elem[1];
