@@ -52,6 +52,11 @@ GCPTargetGenerator::GCPTargetGenerator(shared_ptr<IrElemAllocator> allocator, sh
 {
 }
 
+void GCPTargetGenerator::translate(ostream& os)
+{
+	// TODO
+}
+
 void GCPRegisterAllocator::init_tmp_reg_pool()
 {
 	for (irelem_t reg : tmp_regs)
@@ -303,7 +308,6 @@ void GCPRegisterAllocator::walk()
 					index = i;
 				}
 			}
-			Ir new_code = code;
 			switch (index)
 			{
 			case 0:
@@ -319,6 +323,7 @@ void GCPRegisterAllocator::walk()
 				new_code.elem[1] = allocator.reg(Reg::a3);
 				break;
 			default:
+				break;
 			}
 			buffer.push_back(new_code);
 			break;
@@ -414,6 +419,23 @@ void GCPRegisterAllocator::walk()
 	}
 }
 
+irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
+{
+	// TODO
+	return irelem_t();
+}
+
+irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
+{
+	// TODO
+	return irelem_t();
+}
+
+void GCPRegisterAllocator::free_reg_and_protect_content(irelem_t reg)
+{
+	// TODO
+}
+
 irelem_t GCPRegisterAllocator::trans_val_to_reg_or_cst(irelem_t val)
 {
 	if (IrType::is_var(val))
@@ -459,4 +481,10 @@ GCPRegisterAllocator::GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator
 	gvar_status()
 {
 	init_tmp_reg_pool();
+}
+
+shared_ptr<const IrTable> GCPRegisterAllocator::build()
+{
+	// TODO
+	return shared_ptr<const IrTable>();
 }

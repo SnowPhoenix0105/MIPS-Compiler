@@ -47,6 +47,7 @@
 #include <iostream>
 #include <sstream>
 #include <windows.h>
+#include <exception>
 
 // @param required_level: if DEBUG_LEVEL < required_level, no message will be print;
 // @param operations: some statements, divided with ';'
@@ -82,7 +83,7 @@
 } while (false)
 
 
-#define ASSERT(required_level, state) DEBUG_DO(required_level, if ((state) == false) throw;)
+#define ASSERT(required_level, state) DEBUG_DO(required_level, if ((state) == false) throw std::exception();)
 
 #else
 

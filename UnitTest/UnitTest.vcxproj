@@ -161,6 +161,7 @@
     <ClCompile Include="BlackboxMultiInputTest.cpp" />
     <ClCompile Include="BlackboxTest.cpp" />
     <ClCompile Include="ComplexErrorTest.cpp" />
+    <ClCompile Include="DetectorTest.cpp" />
     <ClCompile Include="HWBlackboxTest.cpp" />
     <ClCompile Include="NoErrorTest.cpp" />
     <ClCompile Include="LexicalAnalyzerCorrectTest.cpp" />

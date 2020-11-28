@@ -257,12 +257,12 @@ public:
 		return *this;
 	}
 
-	void swap( Graph<T>& g2)
+	void swap(Graph<T>& g2)
 	{
-		std::swap(g1.data, g2.data);
-		std::swap(g1._capacity, g2._capacity);
-		std::swap(g1._size, g2._size);
-		std::swap(g1.default_value, g2.default_value);
+		std::swap(data, g2.data);
+		std::swap(_capacity, g2._capacity);
+		std::swap(_size, g2._size);
+		std::swap(default_value, g2.default_value);
 	}
 
 	static void swap(Graph<T>& g1, Graph<T>& g2)

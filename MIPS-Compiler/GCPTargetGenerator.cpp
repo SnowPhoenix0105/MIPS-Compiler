@@ -52,6 +52,11 @@ GCPTargetGenerator::GCPTargetGenerator(shared_ptr<IrElemAllocator> allocator, sh
 {
 }
 
+void GCPTargetGenerator::translate(ostream& os)
+{
+	// TODO
+}
+
 void GCPRegisterAllocator::init_tmp_reg_pool()
 {
 	for (irelem_t reg : tmp_regs)
@@ -92,9 +97,24 @@ void GCPRegisterAllocator::next_function_info()
 	block_detect_result = IrDetectors::func_block_detect(*origin_ir_table_ptr, *allocator_ptr, func_beg_index);
 	block_var_activition_analyze_result = IrDetectors::block_var_activition_analyze(*origin_ir_table_ptr, *allocator_ptr, func_beg_index, *block_detect_result);
 	var_activition_analyze_result = IrDetectors::var_activition_analyze(*origin_ir_table_ptr, *allocator_ptr, func_beg_index, *block_detect_result, *block_var_activition_analyze_result);
+
+	// 统计函数的参数列表
+	params.clear();
+	for (size_t i = func_mid_index; i != func_beg_index; --i)
+	{
+		const auto& code = origin_ir_table_ptr->at(i);
+		if (code.head == IrHead::param)
+		{
+			params.push_back(code.elem[0]);
+		}
+	}
+	block_begs.clear();
+	for (const auto& block : block_detect_result->get_blocks())
+	{
+		block_begs.insert(block.beg);
+	}
+
 	alloc_save_reg();
-	protected_var.clear();
-	init_tmp_reg_pool();
 }
 
 
@@ -120,13 +140,21 @@ void GCPRegisterAllocator::alloc_save_reg()
 		}
 	}
 
+	// $a0-$a3 已经分配了寄存器
+	for (size_t i = 0; i != 4 && i < params.size(); ++i)
+	{
+		save_reg_alloc.erase(params[i]);
+	}
+
 	// TODO 构造全局变量冲突图
 	Graph<bool> graph(save_reg_alloc.size(), true);
 	unordered_map<irelem_t, unsigned> ord;
+	vector<irelem_t> vars;
 	int count = 0;
 	for (const auto& pair : save_reg_alloc)
 	{
 		ord.insert(make_pair(pair.first, count++));
+		vars.push_back(pair.first);
 	}
 	for (const auto& in_set : block_var_activition_analyze_result->get_infos().in)
 	{
@@ -222,10 +250,10 @@ void GCPRegisterAllocator::alloc_save_reg()
 		{
 			if (graph[point][p])
 			{
-				unused_regs.erase(save_reg_alloc[p]);
+				unused_regs.erase(save_reg_alloc[vars[p]]);
 			}
 		}
-		save_reg_alloc[point] = *unused_regs.begin();
+		save_reg_alloc[vars[point]] = *unused_regs.begin();
 	}
 }
 
@@ -234,21 +262,72 @@ void GCPRegisterAllocator::walk()
 {
 	IrElemAllocator& allocator = *allocator_ptr;
 	const IrTable& codes = *origin_ir_table_ptr;
+
 	for (current_index = 0; current_index != codes.size(); ++current_index)
 	{
+		if (block_begs.count(current_index) != 0)
+		{
+			for (const auto& pair : *var_status)
+			{
+				if (save_reg_alloc.at(pair.first) == IrType::NIL)
+				{
+					buffer.push_back(ir.protect(pair.second, pair.first));
+				}
+			}
+			for (const auto& pair : gvar_status)
+			{
+				if (allocator.is_reg(pair.second))
+				{
+					buffer.push_back(ir.protect(pair.second, pair.first));
+				}
+			}
+			var_status->clear();
+			init_tmp_reg_pool();
+			for (irelem_t var : var_activition_analyze_result->get_in(current_index))
+			{
+				var_status->insert(make_pair(var, save_reg_alloc.at(var)));
+			}
+		}
 		const Ir& code = codes.at(current_index);
 		switch (code.head)
 		{
 		case IrHead::param:
-			if (save_reg_alloc[code.elem[0]] == IrType::NIL)
+		{
+			Ir new_code = code;
+			if (save_reg_alloc.count(code.elem[0]) != 0)
 			{
-				buffer.push_back(code);
+				new_code.elem[1] = save_reg_alloc.at(code.elem[0]);
+				buffer.push_back(new_code);
+				break;
 			}
-			else
+			int index = -1;
+			for (size_t i = 0; i != 4 && i < params.size(); ++i)
 			{
-				buffer.push_back(ir.param(get_reg_of_var(code.elem[0])));
+				if (params[i] == code.elem[0])
+				{
+					index = i;
+				}
 			}
+			switch (index)
+			{
+			case 0:
+				new_code.elem[1] = allocator.reg(Reg::a0);
+				break;
+			case 1:
+				new_code.elem[1] = allocator.reg(Reg::a1);
+				break;
+			case 2:
+				new_code.elem[1] = allocator.reg(Reg::a2);
+				break;
+			case 3:
+				new_code.elem[1] = allocator.reg(Reg::a3);
+				break;
+			default:
+				break;
+			}
+			buffer.push_back(new_code);
 			break;
+		}
 		case IrHead::add:
 		case IrHead::sub:
 		case IrHead::mult:
@@ -300,6 +379,7 @@ void GCPRegisterAllocator::walk()
 		}
 		case IrHead::push:
 		{
+			// TODO 保护$a0-$a3
 			Ir new_code = code;
 			new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
 			new_code.elem[1] = code.elem[1];
@@ -339,6 +419,23 @@ void GCPRegisterAllocator::walk()
 	}
 }
 
+irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
+{
+	// TODO
+	return irelem_t();
+}
+
+irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
+{
+	// TODO
+	return irelem_t();
+}
+
+void GCPRegisterAllocator::free_reg_and_protect_content(irelem_t reg)
+{
+	// TODO
+}
+
 irelem_t GCPRegisterAllocator::trans_val_to_reg_or_cst(irelem_t val)
 {
 	if (IrType::is_var(val))
@@ -355,7 +452,6 @@ GCPRegisterAllocator::GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator
 	allocator_ptr(allocator),
 	origin_ir_table_ptr(ir_table),
 	ir(allocator),
-	tmp_reg_pool(),
 	tmp_regs({
 		allocator->reg(Reg::t0),
 		allocator->reg(Reg::t1),
@@ -367,7 +463,7 @@ GCPRegisterAllocator::GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator
 		allocator->reg(Reg::t7),
 		allocator->reg(Reg::t8),
 		allocator->reg(Reg::t9)
-		}),
+	}),
 	save_regs({
 		allocator->reg(Reg::s0),
 		allocator->reg(Reg::s1),
@@ -377,7 +473,18 @@ GCPRegisterAllocator::GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator
 		allocator->reg(Reg::s5),
 		allocator->reg(Reg::s6),
 		allocator->reg(Reg::s7),
-		})
+	}),
+	tmp_reg_pool(),
+	save_reg_alloc(),
+	params(),
+	var_status(new unordered_map<irelem_t, irelem_t>()),
+	gvar_status()
 {
 	init_tmp_reg_pool();
+}
+
+shared_ptr<const IrTable> GCPRegisterAllocator::build()
+{
+	// TODO
+	return shared_ptr<const IrTable>();
 }
