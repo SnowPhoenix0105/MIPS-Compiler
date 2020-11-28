@@ -9,6 +9,7 @@
 #include <memory>
 
 using std::shared_ptr;
+using std::unique_ptr;
 using IrDetectors::VarActivetionAnalyzeResult;
 using IrDetectors::BlockDetectResult;
 using IrDetectors::BlockVarActivetionAnalyzeResult;
@@ -52,12 +53,14 @@ public:
 
 class GCPRegisterAllocator
 {
+	// status
 	size_t current_index = 0;
 	// 分别指向同一个函数的对应label
 	size_t func_beg_index = 0;
 	size_t func_mid_index = 0;
 	size_t func_end_index = 0;
-	// 其它当前函数信息
+	// 当前函数分析结果
+	unordered_set<size_t> block_begs;
 	shared_ptr<const BlockDetectResult> block_detect_result;
 	shared_ptr<const BlockVarActivetionAnalyzeResult> block_var_activition_analyze_result;
 	shared_ptr<const VarActivetionAnalyzeResult> var_activition_analyze_result;
@@ -66,15 +69,15 @@ class GCPRegisterAllocator
 	shared_ptr<const IrTable> origin_ir_table_ptr;
 	IrTableBuilder buffer;
 	IrFactory ir;
-	// 临时寄存器池
-	unordered_map<irelem_t, irelem_t> tmp_reg_pool;		// <reg> <var>
 	const vector<irelem_t> tmp_regs;
 	const vector<irelem_t> save_regs;
+	// 临时寄存器池
+	unordered_map<irelem_t, irelem_t> tmp_reg_pool;		// <reg> <var>
 	// 全局寄存器分配情况
-	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg> 所有全局寄存器都必须在keys中, 未分配寄存器的变量的值为NIL
-	// 目前被保存的变量
-	unordered_set<irelem_t> protected_var;
-	unordered_map<irelem_t, irelem_t> using_global;		// <g-var> <reg>
+	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg> 所有函数内全局变量都必须在keys中, 未分配寄存器的变量的值为NIL
+	vector<irelem_t> params;			// <var> 参数名
+	unique_ptr<unordered_map<irelem_t, irelem_t>> var_status;	// 函数内变量 key: <var>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var> 
+	unordered_map<irelem_t, irelem_t> gvar_status;		// 全局变量 key: <gvar>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var> 
 
 	/// <summary>
 	/// 更新
