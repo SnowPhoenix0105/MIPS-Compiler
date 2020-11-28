@@ -19,6 +19,7 @@ namespace IrDetectors
 	shared_ptr<const unordered_set<irelem_t>> detect_unused_label(const IrTable& codes, const IrElemAllocator& elems)
 	{
 		shared_ptr<unordered_set<irelem_t>> ret = make_shared<unordered_set<irelem_t>>();
+		unordered_set<irelem_t> used_set;
 
 		for (const auto& ir : codes)
 		{
@@ -26,12 +27,21 @@ namespace IrDetectors
 			{
 			case IrHead::call:
 			case IrHead::_goto:
+			{
+				irelem_t label = ir.elem[0];
+				ASSERT(4, IrType::is_label(label));
+				used_set.insert(label);
+				//ret->erase(label);
+				break;
+			}
 			case IrHead::beq:
 			case IrHead::bne:
 			{
 				irelem_t label = ir.elem[2];
 				ASSERT(4, IrType::is_label(label));
-				ret->erase(label);
+				used_set.insert(label);
+				//ret->erase(label);
+				break;
 			}
 			case IrHead::label:
 			{
@@ -43,6 +53,11 @@ namespace IrDetectors
 			default:
 				break;
 			}
+		}
+
+		for (irelem_t used : used_set)
+		{
+			ret->erase(used);
 		}
 		return ret;
 	}
@@ -83,6 +98,7 @@ namespace IrDetectors
 			if (end_set.count(head) != 0)
 			{
 				size_t current_block_index = ret->blocks.size() - 1;
+				size_t idx = index + 1;
 				if (head == IrHead::label)
 				{
 					const auto label = ir.elem[0];
@@ -93,22 +109,24 @@ namespace IrDetectors
 						blocks.back().end = index;
 						break;
 					}
+					if (unused_labels.count(label) != 0)
+					{
+						// 无用的标签, 不会有其它基本块跳入到这里
+						continue;
+					}
 					if (init)
 					{
 						// 当前基本块多了一个入口标签
 						label_index.insert(make_pair(label, current_block_index));
 						continue;
 					}
-					if (unused_labels.count(label) != 0)
-					{
-						// 无用的标签, 不会有其它基本块跳入到这里
-						continue;
-					}
+					--idx;
+					label_index.insert(make_pair(label, current_block_index + 1));
 				}
 				// TODO 基本块结束
-				blocks[current_block_index].end = index;
+				blocks[current_block_index].end = idx;
 				blocks.emplace_back();
-				blocks.back().beg = index;
+				blocks.back().beg = idx;
 				init = true;
 				if (head != IrHead::_goto)
 				{
@@ -132,8 +150,10 @@ namespace IrDetectors
 			case IrHead::beq:
 			case IrHead::bne:
 				target = ir.elem[2];
+				break;
 			case IrHead::_goto:
 				target = ir.elem[0];
+				break;
 			default:
 				continue;
 			}
@@ -142,7 +162,7 @@ namespace IrDetectors
 			ASSERT(4, target_index_it != label_index.end());
 			size_t target_index = target_index_it->second;
 			blocks[target_index].fronts.insert(i);
-			block.nexts.insert(i);
+			block.nexts.insert(target_index);
 		}
 		return ret;
 	}
@@ -330,15 +350,27 @@ namespace IrDetectors
 				irelem_t use_elem_2;
 				const auto& ir = codes.at(j);
 				get_def_and_use_elem(ir, elems, &def_elem, &use_elem_1, &use_elem_2);
-				if (use_elem_1 != IrType::NIL && IrType::is_var(use_elem_1) && !elems.is_global_var(use_elem_1) && def[i].count(use_elem_1) == 0)
+				if (use_elem_1 != IrType::NIL 
+					&& IrType::is_var(use_elem_1) 
+					&& !elems.is_global_var(use_elem_1) 
+					&& !elems.is_reserved_var(use_elem_1) 
+					&& def[i].count(use_elem_1) == 0)
 				{
 					use[i].insert(use_elem_1);
 				}
-				if (use_elem_2 != IrType::NIL && IrType::is_var(use_elem_2) && !elems.is_global_var(use_elem_1) && def[i].count(use_elem_2) == 0)
+				if (use_elem_2 != IrType::NIL 
+					&& IrType::is_var(use_elem_2) 
+					&& !elems.is_global_var(use_elem_2) 
+					&& !elems.is_reserved_var(use_elem_2) 
+					&& def[i].count(use_elem_2) == 0)
 				{
 					use[i].insert(use_elem_2);
 				}
-				if (def_elem != IrType::NIL && IrType::is_var(def_elem) && !elems.is_global_var(def_elem) && use[i].count(def_elem) == 0)
+				if (def_elem != IrType::NIL 
+					&& IrType::is_var(def_elem) 
+					&& !elems.is_global_var(def_elem) 
+					&& !elems.is_reserved_var(def_elem)
+					&& use[i].count(def_elem) == 0)
 				{
 					def[i].insert(def_elem);
 				}
@@ -418,17 +450,26 @@ namespace IrDetectors
 				irelem_t def_elem;
 				irelem_t use_elem_1;
 				irelem_t use_elem_2;
-				const auto& ir = codes.at(j);
+				const auto& ir = codes.at(block.end - 1 - j);
 				get_def_and_use_elem(ir, elems, &def_elem, &use_elem_1, &use_elem_2);
-				if (def_elem != IrType::NIL && IrType::is_var(def_elem) && !elems.is_global_var(def_elem))
+				if (def_elem != IrType::NIL 
+					&& IrType::is_var(def_elem) 
+					&& !elems.is_global_var(def_elem)
+					&& !elems.is_reserved_var(def_elem))
 				{
 					in[current].erase(def_elem);
 				}
-				if (use_elem_1 != IrType::NIL && IrType::is_var(use_elem_1) && !elems.is_global_var(use_elem_1))
+				if (use_elem_1 != IrType::NIL 
+					&& IrType::is_var(use_elem_1) 
+					&& !elems.is_global_var(use_elem_1)
+					&& !elems.is_reserved_var(use_elem_1))
 				{
 					in[current].insert(use_elem_1);
 				}
-				if (use_elem_2 != IrType::NIL && IrType::is_var(use_elem_2) && !elems.is_global_var(use_elem_1))
+				if (use_elem_2 != IrType::NIL 
+					&& IrType::is_var(use_elem_2) 
+					&& !elems.is_global_var(use_elem_2)
+					&& !elems.is_reserved_var(use_elem_2))
 				{
 					in[current].insert(use_elem_2);
 				}

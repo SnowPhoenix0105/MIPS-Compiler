@@ -450,12 +450,12 @@ namespace IrDetectors
 				irelem_t def_elem;
 				irelem_t use_elem_1;
 				irelem_t use_elem_2;
-				const auto& ir = codes.at(j);
+				const auto& ir = codes.at(block.end - 1 - j);
 				get_def_and_use_elem(ir, elems, &def_elem, &use_elem_1, &use_elem_2);
 				if (def_elem != IrType::NIL 
 					&& IrType::is_var(def_elem) 
 					&& !elems.is_global_var(def_elem)
-					&& !elems.is_reserved_var(use_elem_1))
+					&& !elems.is_reserved_var(def_elem))
 				{
 					in[current].erase(def_elem);
 				}
@@ -468,8 +468,8 @@ namespace IrDetectors
 				}
 				if (use_elem_2 != IrType::NIL 
 					&& IrType::is_var(use_elem_2) 
-					&& !elems.is_global_var(use_elem_1)
-					&& !elems.is_reserved_var(use_elem_1))
+					&& !elems.is_global_var(use_elem_2)
+					&& !elems.is_reserved_var(use_elem_2))
 				{
 					in[current].insert(use_elem_2);
 				}
