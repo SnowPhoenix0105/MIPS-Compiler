@@ -267,6 +267,7 @@ void GCPRegisterAllocator::walk()
 	{
 		if (block_begs.count(current_index) != 0)
 		{
+			// 保存被分配至栈上的函数内全局变量
 			for (const auto& pair : *var_status)
 			{
 				if (save_reg_alloc.at(pair.first) == IrType::NIL)
@@ -274,6 +275,7 @@ void GCPRegisterAllocator::walk()
 					buffer.push_back(ir.protect(pair.second, pair.first));
 				}
 			}
+			// 保存所有函数外全局变量
 			for (const auto& pair : gvar_status)
 			{
 				if (allocator.is_reg(pair.second))
@@ -379,12 +381,27 @@ void GCPRegisterAllocator::walk()
 		}
 		case IrHead::push:
 		{
-			// TODO 保护$a0-$a3
-			Ir new_code = code;
-			new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
-			new_code.elem[1] = code.elem[1];
-			new_code.elem[2] = code.elem[2];
-			buffer.push_back(new_code);
+			if (remain_push == 0)
+			{
+				fresh_push_and_call_info();
+			}
+			if (remain_push > 4 
+				|| params.size() < remain_push 
+				|| var_activition_analyze_result->get_out(current_index).count(params[remain_push - 1]) == 0)
+			{
+				// 不需要保护 $ax
+				Ir new_code = code;
+				new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
+				new_code.elem[1] = code.elem[1];
+				new_code.elem[2] = code.elem[2];
+				buffer.push_back(new_code);
+			}
+			else
+			{
+				// 此时 $ax 在push后仍旧有活性, 需要判断在call之前知否还有活跃.
+				irelem_t param_var = params[remain_push - 1];;
+			}
+			--remain_push;
 			break;
 		}
 		case IrHead::scanf:
@@ -443,6 +460,23 @@ irelem_t GCPRegisterAllocator::trans_val_to_reg_or_cst(irelem_t val)
 		return ensure_var_in_reg(val);
 	}
 	return val;
+}
+
+void GCPRegisterAllocator::fresh_push_and_call_info()
+{
+	remain_push = 0;
+	for (size_t idx = current_index; ; ++idx)
+	{
+		const auto& code = origin_ir_table_ptr->at(idx);
+		if (code.head == IrHead::call)
+		{
+			call_index = idx;
+		}
+		if (code.head == IrHead::push)
+		{
+			++remain_push;
+		}
+	}
 }
 
 
