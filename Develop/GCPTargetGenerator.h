@@ -80,7 +80,7 @@ class GCPRegisterAllocator
 	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg> 所有全局变量和param变量都必须在keys中, 未分配寄存器的变量的值为NIL, 包括 $sx 和 $ax 的分配结果
 	vector<irelem_t> params;			// <var> 参数名
 	unique_ptr<unordered_map<irelem_t, irelem_t>> var_status;	// 函数内局部和全局变量 key: <var>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var>
-	unordered_map<irelem_t, irelem_t> gvar_status;		// gvar key: <gvar>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var> 
+	unordered_map<irelem_t, irelem_t> gvar_status;		// gvar key: <gvar>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var>
 
 	/// <summary>
 	/// 更新
@@ -127,10 +127,9 @@ class GCPRegisterAllocator
 	void walk();
 
 	/// <summary>
-	/// 获取分配给某变量的寄存器, 若当前变量未被分配寄存器, 则为其分配一个并返回.
+	/// 获取分配给某变量的寄存器, 若当前变量未被分配寄存器, 则为其分配一个寄存器, 记录并返回.
 	/// 不会保证寄存器中的值为变量的值.
 	/// $sp, $gp, $ret, $zero会返回相应的寄存器.
-	/// 将该变量从protect集中删除.
 	/// </summary>
 	/// <param name="var"></param>
 	/// <returns></returns>
@@ -139,17 +138,10 @@ class GCPRegisterAllocator
 	/// <summary>
 	/// 确保某变量在寄存器中, 并返回保存其的寄存器.
 	/// $sp, $gp, $ret, $zero会返回相应的寄存器.
-	/// 将该变量从protect集中删除.
 	/// </summary>
 	/// <param name="var"> 变量 </param>
 	/// <returns>寄存器</returns>
 	irelem_t ensure_var_in_reg(irelem_t var);
-
-	/// <summary>
-	/// 将某个tmp寄存器重新标记为可用, 并将内容通过protect语句保存到栈中, 并将变量添加到protect集中.
-	/// </summary>
-	/// <param name="reg"></param>
-	void free_reg_and_protect_content(irelem_t reg);
 
 	shared_ptr<IrTable> fresh_code_builder()
 	{
@@ -161,7 +153,7 @@ class GCPRegisterAllocator
 public:
 	GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator, shared_ptr<const IrTable> ir_table);
 
-	shared_ptr<const IrTable> build();
+	shared_ptr<IrTable> build();
 };
 
 #endif // !__GCP_TARGET_GENERATOR_H__

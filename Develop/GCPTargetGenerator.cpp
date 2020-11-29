@@ -79,6 +79,7 @@ void GCPRegisterAllocator::next_function_info()
 #ifdef DEBUG_LEVEL
 	string func_name = allocator.func_name(label);
 #endif // DEBUG_LEVEL
+	DEBUG_LOG_VAR(4, func_name);
 	func_mid_index = func_beg_index;
 	do
 	{
@@ -99,7 +100,7 @@ void GCPRegisterAllocator::next_function_info()
 
 	// 统计函数的参数列表
 	params.clear();
-	for (size_t i = func_mid_index; i != func_beg_index; --i)
+	for (size_t i = func_beg_index; i != func_end_index; ++i)
 	{
 		const auto& code = origin_ir_table_ptr->at(i);
 		if (code.head == IrHead::param)
@@ -159,8 +160,10 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 	{
 		for (irelem_t var1 : in_set)
 		{
+			if (ord.count(var1) == 0) continue;
 			for (irelem_t var2 : in_set)
 			{
+				if (ord.count(var2) == 0) continue;
 				graph.d_link(ord[var1], ord[var2], true);
 			}
 		}
@@ -169,8 +172,10 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 	{
 		for (irelem_t var1 : out_set)
 		{
+			if (ord.count(var1) == 0) continue;
 			for (irelem_t var2 : out_set)
 			{
+				if (ord.count(var2) == 0) continue;
 				graph.d_link(ord[var1], ord[var2], true);
 			}
 		}
@@ -199,7 +204,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		int min_count = graph.size();
 		for (size_t p1 : untracked_points)
 		{
-			unsigned count = 0;
+			int count = 0;
 			for (size_t p2 : untracked_points)
 			{
 				if (graph[p1][p2])
@@ -224,11 +229,11 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 			{
 				reg_num_require = min_count + 1;
 			}
-			untracked_points.insert(min_count_point);
+			untracked_points.erase(min_count_point);
 			stack.push(min_count_point);
 			continue;
 		}
-		untracked_points.insert(max_count_point);
+		untracked_points.erase(max_count_point);
 	}
 	
 	while (stack.size() != 0)
@@ -236,7 +241,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		size_t point = stack.top();
 		stack.pop();
 		unordered_set<irelem_t> unused_regs;
-		unused_regs.reserve(reg_num_require);
+		//unused_regs.reserve(reg_num_require);
 		for (irelem_t reg : save_regs)
 		{
 			if (unused_regs.size() >= reg_num_require)
@@ -283,10 +288,11 @@ void GCPRegisterAllocator::walk()
 		// 整理 status
 		if (block_begs.count(current_index) != 0)
 		{
-			// 保存被分配至栈上的函数内全局变量
+			// 保存被分配至栈上的全局变量
 			for (const auto& pair : *var_status)
 			{
-				if (save_reg_alloc.at(pair.first) == IrType::NIL)
+				auto rlt = save_reg_alloc.find(pair.first);
+				if (rlt != save_reg_alloc.end() && rlt->second == IrType::NIL)
 				{
 					buffer.push_back(ir.protect(pair.second, pair.first));
 				}
@@ -303,7 +309,12 @@ void GCPRegisterAllocator::walk()
 			init_tmp_reg_pool();
 			for (irelem_t var : var_activition_analyze_result->get_in(current_index))
 			{
-				var_status->insert(make_pair(var, save_reg_alloc.at(var)));
+				irelem_t location = save_reg_alloc.at(var);
+				if (location == IrType::NIL)
+				{
+					location = var;
+				}
+				var_status->insert(make_pair(var, location));
 			}
 		}
 
@@ -311,6 +322,10 @@ void GCPRegisterAllocator::walk()
 		const Ir& code = codes.at(current_index);
 		switch (code.head)
 		{
+		case IrHead::gvar:
+			gvar_status.insert(make_pair(code.elem[0], code.elem[0]));
+			buffer.push_back(code);
+			break;
 		case IrHead::param:
 		{
 			Ir new_code = code;
@@ -555,6 +570,22 @@ irelem_t GCPRegisterAllocator::alloc_tmp_reg()
 irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 {
 	// TODO 
+	if (var == allocator_ptr->zero())
+	{
+		return allocator_ptr->reg(Reg::zero);
+	}
+	if (var == allocator_ptr->ret())
+	{
+		return allocator_ptr->reg(Reg::v1);
+	}
+	if (var == allocator_ptr->sp())
+	{
+		return allocator_ptr->reg(Reg::sp);
+	}
+	if (var == allocator_ptr->gp())
+	{
+		return allocator_ptr->reg(Reg::gp);
+	}
 	const auto& in_local = var_status->find(var);
 	const auto& in_global = gvar_status.find(var);
 	irelem_t location = IrType::NIL;
@@ -565,7 +596,9 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 		{
 			return location;
 		}
-
+		irelem_t reg = alloc_tmp_reg();
+		var_status->at(var) = reg;
+		return reg;
 	}
 	if (in_global != gvar_status.end())
 	{
@@ -574,18 +607,66 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 		{
 			return location;
 		}
+		irelem_t reg = alloc_tmp_reg();
+		var_status->at(var) = reg;
+		return reg;
 	}
+	irelem_t reg = alloc_tmp_reg();
+	var_status->insert(make_pair(var, reg));
+	return reg;
 }
 
 irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 {
 	// TODO
-	return irelem_t();
-}
-
-void GCPRegisterAllocator::free_reg_and_protect_content(irelem_t reg)
-{
-	// TODO
+	if (var == allocator_ptr->zero())
+	{
+		return allocator_ptr->reg(Reg::zero);
+	}
+	if (var == allocator_ptr->ret())
+	{
+		return allocator_ptr->reg(Reg::v1);
+	}
+	if (var == allocator_ptr->sp())
+	{
+		return allocator_ptr->reg(Reg::sp);
+	}
+	if (var == allocator_ptr->gp())
+	{
+		return allocator_ptr->reg(Reg::gp);
+	}
+	const auto& in_local = var_status->find(var);
+	if (in_local != var_status->end())
+	{
+		irelem_t location = in_local->second;
+		if (allocator_ptr->is_reg(location))
+		{
+			return location;
+		}
+		irelem_t reg = alloc_tmp_reg();
+		if (IrType::is_var(location))
+		{
+			buffer.push_back(ir.reload(reg, location));
+		}
+		var_status->at(var) = reg;
+		return reg;
+	}
+	const auto& in_global = gvar_status.find(var);
+	if (in_global != gvar_status.end())
+	{
+		irelem_t location = in_global->second;
+		if (allocator_ptr->is_reg(location))
+		{
+			return location;
+		}
+		irelem_t reg = alloc_tmp_reg();
+		buffer.push_back(ir.reload(reg, location));
+		gvar_status.at(var) = reg;
+		return reg;
+	}
+	irelem_t reg = alloc_tmp_reg();
+	gvar_status.at(var) = reg;
+	return reg;
 }
 
 irelem_t GCPRegisterAllocator::trans_val_to_reg_or_cst(irelem_t val)
@@ -606,6 +687,7 @@ void GCPRegisterAllocator::fresh_push_and_call_info()
 		if (code.head == IrHead::call)
 		{
 			call_index = idx;
+			break;
 		}
 		if (code.head == IrHead::push)
 		{
@@ -652,8 +734,8 @@ GCPRegisterAllocator::GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator
 	init_tmp_reg_pool();
 }
 
-shared_ptr<const IrTable> GCPRegisterAllocator::build()
+shared_ptr<IrTable> GCPRegisterAllocator::build()
 {
-	// TODO
-	return shared_ptr<const IrTable>();
+	walk();
+	return buffer.build();
 }

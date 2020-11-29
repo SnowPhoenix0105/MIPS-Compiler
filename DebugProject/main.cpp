@@ -2,11 +2,13 @@
 #include "../Develop/global_control.h"
 #include "../Develop/SyntacticAnalyzer.h"
 #include "../Develop/compile_controller.h"
+#include "../Develop/GCPTargetGenerator.h"
 
-# define DEBUG_004
+# define DEBUG_005
 
 using std::ostringstream;
 using std::ofstream;
+using std::ifstream;
 
 
 int main(int argc, char* argv[])
@@ -90,5 +92,27 @@ int main(int argc, char* argv[])
 
 #endif // DEBUG_004
 
+#ifdef DEBUG_005
+	unique_ptr<istream> input_file(new ifstream("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\GCPDebug\\source.c"));
+	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
+	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
+	syntactic_analyzer.parse();
+	ostringstream oss;
+	syntactic_analyzer.print_all_error(oss);
+	string err_msg = oss.str();
+	if (err_msg.size() != 0)
+	{
+		std::cout << err_msg << std::endl;
+		return 0;
+	}
+	shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
+	shared_ptr<IrTable> ir_table_ptr = syntactic_analyzer.get_ir_table();
+	ofstream origin_ir_os("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\GCPDebug\\origin.ir");
+	ofstream transed_ir_os("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\GCPDebug\\transed.ir");
+	origin_ir_os << ir_table_ptr->to_string(*allocator_ptr);
+	GCPRegisterAllocator gcp_registre_allocator(allocator_ptr, ir_table_ptr);
+	shared_ptr<IrTable> transed_table = gcp_registre_allocator.build();
+	transed_ir_os << transed_table->to_string(*allocator_ptr);
+#endif // DEBUG_005
 
 }
