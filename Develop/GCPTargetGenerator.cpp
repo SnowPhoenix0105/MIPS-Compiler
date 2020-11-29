@@ -314,6 +314,7 @@ void GCPRegisterAllocator::walk()
 			{
 				if (allocator.is_reg(pair.second))
 				{
+					// TODO 如果没有改变, 可以不保护gvar
 					buffer.push_back(ir.protect(pair.second, pair.first));
 					pair.second = pair.first;
 				}
@@ -479,6 +480,16 @@ void GCPRegisterAllocator::walk()
 			--remain_push;
 			break;
 		}
+		case IrHead::call:
+		{
+			// TODO 如果有没被保护的仍有活性的 param_var, 将其保护
+
+			// TODO 如果 $tx 中局部变量有活性/保存着脏的全局变量/保存着脏的gvar, 将其保护
+
+			// TODO 调用目标函数
+			buffer.push_back(code);
+			break;
+		}
 		case IrHead::scanf:
 		{
 			Ir new_code = code;
@@ -601,6 +612,7 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 	}
 	// var_status 中, 表示已经在寄存器中/被保护到栈上
 	const auto& in_local = var_status->find(var);
+	const auto& in_save = save_reg_alloc.find(var);
 	if (in_local != var_status->end())
 	{
 		irelem_t location = in_local->second;
@@ -608,12 +620,23 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 		{
 			return location;
 		}
-		irelem_t reg = alloc_tmp_reg();
+		irelem_t reg;
+		if (in_save != save_reg_alloc.end() && allocator_ptr->is_reg(in_save->second))
+		{
+			// var 是一个保存在栈上且分配了寄存器的的全局寄存器
+			// 应该是 $ax ?
+			reg = in_save->second;
+		}
+		else
+		{
+			reg = alloc_tmp_reg();
+			tmp_reg_pool.at(reg) = var;
+		}
 		var_status->at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
 		return reg;
 	}
 	// save_reg_alloc中, 表示是一个全局变量, 但是未被使用
-	const auto& in_save = save_reg_alloc.find(var);
 	if (in_save != save_reg_alloc.end())
 	{
 		irelem_t location = in_save->second;
@@ -624,6 +647,7 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 		}
 		irelem_t reg = alloc_tmp_reg();
 		var_status->at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
 		return reg;
 	}
 	// gvar_status 中, 表示是一个全局变量
@@ -637,10 +661,12 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 		}
 		irelem_t reg = alloc_tmp_reg();
 		var_status->at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
 		return reg;
 	}
 	irelem_t reg = alloc_tmp_reg();
 	var_status->insert(make_pair(var, reg));
+	tmp_reg_pool.at(reg) = var;
 	return reg;
 }
 
@@ -665,6 +691,7 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 	}
 	// var_status 中, 表示已经在寄存器中/被保护到栈上
 	const auto& in_local = var_status->find(var);
+	const auto& in_save = save_reg_alloc.find(var);
 	if (in_local != var_status->end())
 	{
 		irelem_t location = in_local->second;
@@ -672,17 +699,26 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 		{
 			return location;
 		}
-		irelem_t reg = alloc_tmp_reg();
+		irelem_t reg;
+		if (in_save != save_reg_alloc.end() && allocator_ptr->is_reg(in_save->second))
+		{
+			// var 是一个保存在栈上且分配了寄存器的的全局寄存器
+			// 应该是 $ax ?
+			reg = in_save->second;
+		}
+		else
+		{
+			reg = alloc_tmp_reg();
+			tmp_reg_pool.at(reg) = var;
+		}
 		if (IrType::is_var(location))
 		{
 			buffer.push_back(ir.reload(reg, location));
 		}
 		var_status->at(var) = reg;
-		tmp_reg_pool.at(reg) = var;
 		return reg;
 	}
 	// save_reg_alloc中, 表示是一个全局变量, 但是未被使用, 也未被初始化
-	const auto& in_save = save_reg_alloc.find(var);
 	if (in_save != save_reg_alloc.end())
 	{
 		irelem_t location = in_save->second;

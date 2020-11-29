@@ -16,49 +16,49 @@
 func_beg_randomi:
 	func	int
 func_mid_randomi:
-	reload	$t0,	__global_var_idx1
-	$t0	=	$t0	<<	2
-	$t1	=	$gp	+	$t0
-	$t1	=	$t1[__global__arr__arr]
-	reload	$t1,	__global_var_idx2
-	$t1	=	$t1	<<	2
-	$t2	=	$gp	+	$t1
-	$t2	=	$t2[__global__arr__arr]
-	$t2	=	$t1	-	$t2
-	$t2	=	$t2	+	$zero
-	$s0	=	$t2	+	$zero
-	$t2	=	$s0	+	$zero
-	$t2	=	$t0	<<	2
-	$t2	=	$gp	+	$t2
-	$t2[__global__arr__arr]	=	$t2
-	$t2	=	$t0	+	1
-	$t2	=	$t2	+	$zero
-	$t0	=	$t2	+	$zero
-	$t2	=	$t0	<	8
-	if $t2 != $zero	goto	if_mid_0
-	protect	$t0,	__global_var_idx1
-	protect	$t1,	__global_var_idx2
+	reload	$t1,	__global_var_idx1
+	$t0	=	$t1	<<	2
+	$t2	=	$gp	+	$t0
+	$t3	=	$t2[__global__arr__arr]
+	reload	$t5,	__global_var_idx2
+	$t4	=	$t5	<<	2
+	$t6	=	$gp	+	$t4
+	$t7	=	$t6[__global__arr__arr]
+	$t8	=	$t3	-	$t7
+	$t9	=	$t8	+	$zero
+	$s0	=	$t9	+	$zero
+	$t9	=	$s0	+	$zero
+	$t0	=	$t1	<<	2
+	$t2	=	$gp	+	$t0
+	$t2[__global__arr__arr]	=	$t9
+	$t3	=	$t1	+	1
+	$t4	=	$t3	+	$zero
+	$t1	=	$t4	+	$zero
+	$t6	=	$t1	<	8
+	if $t6 != $zero	goto	if_mid_0
+	protect	$t1,	__global_var_idx1
+	protect	$t5,	__global_var_idx2
 if_beg_0:
-	reload	$t0,	__global_var_idx1
-	$t0	=	$t0	-	8
-	$t1	=	$t0	+	$zero
-	$t0	=	$t1	+	$zero
-	protect	$t0,	__global_var_idx1
+	reload	$t1,	__global_var_idx1
+	$t0	=	$t1	-	8
+	$t2	=	$t0	+	$zero
+	$t1	=	$t2	+	$zero
+	protect	$t1,	__global_var_idx1
 if_mid_0:
 if_end_0:
-	reload	$t0,	__global_var_idx2
-	$t0	=	$t0	+	1
-	$t1	=	$t0	+	$zero
-	$t0	=	$t1	+	$zero
-	$t1	=	$t0	<	8
-	if $t1 != $zero	goto	if_mid_1
-	protect	$t0,	__global_var_idx2
+	reload	$t1,	__global_var_idx2
+	$t0	=	$t1	+	1
+	$t2	=	$t0	+	$zero
+	$t1	=	$t2	+	$zero
+	$t3	=	$t1	<	8
+	if $t3 != $zero	goto	if_mid_1
+	protect	$t1,	__global_var_idx2
 if_beg_1:
-	reload	$t0,	__global_var_idx2
-	$t0	=	$t0	-	8
-	$t1	=	$t0	+	$zero
-	$t0	=	$t1	+	$zero
-	protect	$t0,	__global_var_idx2
+	reload	$t1,	__global_var_idx2
+	$t0	=	$t1	-	8
+	$t2	=	$t0	+	$zero
+	$t1	=	$t2	+	$zero
+	protect	$t1,	__global_var_idx2
 if_mid_1:
 if_end_1:
 	$v1	=	$s0	+	$zero
@@ -67,11 +67,11 @@ func_end_randomi:
 func_beg_get_increase:
 	func	int
 func_mid_get_increase:
-	reload	$t0,	__global_var_a
-	$t0	=	$t0	+	1
-	$t1	=	$t0	+	$zero
-	$t0	=	$t1	+	$zero
-	$v1	=	$t0	+	$zero
+	reload	$t1,	__global_var_a
+	$t0	=	$t1	+	1
+	$t2	=	$t0	+	$zero
+	$t1	=	$t2	+	$zero
+	$v1	=	$t1	+	$zero
 	ret
 func_end_get_increase:
 func_beg_foo:
@@ -83,40 +83,40 @@ func_beg_foo:
 	param	foo_var_m	$s1
 	param	foo_var_n	$s0
 func_mid_foo:
-	protect	$t0,	__global_var_a
+	protect	$t1,	__global_var_a
 	$t0	=	$a1	<	$a0
 	if $t0 == $zero	goto	if_mid_2
 if_beg_2:
 	call	func_beg_randomi
 	$t0	=	$v1	+	$zero
-	$t0	=	$s1	+	$t0
-	$t0	=	$t0	+	$zero
-	$a3	=	$t0	+	$zero
+	$t1	=	$s1	+	$t0
+	$t2	=	$t1	+	$zero
+	$a3	=	$t2	+	$zero
 	goto	if_end_2
 if_mid_2:
 	$t0	=	$s1	*	$s1
-	$t0	=	$t0	/	123
-	$t0	=	$a1	/	$a2
-	$t0	=	$a0	+	$t0
-	$t0	=	$s1	+	$s0
-	$t0	=	4	*	$t0
-	$t0	=	$t0	-	$t0
-	$t0	=	$t0	/	324
-	$t0	=	312	+	$t0
-	$t0	=	$t0	+	$t0
-	$t0	=	$s0	*	$a2
-	$t0	=	$t0	+	$t0
-	$t0	=	$t0	+	$zero
-	$a3	=	$t0	+	$zero
+	$t1	=	$t0	/	123
+	$t2	=	$a1	/	$a2
+	$t3	=	$a0	+	$t2
+	$t4	=	$s1	+	$s0
+	$t5	=	4	*	$t4
+	$t6	=	$t3	-	$t5
+	$t7	=	$t6	/	324
+	$t8	=	312	+	$t7
+	$t9	=	$t1	+	$t8
+	$t8	=	$s0	*	$a2
+	$t0	=	$t9	+	$t8
+	$t1	=	$t0	+	$zero
+	$a3	=	$t1	+	$zero
 if_end_2:
 	$t0	=	$a2	<	$a1
 	if $t0 == $zero	goto	if_mid_3
 if_beg_3:
 	call	func_beg_randomi
 	$t0	=	$v1	+	$zero
-	$t0	=	$s0	+	$t0
-	$t0	=	$t0	+	$zero
-	$s1	=	$t0	+	$zero
+	$t1	=	$s0	+	$t0
+	$t2	=	$t1	+	$zero
+	$s1	=	$t2	+	$zero
 	goto	if_end_3
 if_mid_3:
 	$a0	=	$zero	+	0
@@ -124,9 +124,9 @@ if_mid_3:
 for_beg_0:
 	call	func_beg_get_increase
 	$t0	=	$v1	+	$zero
-	$t0	=	$s0	*	$t0
-	$t0	=	$t0	+	$zero
-	$s1	=	$t0	+	$zero
+	$t1	=	$s0	*	$t0
+	$t2	=	$t1	+	$zero
+	$s1	=	$t2	+	$zero
 	$a0	=	$a0	+	1
 for_mid_0:
 	$t0	=	$a0	<	4
@@ -147,8 +147,8 @@ for_beg_1:
 	$t0	=	$v1	+	$zero
 	printf	NIL,	$t0,	int
 	call	func_beg_get_increase
-	$t0	=	$v1	+	$zero
-	printf	NIL,	$t0,	int
+	$t1	=	$v1	+	$zero
+	printf	NIL,	$t1,	int
 	$s0	=	$s0	+	1
 for_mid_1:
 	$t0	=	$s0	<	7

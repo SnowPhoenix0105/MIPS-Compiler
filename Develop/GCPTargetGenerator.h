@@ -75,6 +75,7 @@ class GCPRegisterAllocator
 	const vector<irelem_t> save_regs;
 	// 临时寄存器池
 	unordered_map<irelem_t, irelem_t> tmp_reg_pool;		// <reg> <var>
+	unordered_map<irelem_t, bool> tmp_reg_dirty;		// <reg> bool	标记 $tx 被分配并重新加载后, 是否与加载处不同步
 	// 全局寄存器分配情况
 	unordered_set<irelem_t> keep_in_tx;		// <reg> 需要保持在 $tx 中的变量, 淘汰 $tx 时将不会将其淘汰
 	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg> 所有全局变量和param变量都必须在keys中, 未分配寄存器的变量的值为NIL, 包括 $sx 和 $ax 的分配结果
