@@ -79,6 +79,7 @@ void GCPRegisterAllocator::next_function_info()
 #ifdef DEBUG_LEVEL
 	string func_name = allocator.func_name(label);
 #endif // DEBUG_LEVEL
+	DEBUG_LOG_VAR(4, func_name);
 	func_mid_index = func_beg_index;
 	do
 	{
@@ -99,7 +100,7 @@ void GCPRegisterAllocator::next_function_info()
 
 	// 统计函数的参数列表
 	params.clear();
-	for (size_t i = func_mid_index; i != func_beg_index; --i)
+	for (size_t i = func_beg_index; i != func_end_index; ++i)
 	{
 		const auto& code = origin_ir_table_ptr->at(i);
 		if (code.head == IrHead::param)
@@ -159,8 +160,10 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 	{
 		for (irelem_t var1 : in_set)
 		{
+			if (ord.count(var1) == 0) continue;
 			for (irelem_t var2 : in_set)
 			{
+				if (ord.count(var2) == 0) continue;
 				graph.d_link(ord[var1], ord[var2], true);
 			}
 		}
@@ -169,8 +172,10 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 	{
 		for (irelem_t var1 : out_set)
 		{
+			if (ord.count(var1) == 0) continue;
 			for (irelem_t var2 : out_set)
 			{
+				if (ord.count(var2) == 0) continue;
 				graph.d_link(ord[var1], ord[var2], true);
 			}
 		}
@@ -181,6 +186,17 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		graph[i][i] = false;
 	}
 
+#ifdef DEBUG_LEVEL
+	for (size_t i = 0; i != ord.size(); ++i)
+	{
+		for (size_t j = 0; j != ord.size(); ++j)
+		{
+			std::cout << graph[i][j] << '\t';
+		}
+		std::cout << endl;
+	}
+#endif // DEBUG_LEVEL
+
 	// TODO 图着色分配寄存器
 	stack<size_t> stack;
 	unordered_set<size_t> untracked_points;
@@ -189,7 +205,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		untracked_points.insert(i);
 	}
 
-	unsigned reg_num_require = -1;
+	int reg_num_require = -1;
 
 	while (untracked_points.size() != 0)
 	{
@@ -199,7 +215,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		int min_count = graph.size();
 		for (size_t p1 : untracked_points)
 		{
-			unsigned count = 0;
+			int count = 0;
 			for (size_t p2 : untracked_points)
 			{
 				if (graph[p1][p2])
@@ -224,11 +240,11 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 			{
 				reg_num_require = min_count + 1;
 			}
-			untracked_points.insert(min_count_point);
+			untracked_points.erase(min_count_point);
 			stack.push(min_count_point);
 			continue;
 		}
-		untracked_points.insert(max_count_point);
+		untracked_points.erase(max_count_point);
 	}
 	
 	while (stack.size() != 0)
@@ -236,7 +252,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		size_t point = stack.top();
 		stack.pop();
 		unordered_set<irelem_t> unused_regs;
-		unused_regs.reserve(reg_num_require);
+		//unused_regs.reserve(reg_num_require);
 		for (irelem_t reg : save_regs)
 		{
 			if (unused_regs.size() >= reg_num_require)
@@ -252,6 +268,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 				unused_regs.erase(save_reg_alloc[vars[p]]);
 			}
 		}
+		untracked_points.insert(point);
 		save_reg_alloc[vars[point]] = *unused_regs.begin();
 	}
 
@@ -286,18 +303,19 @@ void GCPRegisterAllocator::walk()
 			// 保存被分配至栈上的全局变量
 			for (const auto& pair : *var_status)
 			{
-				// 此处为基本快交界处, var_status 中的值应当为 out[B]
-				if (save_reg_alloc.at(pair.first) == IrType::NIL)
+				auto rlt = save_reg_alloc.find(pair.first);
+				if (rlt != save_reg_alloc.end() && rlt->second == IrType::NIL)
 				{
 					buffer.push_back(ir.protect(pair.second, pair.first));
 				}
 			}
 			// 保存所有 gvar 变量
-			for (const auto& pair : gvar_status)
+			for (auto& pair : gvar_status)
 			{
 				if (allocator.is_reg(pair.second))
 				{
 					buffer.push_back(ir.protect(pair.second, pair.first));
+					pair.second = pair.first;
 				}
 			}
 			var_status->clear();
@@ -317,6 +335,10 @@ void GCPRegisterAllocator::walk()
 		const Ir& code = codes.at(current_index);
 		switch (code.head)
 		{
+		case IrHead::gvar:
+			gvar_status.insert(make_pair(code.elem[0], code.elem[0]));
+			buffer.push_back(code);
+			break;
 		case IrHead::param:
 		{
 			Ir new_code = code;
@@ -603,7 +625,7 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 		return reg;
 	}
 	irelem_t reg = alloc_tmp_reg();
-	var_status->at(var) = reg;
+	var_status->insert(make_pair(var, reg));
 	return reg;
 }
 
@@ -678,6 +700,7 @@ void GCPRegisterAllocator::fresh_push_and_call_info()
 		if (code.head == IrHead::call)
 		{
 			call_index = idx;
+			break;
 		}
 		if (code.head == IrHead::push)
 		{
@@ -724,8 +747,8 @@ GCPRegisterAllocator::GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator
 	init_tmp_reg_pool();
 }
 
-shared_ptr<const IrTable> GCPRegisterAllocator::build()
+shared_ptr<IrTable> GCPRegisterAllocator::build()
 {
 	walk();
-	return shared_ptr<const IrTable>();
+	return buffer.build();
 }

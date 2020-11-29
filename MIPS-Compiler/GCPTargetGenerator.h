@@ -152,7 +152,7 @@ class GCPRegisterAllocator
 public:
 	GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator, shared_ptr<const IrTable> ir_table);
 
-	shared_ptr<const IrTable> build();
+	shared_ptr<IrTable> build();
 };
 
 #endif // !__GCP_TARGET_GENERATOR_H__
