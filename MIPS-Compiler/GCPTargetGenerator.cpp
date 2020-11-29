@@ -114,11 +114,11 @@ void GCPRegisterAllocator::next_function_info()
 		block_begs.insert(block.beg);
 	}
 
-	alloc_save_reg();
+	alloc_all_save_reg();
 }
 
 
-void GCPRegisterAllocator::alloc_save_reg()
+void GCPRegisterAllocator::alloc_all_save_reg()
 {
 	const auto& codes = *origin_ir_table_ptr;
 	auto& allocator = *allocator_ptr;

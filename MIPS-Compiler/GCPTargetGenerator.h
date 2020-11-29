@@ -91,7 +91,7 @@ class GCPRegisterAllocator
 	/// 扫描并分配全局寄存器.
 	/// 函数参数按照常规变量处理, 即$a0~$a3中的值会直接保存到栈中或其它寄存器中.
 	/// </summary>
-	void alloc_save_reg();
+	void alloc_all_save_reg();
 
 	/// <summary>
 	/// 将临时寄存器池置空

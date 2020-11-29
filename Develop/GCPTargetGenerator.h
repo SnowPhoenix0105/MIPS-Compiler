@@ -76,10 +76,11 @@ class GCPRegisterAllocator
 	// 临时寄存器池
 	unordered_map<irelem_t, irelem_t> tmp_reg_pool;		// <reg> <var>
 	// 全局寄存器分配情况
-	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg> 所有函数内全局变量都必须在keys中, 未分配寄存器的变量的值为NIL
+	unordered_set<irelem_t> keep_in_tx;		// <reg> 需要保持在 $tx 中的变量, 淘汰 $tx 时将不会将其淘汰
+	unordered_map<irelem_t, irelem_t> save_reg_alloc;	// <var> <reg> 所有全局变量和param变量都必须在keys中, 未分配寄存器的变量的值为NIL, 包括 $sx 和 $ax 的分配结果
 	vector<irelem_t> params;			// <var> 参数名
-	unique_ptr<unordered_map<irelem_t, irelem_t>> var_status;	// 函数内变量 key: <var>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var>
-	unordered_map<irelem_t, irelem_t> gvar_status;		// 全局变量 key: <gvar>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var> 
+	unique_ptr<unordered_map<irelem_t, irelem_t>> var_status;	// 函数内局部和全局变量 key: <var>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var>
+	unordered_map<irelem_t, irelem_t> gvar_status;		// gvar key: <gvar>; value: 当变量在寄存器中时, 为<reg>, 在栈上时, 为<var> 
 
 	/// <summary>
 	/// 更新
@@ -102,6 +103,7 @@ class GCPRegisterAllocator
 	void init_tmp_reg_pool();
 
 	/// <summary>
+	/// 返回一个 free 的 $tx
 	/// 若临时寄存器池有寄存器, 则选择一个返回, 否则淘汰一个.
 	/// </summary>
 	/// <returns></returns>
