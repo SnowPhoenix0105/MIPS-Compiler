@@ -114,11 +114,11 @@ void GCPRegisterAllocator::next_function_info()
 		block_begs.insert(block.beg);
 	}
 
-	alloc_save_reg();
+	alloc_all_save_reg();
 }
 
 
-void GCPRegisterAllocator::alloc_save_reg()
+void GCPRegisterAllocator::alloc_all_save_reg()
 {
 	const auto& codes = *origin_ir_table_ptr;
 	auto& allocator = *allocator_ptr;
@@ -399,7 +399,36 @@ void GCPRegisterAllocator::walk()
 			else
 			{
 				// 此时 $ax 在push后仍旧有活性, 需要判断在call之前知否还有活跃.
-				irelem_t param_var = params[remain_push - 1];;
+				irelem_t param_var = params[remain_push - 1];
+				irelem_t reg_ax = var_status->at(param_var);
+				ASSERT(4, current_index < call_index);
+				bool need_protect_to_reg = false;
+				for (size_t i = current_index + 1; i != call_index; ++i)
+				{
+					irelem_t def_elem;
+					irelem_t use_elem_1;
+					irelem_t use_elem_2;
+					IrDetectors::get_def_and_use_elem(origin_ir_table_ptr->at(i), *allocator_ptr, &def_elem, &use_elem_1, &use_elem_2);
+					
+					if (use_elem_1 == param_var || use_elem_2 == param_var)
+					{
+						need_protect_to_reg = true;
+						break;
+					}
+					// 如果有def, 那么前面一定有use, 否则out[current_index]一定不包含param_var 
+					ASSERT(4, def_elem != param_var);
+				}
+				if (need_protect_to_reg)
+				{
+					irelem_t reg = alloc_tmp_reg();
+					var_status->at(param_var) = reg;
+					buffer.push_back(ir.add(reg, reg_ax, allocator.reg(Reg::zero)));
+				}
+				else
+				{
+					var_status->at(param_var) = param_var;
+					buffer.push_back(ir.protect(reg_ax, param_var));
+				}
 			}
 			--remain_push;
 			break;

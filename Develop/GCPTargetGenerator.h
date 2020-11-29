@@ -94,12 +94,18 @@ class GCPRegisterAllocator
 	/// 扫描并分配全局寄存器.
 	/// 函数参数按照常规变量处理, 即$a0~$a3中的值会直接保存到栈中或其它寄存器中.
 	/// </summary>
-	void alloc_save_reg();
+	void alloc_all_save_reg();
 
 	/// <summary>
-	/// 将临时寄存器池置空
+	/// 将临时寄存器池重置
 	/// </summary>
 	void init_tmp_reg_pool();
+
+	/// <summary>
+	/// 若临时寄存器池有寄存器, 则选择一个返回, 否则淘汰一个.
+	/// </summary>
+	/// <returns></returns>
+	irelem_t alloc_tmp_reg();
 
 	/// <summary>
 	/// var转换为保存其的寄存器, cst保持原样输出.
