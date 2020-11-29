@@ -444,7 +444,10 @@ string IrTable::to_string(const IrElemAllocator& allocator)
 			builder << "\tfunc\t" << (code.elem[0] == IrType::_int ? "int" : code.elem[0] == IrType::_char ? "char" : "void") << endl;
 			break;
 		case IrHead::param:
-			builder << "\tparam\t" << allocator.var_to_string(code.elem[0]) << endl;
+			builder << "\tparam\t" 
+				<< allocator.var_to_string(code.elem[0]) << '\t' 
+				<< (code.elem[1] == IrType::NIL ? "NIL" : allocator.var_to_string(code.elem[1])) 
+				<< endl;
 			break;
 		case IrHead::add:
 			builder << '\t' << allocator.var_to_string(code.elem[0])

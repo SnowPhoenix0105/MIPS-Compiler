@@ -65,12 +65,12 @@ func_mid_get_increase:
 func_end_get_increase:
 func_beg_foo:
 	func	int
-	param	foo_var_i
-	param	foo_var_j
-	param	foo_var_k
-	param	foo_var_l
-	param	foo_var_m
-	param	foo_var_n
+	param	foo_var_i	NIL
+	param	foo_var_j	NIL
+	param	foo_var_k	NIL
+	param	foo_var_l	NIL
+	param	foo_var_m	NIL
+	param	foo_var_n	NIL
 func_mid_foo:
 	foo_tmp_23	=	foo_var_j	<	foo_var_i
 	if foo_tmp_23 == #zero	goto	if_mid_2

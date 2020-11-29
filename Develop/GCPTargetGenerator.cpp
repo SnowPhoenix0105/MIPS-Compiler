@@ -186,6 +186,17 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		graph[i][i] = false;
 	}
 
+#ifdef DEBUG_LEVEL
+	for (size_t i = 0; i != ord.size(); ++i)
+	{
+		for (size_t j = 0; j != ord.size(); ++j)
+		{
+			std::cout << graph[i][j] << '\t';
+		}
+		std::cout << endl;
+	}
+#endif // DEBUG_LEVEL
+
 	// TODO 图着色分配寄存器
 	stack<size_t> stack;
 	unordered_set<size_t> untracked_points;
@@ -194,7 +205,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		untracked_points.insert(i);
 	}
 
-	unsigned reg_num_require = -1;
+	int reg_num_require = -1;
 
 	while (untracked_points.size() != 0)
 	{
@@ -257,6 +268,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 				unused_regs.erase(save_reg_alloc[vars[p]]);
 			}
 		}
+		untracked_points.insert(point);
 		save_reg_alloc[vars[point]] = *unused_regs.begin();
 	}
 
@@ -298,11 +310,12 @@ void GCPRegisterAllocator::walk()
 				}
 			}
 			// 保存所有 gvar 变量
-			for (const auto& pair : gvar_status)
+			for (auto& pair : gvar_status)
 			{
 				if (allocator.is_reg(pair.second))
 				{
 					buffer.push_back(ir.protect(pair.second, pair.first));
+					pair.second = pair.first;
 				}
 			}
 			var_status->clear();
