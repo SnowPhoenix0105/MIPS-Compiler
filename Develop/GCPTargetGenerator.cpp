@@ -599,12 +599,11 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 	{
 		return allocator_ptr->reg(Reg::gp);
 	}
+	// var_status 中, 表示已经在寄存器中/被保护到栈上
 	const auto& in_local = var_status->find(var);
-	const auto& in_global = gvar_status.find(var);
-	irelem_t location = IrType::NIL;
 	if (in_local != var_status->end())
 	{
-		location = in_local->second;
+		irelem_t location = in_local->second;
 		if (allocator_ptr->is_reg(location))
 		{
 			return location;
@@ -613,9 +612,25 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 		var_status->at(var) = reg;
 		return reg;
 	}
+	// save_reg_alloc中, 表示是一个全局变量, 但是未被使用
+	const auto& in_save = save_reg_alloc.find(var);
+	if (in_save != save_reg_alloc.end())
+	{
+		irelem_t location = in_save->second;
+		if (allocator_ptr->is_reg(location))
+		{
+			var_status->insert(make_pair(var, location));
+			return location;
+		}
+		irelem_t reg = alloc_tmp_reg();
+		var_status->at(var) = reg;
+		return reg;
+	}
+	// gvar_status 中, 表示是一个全局变量
+	const auto& in_global = gvar_status.find(var);
 	if (in_global != gvar_status.end())
 	{
-		location = in_global->second;
+		irelem_t location = in_global->second;
 		if (allocator_ptr->is_reg(location))
 		{
 			return location;
@@ -648,6 +663,7 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 	{
 		return allocator_ptr->reg(Reg::gp);
 	}
+	// var_status 中, 表示已经在寄存器中/被保护到栈上
 	const auto& in_local = var_status->find(var);
 	if (in_local != var_status->end())
 	{
@@ -662,8 +678,26 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 			buffer.push_back(ir.reload(reg, location));
 		}
 		var_status->at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
 		return reg;
 	}
+	// save_reg_alloc中, 表示是一个全局变量, 但是未被使用, 也未被初始化
+	const auto& in_save = save_reg_alloc.find(var);
+	if (in_save != save_reg_alloc.end())
+	{
+		irelem_t location = in_save->second;
+		if (allocator_ptr->is_reg(location))
+		{
+			var_status->insert(make_pair(var, location));
+			return location;
+		}
+		irelem_t reg = alloc_tmp_reg();
+		buffer.push_back(ir.reload(reg, location));
+		var_status->at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
+		return reg;
+	}
+	// gvar_status 中, 表示是一个全局变量
 	const auto& in_global = gvar_status.find(var);
 	if (in_global != gvar_status.end())
 	{
@@ -675,10 +709,12 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 		irelem_t reg = alloc_tmp_reg();
 		buffer.push_back(ir.reload(reg, location));
 		gvar_status.at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
 		return reg;
 	}
 	irelem_t reg = alloc_tmp_reg();
-	gvar_status.at(var) = reg;
+	var_status->insert(make_pair(var, reg));
+	tmp_reg_pool.at(reg) = var;
 	return reg;
 }
 
