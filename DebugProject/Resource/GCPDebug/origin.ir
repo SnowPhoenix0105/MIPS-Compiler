@@ -54,6 +54,10 @@ if_end_1:
 	#ret	=	randomi_var_ret	+	#zero
 	ret
 func_end_randomi:
+
+
+
+
 func_beg_get_increase:
 	func	int
 func_mid_get_increase:
@@ -63,6 +67,21 @@ func_mid_get_increase:
 	#ret	=	__global_var_a	+	#zero
 	ret
 func_end_get_increase:
+
+
+
+
+func_beg_increase:
+	func	void
+func_mid_increase:
+	increase_tmp_24	=	__global_var_a	+	1
+	increase_tmp_23	=	increase_tmp_24	+	#zero
+	__global_var_a	=	increase_tmp_23	+	#zero
+func_end_increase:
+
+
+
+
 func_beg_foo:
 	func	int
 	param	foo_var_i	NIL
@@ -72,59 +91,63 @@ func_beg_foo:
 	param	foo_var_m	NIL
 	param	foo_var_n	NIL
 func_mid_foo:
-	foo_tmp_23	=	foo_var_j	<	foo_var_i
-	if foo_tmp_23 == #zero	goto	if_mid_2
+	foo_tmp_25	=	foo_var_j	<	foo_var_i
+	if foo_tmp_25 == #zero	goto	if_mid_2
 if_beg_2:
 	call	func_beg_randomi
-	foo_tmp_25	=	#ret	+	#zero
-	foo_tmp_26	=	foo_var_m	+	foo_tmp_25
-	foo_tmp_24	=	foo_tmp_26	+	#zero
-	foo_var_l	=	foo_tmp_24	+	#zero
+	foo_tmp_27	=	#ret	+	#zero
+	foo_tmp_28	=	foo_var_m	+	foo_tmp_27
+	foo_tmp_26	=	foo_tmp_28	+	#zero
+	foo_var_l	=	foo_tmp_26	+	#zero
 	goto	if_end_2
 if_mid_2:
-	foo_tmp_28	=	foo_var_m	*	foo_var_m
-	foo_tmp_29	=	foo_tmp_28	/	123
-	foo_tmp_30	=	foo_var_j	/	foo_var_k
-	foo_tmp_31	=	foo_var_i	+	foo_tmp_30
-	foo_tmp_32	=	foo_var_m	+	foo_var_n
-	foo_tmp_33	=	4	*	foo_tmp_32
-	foo_tmp_34	=	foo_tmp_31	-	foo_tmp_33
-	foo_tmp_35	=	foo_tmp_34	/	324
-	foo_tmp_36	=	312	+	foo_tmp_35
-	foo_tmp_37	=	foo_tmp_29	+	foo_tmp_36
-	foo_tmp_38	=	foo_var_n	*	foo_var_k
-	foo_tmp_39	=	foo_tmp_37	+	foo_tmp_38
-	foo_tmp_27	=	foo_tmp_39	+	#zero
-	foo_var_l	=	foo_tmp_27	+	#zero
+	foo_tmp_30	=	foo_var_m	*	foo_var_m
+	foo_tmp_31	=	foo_tmp_30	/	123
+	foo_tmp_32	=	foo_var_j	/	foo_var_k
+	foo_tmp_33	=	foo_var_i	+	foo_tmp_32
+	foo_tmp_34	=	foo_var_m	+	foo_var_n
+	foo_tmp_35	=	4	*	foo_tmp_34
+	foo_tmp_36	=	foo_tmp_33	-	foo_tmp_35
+	foo_tmp_37	=	foo_tmp_36	/	324
+	foo_tmp_38	=	312	+	foo_tmp_37
+	foo_tmp_39	=	foo_tmp_31	+	foo_tmp_38
+	foo_tmp_40	=	foo_var_n	*	foo_var_k
+	foo_tmp_41	=	foo_tmp_39	+	foo_tmp_40
+	foo_tmp_29	=	foo_tmp_41	+	#zero
+	foo_var_l	=	foo_tmp_29	+	#zero
 if_end_2:
-	foo_tmp_40	=	foo_var_k	<	foo_var_j
-	if foo_tmp_40 == #zero	goto	if_mid_3
+	foo_tmp_42	=	foo_var_k	<	foo_var_j
+	if foo_tmp_42 == #zero	goto	if_mid_3
 if_beg_3:
 	call	func_beg_randomi
-	foo_tmp_42	=	#ret	+	#zero
-	foo_tmp_43	=	foo_var_n	+	foo_tmp_42
-	foo_tmp_41	=	foo_tmp_43	+	#zero
-	foo_var_m	=	foo_tmp_41	+	#zero
+	foo_tmp_44	=	#ret	+	#zero
+	foo_tmp_45	=	foo_var_n	+	foo_tmp_44
+	foo_tmp_43	=	foo_tmp_45	+	#zero
+	foo_var_m	=	foo_tmp_43	+	#zero
 	goto	if_end_3
 if_mid_3:
 	foo_var_i	=	#zero	+	0
 	goto	for_mid_0
 for_beg_0:
 	call	func_beg_get_increase
-	foo_tmp_46	=	#ret	+	#zero
-	foo_tmp_47	=	foo_var_n	*	foo_tmp_46
-	foo_tmp_45	=	foo_tmp_47	+	#zero
-	foo_var_m	=	foo_tmp_45	+	#zero
+	foo_tmp_48	=	#ret	+	#zero
+	foo_tmp_49	=	foo_var_n	*	foo_tmp_48
+	foo_tmp_47	=	foo_tmp_49	+	#zero
+	foo_var_m	=	foo_tmp_47	+	#zero
 	foo_var_i	=	foo_var_i	+	1
 for_mid_0:
-	foo_tmp_44	=	foo_var_i	<	4
-	if foo_tmp_44 != #zero	goto	for_beg_0
+	foo_tmp_46	=	foo_var_i	<	4
+	if foo_tmp_46 != #zero	goto	for_beg_0
 for_end_0:
 if_end_3:
-	foo_tmp_48	=	foo_var_l	+	foo_var_m
-	#ret	=	foo_tmp_48	+	#zero
+	foo_tmp_50	=	foo_var_l	+	foo_var_m
+	#ret	=	foo_tmp_50	+	#zero
 	ret
 func_end_foo:
+
+
+
+
 func_beg_main:
 	func	void
 func_mid_main:
@@ -132,14 +155,39 @@ func_mid_main:
 	goto	for_mid_1
 for_beg_1:
 	call	func_beg_randomi
-	main_tmp_50	=	#ret	+	#zero
-	printf	NIL,	main_tmp_50,	int
+	main_tmp_52	=	#ret	+	#zero
+	printf	NIL,	main_tmp_52,	int
 	call	func_beg_get_increase
-	main_tmp_51	=	#ret	+	#zero
-	printf	NIL,	main_tmp_51,	int
+	main_tmp_53	=	#ret	+	#zero
+	printf	NIL,	main_tmp_53,	int
+	call	func_beg_randomi
+	main_tmp_59	=	#ret	+	#zero
+	call	func_beg_randomi
+	main_tmp_58	=	#ret	+	#zero
+	call	func_beg_randomi
+	main_tmp_57	=	#ret	+	#zero
+	call	func_beg_randomi
+	main_tmp_56	=	#ret	+	#zero
+	call	func_beg_randomi
+	main_tmp_55	=	#ret	+	#zero
+	call	func_beg_get_increase
+	main_tmp_54	=	#ret	+	#zero
+	push	main_tmp_59
+	push	main_tmp_58
+	push	main_tmp_57
+	push	main_tmp_56
+	push	main_tmp_55
+	push	main_tmp_54
+	call	func_beg_foo
+	main_tmp_60	=	#ret	+	#zero
+	printf	NIL,	main_tmp_60,	int
 	main_var_i	=	main_var_i	+	1
 for_mid_1:
-	main_tmp_49	=	main_var_i	<	7
-	if main_tmp_49 != #zero	goto	for_beg_1
+	main_tmp_51	=	main_var_i	<	7
+	if main_tmp_51 != #zero	goto	for_beg_1
 for_end_1:
 func_end_main:
+
+
+
+

@@ -28,6 +28,10 @@ int get_increase()
     return(a);
 }
 
+void increase()
+{
+    a = a + 1;
+}
 
 int foo(int i, int j, int k, int l, int m, int n)
 {
@@ -61,5 +65,15 @@ void main()
     {
         printf(randomi());
         printf(get_increase());
+        printf(
+            foo(
+                get_increase(), 
+                randomi(), 
+                randomi(), 
+                randomi(), 
+                randomi(), 
+                randomi()
+            )
+        );
     }
 }

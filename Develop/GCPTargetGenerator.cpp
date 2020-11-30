@@ -552,6 +552,8 @@ void GCPRegisterAllocator::walk()
 			buffer.push_back(new_code);
 			break;
 		}
+		case IrHead::ret:
+			// TODO
 		case IrHead::label:
 		{
 			if (IrType::is_func(code.elem[0]) && IrType::is_beg(code.elem[0]))

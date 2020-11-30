@@ -63,6 +63,10 @@ if_end_1:
 	$v1	=	$s0	+	$zero
 	ret
 func_end_randomi:
+
+
+
+
 func_beg_get_increase:
 	func	int
 func_mid_get_increase:
@@ -73,6 +77,23 @@ func_mid_get_increase:
 	$v1	=	$t1	+	$zero
 	ret
 func_end_get_increase:
+
+
+
+
+func_beg_increase:
+	func	void
+func_mid_increase:
+	protect	$t1,	__global_var_a
+	reload	$t1,	__global_var_a
+	$t0	=	$t1	+	1
+	$t2	=	$t0	+	$zero
+	$t1	=	$t2	+	$zero
+func_end_increase:
+
+
+
+
 func_beg_foo:
 	func	int
 	param	foo_var_i	$a0
@@ -146,6 +167,10 @@ if_end_3:
 	$v1	=	$t0	+	$zero
 	ret
 func_end_foo:
+
+
+
+
 func_beg_main:
 	func	void
 func_mid_main:
@@ -158,9 +183,44 @@ for_beg_1:
 	call	func_beg_get_increase
 	$t0	=	$v1	+	$zero
 	printf	NIL,	$t0,	int
+	call	func_beg_randomi
+	$t0	=	$v1	+	$zero
+	protect	$t0,	main_tmp_59
+	call	func_beg_randomi
+	$t0	=	$v1	+	$zero
+	protect	$t0,	main_tmp_58
+	call	func_beg_randomi
+	$t0	=	$v1	+	$zero
+	protect	$t0,	main_tmp_57
+	call	func_beg_randomi
+	$t0	=	$v1	+	$zero
+	protect	$t0,	main_tmp_56
+	call	func_beg_randomi
+	$t0	=	$v1	+	$zero
+	protect	$t0,	main_tmp_55
+	call	func_beg_get_increase
+	$t0	=	$v1	+	$zero
+	reload	$t1,	main_tmp_59
+	push	$t1
+	reload	$t2,	main_tmp_58
+	push	$t2
+	reload	$t3,	main_tmp_57
+	$a3	=	$zero	+	$t3
+	reload	$t4,	main_tmp_56
+	$a2	=	$zero	+	$t4
+	reload	$t5,	main_tmp_55
+	$a1	=	$zero	+	$t5
+	$a0	=	$zero	+	$t0
+	call	func_beg_foo
+	$t0	=	$v1	+	$zero
+	printf	NIL,	$t0,	int
 	$s0	=	$s0	+	1
 for_mid_1:
 	$t0	=	$s0	<	7
 	if $t0 != $zero	goto	for_beg_1
 for_end_1:
 func_end_main:
+
+
+
+
