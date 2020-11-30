@@ -21,6 +21,7 @@ UnitTest/TestResource/auto_samples/*/*.input
 *.result
 *ir.asm
 *.ir
+*.exe
 *assembly.asm
 
 # Prerequisites

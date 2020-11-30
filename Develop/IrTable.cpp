@@ -171,7 +171,7 @@ irelem_t LabelAllocator::end() const
 	return stored | 0x0C000000;
 }
 
-const shared_ptr<const string> VarAllocator::__global = make_shared<const string>("__global");
+const shared_ptr<const string> VarAllocator::__global = make_shared<const string>("G");
 
 VarAllocator::VarAllocator() : tmps(), nameds(), current_func(__global), _reserved_var(), regs()
 {
@@ -260,10 +260,11 @@ string VarAllocator::var_to_string(irelem_t var) const
 	size_t ord = IrType::get_ord(var);
 	if (IrType::is_tmp(var))
 	{
-		return *tmps.at(ord) + "_tmp_" + to_string(ord);
+		return "t" + to_string(ord);
+		// return *tmps.at(ord) + "_t" + to_string(ord);
 	}
 	const auto& pair = nameds.at(ord);
-	return *pair.first + "_var_" + *pair.second;
+	return *pair.first + "_" + *pair.second;
 }
 
 irelem_t CstAllocator::alloc_imm(int imm)
@@ -365,7 +366,7 @@ string CstAllocator::cst_to_string(irelem_t cst) const
 	if (IrType::is_pure_arr(cst))
 	{
 		const auto& arr = arrs.at(ord);
-		return *(arr.first) + "__arr__" + *(arr.second);
+		return *(arr.first) + "_a_" + *(arr.second);
 	}
 	const auto& pair = arrs_with_offset.at(ord);
 	irelem_t arr = pair.first;
