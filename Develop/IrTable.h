@@ -30,7 +30,7 @@ enum class IrHead
 	init,		//  <imm>
 
 	func,		//  <type>
-	param,		//  <var> <reg>
+	param,		//  <var>
 
 
 	add,		// 	<var> <val> <val>
@@ -353,11 +353,6 @@ struct IrFactory
 	Ir param(irelem_t var) const
 	{
 		return Ir(IrHead::param, var, nil(), nil());
-	}
-
-	Ir param(irelem_t var, irelem_t reg) const
-	{
-		return Ir(IrHead::param, var, reg, nil());
 	}
 
 	Ir add(irelem_t var, irelem_t val1, irelem_t val2) const

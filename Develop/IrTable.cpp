@@ -450,8 +450,9 @@ string IrTable::to_string(const IrElemAllocator& allocator)
 			break;
 		case IrHead::param:
 			builder << "\tparam\t" 
-				<< allocator.var_to_string(code.elem[0]) << '\t' 
-				<< (code.elem[1] == IrType::NIL ? "NIL" : allocator.var_to_string(code.elem[1])) 
+				<< allocator.var_to_string(code.elem[0]) 
+				// << '\t' 
+				// << (code.elem[1] == IrType::NIL ? "NIL" : allocator.var_to_string(code.elem[1])) 
 				<< endl;
 			break;
 		case IrHead::add:

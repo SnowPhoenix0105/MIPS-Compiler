@@ -7,9 +7,11 @@
 #include "Detectors.h"
 #include "global_control.h"
 #include <memory>
+#include <set>
 
 using std::shared_ptr;
 using std::unique_ptr;
+using std::set;
 using IrDetectors::VarActivetionAnalyzeResult;
 using IrDetectors::BlockDetectResult;
 using IrDetectors::BlockVarActivetionAnalyzeResult;
@@ -23,7 +25,9 @@ private:
 	size_t func_end_index = 0;
 	// 其它当前函数信息
 	size_t stack_size = 0;
-	string func_name = "__global";
+	string func_name = "G";
+	set<irelem_t> used_sregs;
+	bool is_leaf = true;
 	// IR信息
 	shared_ptr<IrElemAllocator> allocator_ptr;
 	shared_ptr<const IrTable> ir_table_ptr;
@@ -36,14 +40,55 @@ private:
 	MipsInstructionFormatter mips;
 
 	/// <summary>
-	/// 清空缓冲区, 返回缓冲区中原先的内容.
+	/// 为每个全局变量分配空间, 分配label, 填入初值;
+	/// 填写global_var_offset_table, string_label_table;
 	/// </summary>
-	string fresh_buffer();
+	/// <returns></returns>
+	void init_global();
 
 	/// <summary>
 	/// 更新func_beg_index, func_mid_index, func_end_index, func_name.
 	/// </summary>
 	void next_function_info();
+
+	/// <summary>
+	/// 扫描当前func_beg_index, func_mid_index, func_end_index标注的函数;
+	/// 重新填写 func_var_offset_table 和 used_sregs;
+	/// 计算运行栈大小并写入stack_size.
+	/// </summary>
+	void init_func();
+
+	/// <summary>
+	/// 完成进入函数体前的初始化工作, 不包括数组初始化.
+	/// </summary>
+	void beg_func();
+
+	/// <summary>
+	/// 完成返回工作
+	/// </summary>
+	/// <param name="stack_size"></param>
+	void ret_func();
+
+	/// <summary>
+	/// 完成进入main函数体前的初始化工作.
+	/// </summary>
+	void beg_main();
+
+	/// <summary>
+	/// 退出程序
+	/// </summary>
+	void ret_main();
+
+
+	/// <summary>
+	/// 分析函数体.
+	/// </summary>
+	void func_body();
+
+	/// <summary>
+	/// 清空缓冲区, 返回缓冲区中原先的内容.
+	/// </summary>
+	string fresh_buffer();
 
 public:
 	GCPTargetGenerator(shared_ptr<IrElemAllocator> allocator, shared_ptr<const IrTable> ir_table);

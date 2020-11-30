@@ -1,16 +1,121 @@
 #include "GCPTargetGenerator.h"
 #include "Graph.h"
 #include <stack>
+#include <set>
 
 using std::stack;
+using std::set;
 
-string GCPTargetGenerator::fresh_buffer()
+
+
+void GCPTargetGenerator::init_global()
 {
-	string ret = buffer.str();
-	buffer.str(string());
-	buffer.clear();
-	return ret;
+	const IrElemAllocator& allocator = *allocator_ptr;
+	const IrTable& ir_table = *ir_table_ptr;
+	unsigned offset = 0;
+	buffer << ".data" << endl;
+	buffer << "__GP__:" << endl;
+	bool flag = true;
+#ifdef DEBUG_LEVEL
+	std::cout << "     ____GLOBAL_____" << endl;
+	std::cout << "+ - - - - - - - - - - - + 0" << endl;
+#endif // DEBUG_LEVEL
+
+	for (size_t i = 0; flag; ++i)
+	{
+		const auto& code = ir_table.at(i);
+		switch (code.head)
+		{
+		case IrHead::label:
+			// 变量声明结束
+			flag = false;
+			break;
+		case IrHead::gvar:
+		{
+			// 全局变量
+			irelem_t var = code.elem[0];
+			string var_label = allocator.var_to_string(var);
+			global_var_offset_table.insert(make_pair(var, offset));
+			offset += 4;
+#ifdef DEBUG_LEVEL
+			std::cout << "|\t" << allocator.val_to_string(var) << ' ' << endl;
+			std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
+			//buffer << var_label << ":\t.word";
+			buffer << ".word";
+			if (ir_table.at(i + 1).head == IrHead::init)
+			{
+				buffer << '\t' << allocator.imm_to_value(ir_table.at(++i).elem[0]) << endl;
+			}
+			else
+			{
+				buffer << '\t' << 0 << endl;
+			}
+			break;
+		}
+		case IrHead::arr:
+		{
+			// 全局数组
+			irelem_t arr = code.elem[0];
+			bool is_int = code.elem[1] == IrType::_int;
+			int size = allocator.imm_to_value(code.elem[2]);
+			allocator_ptr->set_arr_value(arr, offset);
+			int space = size * (is_int ? 4 : 1);
+			space = (space + 3) & ~3;			// up tp 4*n
+			offset += space;
+#ifdef DEBUG_LEVEL
+			std::cout << "|\t" << allocator.val_to_string(arr) << ' ' << endl;
+			std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
+			// 无初始化
+			if (ir_table.at(i + 1).head != IrHead::init)
+			{
+				buffer << ".space " << space << endl;
+				break;
+			}
+			// 有初始化
+			const char* head = is_int ? ".word " : ".byte ";
+			int end = i + size;
+			while (i != end)
+			{
+				const auto& init = ir_table.at(++i);
+				ASSERT(3, init.head == IrHead::init);
+				irelem_t imm = init.elem[0];
+				unsigned value = allocator.imm_to_value(imm);
+				buffer << head << value << endl;
+			}
+			if (is_int)
+			{
+				break;
+			}
+			// 字对齐
+			for (int j = 0; j != space - size; ++j)
+			{
+				buffer << head << 0 << endl;
+			}
+			break;
+		}
+		default:
+			PANIC();
+		}
+	}
+#ifdef DEBUG_LEVEL
+	std::cout << "+ - - - - - - - - - + " << offset << endl;
+	std::cout << "\n\n\n\n" << endl;
+#endif // DEBUG_LEVEL
+	int str_count = 0;
+	for (const auto& p : allocator.get_string_map())
+	{
+		string l = "string_";
+		l += to_string(str_count++);
+		string_label_table.insert(make_pair(p.second, l));
+		buffer << mips.label(l) << endl;
+		buffer << ".asciiz " << p.first << endl;
+	}
+	buffer << "\n\n\n\n\n.text" << endl;
+	buffer << mips.j("func_beg_main") << endl;
 }
+
 
 void GCPTargetGenerator::next_function_info()
 {
@@ -40,6 +145,495 @@ void GCPTargetGenerator::next_function_info()
 	ASSERT(3, func_name == allocator.func_name(label));
 }
 
+void GCPTargetGenerator::init_func()
+{
+	const IrElemAllocator& allocator = *allocator_ptr;
+	const IrTable& ir_table = *ir_table_ptr;
+	const unordered_set<irelem_t> sregs({
+		allocator.reg(Reg::s0),
+		allocator.reg(Reg::s1),
+		allocator.reg(Reg::s2),
+		allocator.reg(Reg::s3),
+		allocator.reg(Reg::s4),
+		allocator.reg(Reg::s5),
+		allocator.reg(Reg::s6),
+		allocator.reg(Reg::s7)
+		});
+
+
+	// 遍历 mid -> end , 统计局部var数量, 统计使用过的 $sx, 统计是否出现 call
+	set<irelem_t> var_set;
+	used_sregs.clear();
+	is_leaf = true;
+	for (size_t i = func_mid_index + 1; i != func_end_index; ++i)
+	{
+		const auto& code = ir_table.at(i);
+		for (size_t j = 0; j < 3; ++j)
+		{
+			irelem_t elem = code.elem[j];
+			if (sregs.count(elem) != 0)
+			{
+				used_sregs.insert(elem);
+			}
+#ifdef DEBUG_LEVEL
+			bool b = 
+				code.head == IrHead::protect 
+				|| code.head == IrHead::reload
+				|| !IrType::is_var(elem) || allocator.is_reg(elem);
+			ASSERT(4, b);
+#endif // DEBUG_LEVEL
+		}
+		if (code.head == IrHead::call)
+		{
+			is_leaf = false;
+		}
+		else if (code.head == IrHead::protect && allocator.is_local_var(code.elem[1]))
+		{
+			var_set.insert(code.elem[1]);
+		}
+	}
+
+#ifdef DEBUG_LEVEL
+	std::cout << "     " << allocator.label_to_string(ir_table.at(func_beg_index).elem[0]) << endl;
+	std::cout << "+ - - - - - - - - - - - + 0" << endl;
+#endif // DEBUG_LEVEL
+	// 遍历 beg -> mid , 统计形参, 初始化数组
+	vector<irelem_t> param_list;
+	unsigned offset = 0;
+	for (size_t i = func_beg_index + 1; i != func_mid_index; ++i)
+	{
+		const auto& code = ir_table.at(i);
+		switch (code.head)
+		{
+		case IrHead::func:
+			break;
+		case IrHead::param:
+		{
+			ASSERT(4, IrType::is_var(code.elem[0]));
+			param_list.push_back(code.elem[0]);
+			break;
+		}
+		case IrHead::arr:
+		{
+			irelem_t arr = code.elem[0];
+			bool is_int = code.elem[1] == IrType::_int;
+			int size = allocator.imm_to_value(code.elem[2]);
+			allocator_ptr->set_arr_value(arr, offset);
+			int space = size * (is_int ? 4 : 1);
+			space = (space + 3) & ~3;			// up tp 4*n
+			unsigned off = offset;
+			offset += space;
+#ifdef DEBUG_LEVEL
+			std::cout << "|\t" << allocator.val_to_string(arr) << ' ' << endl;
+			std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
+			// 无初始化
+			if (ir_table.at(i + 1).head != IrHead::init)
+			{
+				break;
+			}
+			// 有初始化
+
+			// TODO
+			if (is_int)
+			{
+				int end = i + size;
+				while (i != end)
+				{
+					const auto& init = ir_table.at(++i);
+					ASSERT(3, init.head == IrHead::init);
+					irelem_t imm = init.elem[0];
+					unsigned value = allocator.imm_to_value(imm);
+					buffer << mips.li("$t0", value) << endl;
+					buffer << mips.mem_op("sw ", "$t0", "$sp", off) << endl;
+					off += 4;
+				}
+				break;
+			}
+			else
+			{
+				uint8_t* table8 = new uint8_t[space];
+				uint32_t* table32 = reinterpret_cast<uint32_t*>(table8);
+				for (size_t i = 0; i != space / 4; ++i)
+				{
+					table32[i] = static_cast<uint32_t>(0u);
+				}
+				
+				for (size_t idx = 0; idx != size; ++idx)
+				{
+					const auto& init = ir_table.at(++i);
+					ASSERT(3, init.head == IrHead::init);
+					irelem_t imm = init.elem[0];
+					unsigned value = allocator.imm_to_value(imm);
+					table8[idx] = static_cast<uint8_t>(value);
+				}
+				for (size_t idx = 0; idx != space / 4; ++idx)
+				{
+					uint32_t value = table32[idx];
+					buffer << mips.li("$t0", value) << endl;
+					buffer << mips.mem_op("sw ", "$t0", "$sp", off) << endl;
+					off += 4;
+				}
+				delete[] table8;
+			}
+		}
+		default:
+			break;
+		}
+	}
+	// 清除需要特殊分配的寄存器
+	for (auto p : param_list)
+	{
+		var_set.erase(p);
+	}
+	ASSERT(4, var_set.count(allocator.sp()) == 0);
+	ASSERT(4, var_set.count(allocator.gp()) == 0);
+	ASSERT(4, var_set.count(allocator.zero()) == 0);
+	ASSERT(4, var_set.count(allocator.ret()) == 0);
+	for (auto v : var_set)
+	{
+		func_var_offset_table.insert(make_pair(v, offset));
+		offset += 4;
+#ifdef DEBUG_LEVEL
+		std::cout << "|\t" << allocator.val_to_string(v) << ' ' << endl;
+		std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
+	}
+	for (auto sreg : used_sregs)
+	{
+		func_var_offset_table.insert(make_pair(sreg, offset));
+		offset += 4;
+#ifdef DEBUG_LEVEL
+		std::cout << "|\t" << allocator.val_to_string(sreg) << ' ' << endl;
+		std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
+	}
+	for (auto p : param_list)
+	{
+		func_var_offset_table.insert(make_pair(p, offset));
+		offset += 4;
+#ifdef DEBUG_LEVEL
+		std::cout << "|\t" << allocator.val_to_string(p) << ' ' << endl;
+		std::cout << "+ - - - - - - - - - + " << offset << endl;
+#endif // DEBUG_LEVEL
+	}
+#ifdef DEBUG_LEVEL
+	std::cout << "+ - - - - - - - - - + " << offset << endl;
+	std::cout << "\n\n\n\n" << endl;
+#endif // DEBUG_LEVEL
+	// $ra
+	offset += 4;
+	stack_size = offset;
+}
+
+
+void GCPTargetGenerator::beg_func()
+{
+	buffer << mips.label(allocator_ptr->label_to_string(ir_table_ptr->at(func_beg_index).elem[0])) << endl;
+	buffer << mips.subu("$sp", "$sp", stack_size) << endl;
+	if (!is_leaf) buffer << mips.sw("$ra", "$sp", stack_size - 4) << endl;
+	for (irelem_t sreg : used_sregs)
+	{
+		buffer << mips.sw(allocator_ptr->var_to_string(sreg), "$sp", func_var_offset_table.at(sreg)) << endl;
+	}
+}
+
+void GCPTargetGenerator::ret_func()
+{
+	buffer << mips.label(allocator_ptr->label_to_string(ir_table_ptr->at(func_end_index).elem[0])) << endl;
+	for (irelem_t sreg : used_sregs)
+	{
+		buffer << mips.lw(allocator_ptr->var_to_string(sreg), "$sp", func_var_offset_table.at(sreg));
+	}
+	if (!is_leaf) buffer << mips.lw("$ra", "$sp", stack_size - 4) << endl;
+	buffer << mips.addu("$sp", "$sp", stack_size) << endl;
+	buffer << mips.jr() << endl;
+}
+
+void GCPTargetGenerator::beg_main()
+{
+	buffer << mips.label("func_beg_main") << endl;
+	buffer << mips.la("$gp", "__GP__") << endl;
+	buffer << mips.subu("$sp", "$sp", stack_size) << endl;
+}
+
+void GCPTargetGenerator::ret_main()
+{
+	buffer << mips.li("$v0", 10) << endl;
+	buffer << mips.syscall() << endl;
+}
+
+#define CASE(head, type)									\
+case IrHead::head:											\
+	buffer													\
+		<< mips.type(										\
+			allocator.val_to_string(code.elem[0]),			\
+			allocator.val_to_string(code.elem[1]),			\
+			allocator.val_to_string(code.elem[2]))			\
+		<< endl;											\
+	break	
+
+void GCPTargetGenerator::func_body()
+{
+	const IrElemAllocator& allocator = *allocator_ptr;
+	const IrTable& ir_table = *ir_table_ptr;
+
+	bool last_is_push = false;
+	int push_count = 0;
+	for (size_t index = func_mid_index; index < func_end_index; ++index)
+	{
+		const auto& code = ir_table.at(index);
+		switch (code.head)
+		{
+		case IrHead::label:
+			buffer << allocator.label_to_string(code.elem[0]) << ':' << endl;
+			break;
+			CASE(add, addu);
+			CASE(sub, subu);
+			CASE(mult, mul);
+			CASE(div, div);
+			CASE(_and, _and);
+			CASE(_or, _or);
+			CASE(_nor, _nor);
+			CASE(_xor, _xor);
+			CASE(sl, sll);
+			CASE(sr, sra);
+			CASE(less, slt);
+		case IrHead::lw:
+			buffer 
+				<< mips.lw(
+					allocator.val_to_string(code.elem[0]), 
+					allocator.val_to_string(code.elem[1]), 
+					allocator.cst_to_value(code.elem[2])) 
+				<< endl;
+			break;
+		case IrHead::lb:
+			buffer 
+				<< mips.lb(
+					allocator.val_to_string(code.elem[0]),
+					allocator.val_to_string(code.elem[1]),
+					allocator.cst_to_value(code.elem[2])) 
+				<< endl;
+			break;
+		case IrHead::sw:
+			buffer 
+				<< mips.sw(
+					allocator.val_to_string(code.elem[0]),
+					allocator.val_to_string(code.elem[1]),
+					allocator.cst_to_value(code.elem[2])) 
+				<< endl;
+			break;
+		case IrHead::sb:
+			buffer 
+				<< mips.sb(
+					allocator.val_to_string(code.elem[0]),
+					allocator.val_to_string(code.elem[1]),
+					allocator.cst_to_value(code.elem[2])) 
+				<< endl;
+			break;
+		case IrHead::beq:
+			buffer 
+				<< mips.beq(
+					allocator.val_to_string(code.elem[0]),
+					allocator.val_to_string(code.elem[1]),
+					allocator.label_to_string(code.elem[2]))
+				<< endl;
+			break;
+		case IrHead::bne:
+			buffer
+				<< mips.bne(
+					allocator.val_to_string(code.elem[0]),
+					allocator.val_to_string(code.elem[1]),
+					allocator.label_to_string(code.elem[2]))
+				<< endl;
+			break;
+		case IrHead::_goto:
+			buffer << mips.j(allocator.label_to_string(code.elem[0])) << endl;
+			break;
+		case IrHead::push:
+		{
+			if (last_is_push)
+			{
+				++push_count;
+			}
+			else
+			{
+				push_count = 0;
+			}
+			int offset = -8 - push_count * 4;
+			buffer << mips.sw(allocator.val_to_string(code.elem[0]), "$sp", offset) << endl;
+			break;
+		}
+		case IrHead::call:
+			// buffer << mips.sw("$v0", "$sp", stack_size - 8) << endl;
+			buffer << mips.jal(allocator.label_to_string(code.elem[0])) << endl;
+			// buffer << mips.lw("$v0", "$sp", stack_size - 8) << endl;
+			break;
+		case IrHead::ret:
+			if (func_name == "main")
+			{
+				ret_main();
+			}
+			else
+			{
+				ret_func();
+			}
+			break;
+		case IrHead::scanf:
+			buffer << mips.li("$v0", code.elem[1] == IrType::_int ? mips.read_int : mips.read_cahr) << endl;
+			buffer << mips.syscall() << endl;
+			buffer << mips.addu(allocator.val_to_string(code.elem[0]), "$v0", "$0") << endl;
+			break;
+		case IrHead::printf:
+		{
+			bool str = code.elem[0] != IrType::NIL;
+			bool val = code.elem[1] != IrType::NIL;
+			if (str)
+			{
+				const auto& label = string_label_table.at(code.elem[0]);
+				buffer << mips.la("$a0", label) << endl;
+				buffer << mips.li("$v0", mips.print_string) << endl;
+				buffer << mips.syscall() << endl;
+			}
+			if (val)
+			{
+				buffer << mips.addu("$a0", "$0", allocator.val_to_string(code.elem[1]));
+				buffer << mips.li("$v0", code.elem[2] == IrType::_int ? mips.print_int : mips.print_char) << endl;
+				buffer << mips.syscall() << endl;
+			}
+			buffer << mips.li("$a0", '\n') << endl;
+			buffer << mips.li("$v0", mips.print_char) << endl;
+			buffer << mips.syscall() << endl;
+			break;
+		}
+		case IrHead::reload:
+		{
+			auto rlt = func_var_offset_table.find(code.elem[1]);
+			if (rlt != func_var_offset_table.end())
+			{
+				buffer
+					<< mips.lw(
+						allocator.val_to_string(code.elem[0]),
+						"$sp",
+						rlt->second)
+					<< endl;
+			}
+			else
+			{
+				buffer
+					<< mips.lw(
+						allocator.val_to_string(code.elem[0]),
+						"$gp",
+						global_var_offset_table.at(code.elem[1]))
+					<< endl;
+			}
+			break;
+		}
+		case IrHead::protect:
+		{
+			auto rlt = func_var_offset_table.find(code.elem[1]);
+			if (rlt != func_var_offset_table.end())
+			{
+				buffer
+					<< mips.sw(
+						allocator.val_to_string(code.elem[0]),
+						"$sp",
+						rlt->second)
+					<< endl;
+			}
+			else
+			{
+				buffer
+					<< mips.sw(
+						allocator.val_to_string(code.elem[0]),
+						"$gp",
+						global_var_offset_table.at(code.elem[1]))
+					<< endl;
+			}
+			break;
+		}
+		default:
+			PANIC();
+		}
+		last_is_push = code.head == IrHead::push;
+	}
+}
+
+
+string GCPTargetGenerator::fresh_buffer()
+{
+	string ret = buffer.str();
+	buffer.str(string());
+	buffer.clear();
+	return ret;
+}
+
+
+
+void GCPTargetGenerator::translate(ostream& os)
+{
+	init_global();
+	os << fresh_buffer() << endl;
+	// os << "\n\n\n\n\n.text" << endl;
+	bool flag = true;
+	while (flag)
+	{
+		next_function_info();
+		init_func();
+		string arr_init_codes = fresh_buffer();
+		if (func_name == "main")
+		{
+			flag = false;
+			beg_main();
+		}
+		else
+		{
+			beg_func();
+		}
+		os << fresh_buffer();
+
+		os << arr_init_codes;
+		func_body();
+
+		os << fresh_buffer();
+		os << allocator_ptr->label_to_string(ir_table_ptr->at(func_end_index).elem[0]) << endl;
+		if (flag)
+		{
+			ret_func();
+		}
+		else
+		{
+			ret_main();
+		}
+		os << fresh_buffer();
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 GCPTargetGenerator::GCPTargetGenerator(shared_ptr<IrElemAllocator> allocator, shared_ptr<const IrTable> ir_table)
 	:
 	allocator_ptr(allocator),
@@ -50,11 +644,6 @@ GCPTargetGenerator::GCPTargetGenerator(shared_ptr<IrElemAllocator> allocator, sh
 	buffer(),
 	mips()
 {
-}
-
-void GCPTargetGenerator::translate(ostream& os)
-{
-	// TODO
 }
 
 void GCPRegisterAllocator::init_tmp_reg_pool()
@@ -127,14 +716,15 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 	save_reg_alloc.clear();
 
 	// TODO 扫描当前函数, 确定全局变量集合
-	for (const auto& in_set : block_var_activition_analyze_result->get_infos().in)
+	// in 包含第一个块中的入口 param
+	/*for (const auto& in_set : block_var_activition_analyze_result->get_infos().in)
 	{
 		for (irelem_t var : in_set)
 		{
 			save_reg_alloc.insert(make_pair(var, IrType::NIL));
 		}
-	}
-	for (const auto& out_set : block_var_activition_analyze_result->get_infos().in)
+	}*/
+	for (const auto& out_set : block_var_activition_analyze_result->get_infos().out)
 	{
 		for (irelem_t var : out_set)
 		{
@@ -193,7 +783,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 	{
 		for (size_t j = 0; j != ord.size(); ++j)
 		{
-			std::cout << graph[i][j] << '\t';
+			std::cout << (graph[i][j] ? 1 : 0) << ' ';
 		}
 		std::cout << endl;
 	}
@@ -289,6 +879,14 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 	case 0:
 		break;
 	}
+
+	for (irelem_t param : params)
+	{
+		if (save_reg_alloc.count(param) == 0)
+		{
+			save_reg_alloc.insert(make_pair(param, IrType::NIL));
+		}
+	}
 }
 
 
@@ -346,9 +944,16 @@ void GCPRegisterAllocator::walk()
 			break;
 		case IrHead::param:
 		{
-			Ir new_code = code;
-			new_code.elem[1] = save_reg_alloc.at(code.elem[0]);
-			buffer.push_back(new_code);
+			buffer.push_back(code);
+			irelem_t reg = save_reg_alloc.at(code.elem[0]);
+			for (irelem_t sreg : save_regs)
+			{
+				if (reg == sreg)
+				{
+					buffer.push_back(ir.reload(reg, code.elem[0]));
+					break;
+				}
+			}
 			break;
 		}
 		case IrHead::add:
@@ -509,12 +1114,9 @@ void GCPRegisterAllocator::walk()
 				}
 			}
 
-
-
 			// TODO 如果 $tx 中局部变量有活性/保存着脏的全局变量/保存着脏的gvar, 将其保护
 			keep_in_tx.clear();
 			protect_all_vars_in_tmp_regs_to_stack();
-
 
 			// TODO 调用目标函数
 			buffer.push_back(code);
@@ -563,11 +1165,34 @@ void GCPRegisterAllocator::walk()
 		}
 		case IrHead::printf:
 		{
+			// 保护 $a0
+			irelem_t reg = IrType::NIL;
+			if (params.size() != 0 
+				&& var_activition_analyze_result->get_in(current_index).count(params[0]) != 0)
+			{
+				irelem_t avar = params[0];
+				ASSERT(4, var_status->at(avar) == allocator_ptr->reg(Reg::a0));
+				reg = alloc_tmp_reg();
+				var_status->at(avar) = reg;
+				keep_in_tx.insert(reg);
+				tmp_reg_dirty[reg] = true;
+				tmp_reg_pool[reg] = avar;
+				buffer.push_back(ir.add(reg, allocator_ptr->reg(Reg::a0), allocator_ptr->reg(Reg::zero)));
+			}
 			Ir new_code = code;
 			new_code.elem[0] = code.elem[0];
 			new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
 			new_code.elem[2] = code.elem[2];
 			buffer.push_back(new_code);
+			if (reg != IrType::NIL)
+			{
+				irelem_t avar = params[0];
+				buffer.push_back(ir.add(allocator_ptr->reg(Reg::a0), reg, allocator_ptr->reg(Reg::zero)));
+				keep_in_tx.erase(reg);
+				tmp_reg_dirty[reg] = false;
+				tmp_reg_pool[reg] = IrType::NIL;
+				var_status->at(avar) = allocator_ptr->reg(Reg::a0);
+			}
 			break;
 		}
 		case IrHead::label:
@@ -816,7 +1441,7 @@ irelem_t GCPRegisterAllocator::write_reg_of_var(irelem_t var)
 			return location;
 		}
 		irelem_t reg = alloc_tmp_reg();
-		var_status->at(var) = reg;
+		var_status->insert(make_pair(var, reg));
 		tmp_reg_pool.at(reg) = var;
 		tmp_reg_dirty.at(reg) = true;
 		return reg;
@@ -835,7 +1460,7 @@ irelem_t GCPRegisterAllocator::write_reg_of_var(irelem_t var)
 			return location;
 		}
 		irelem_t reg = alloc_tmp_reg();
-		var_status->at(var) = reg;
+		gvar_status.at(var) = reg;
 		tmp_reg_pool.at(reg) = var;
 		tmp_reg_dirty.at(reg) = true;
 		return reg;
@@ -889,7 +1514,7 @@ irelem_t GCPRegisterAllocator::use_reg_of_var(irelem_t var)
 			tmp_reg_pool.at(reg) = var;
 			tmp_reg_dirty.at(reg) = false;
 		}
-		if (IrType::is_var(location))
+		if (IrType::is_var(location))	// location 一定不是 reg
 		{
 			buffer.push_back(ir.reload(reg, location));
 		}
@@ -907,7 +1532,7 @@ irelem_t GCPRegisterAllocator::use_reg_of_var(irelem_t var)
 		}
 		irelem_t reg = alloc_tmp_reg();
 		buffer.push_back(ir.reload(reg, location));
-		var_status->at(var) = reg;
+		var_status->insert(make_pair(var, reg));
 		tmp_reg_pool.at(reg) = var;
 		tmp_reg_dirty.at(reg) = false;
 		return reg;
@@ -1003,5 +1628,25 @@ GCPRegisterAllocator::GCPRegisterAllocator(shared_ptr<IrElemAllocator> allocator
 shared_ptr<IrTable> GCPRegisterAllocator::build()
 {
 	walk();
+
+	unordered_set<IrHead> end_set = { IrHead::arr, IrHead::init, IrHead::gvar, IrHead::param, IrHead::func };
+	for (int i = 0; i < buffer.size(); ++i)
+	{
+		if (buffer[i].head == IrHead::arr ||
+			buffer[i].head == IrHead::param ||
+			buffer[i].head == IrHead::init ||
+			buffer[i].head == IrHead::label
+			&& IrType::is_mid(buffer[i].elem[0])
+			&& IrType::is_func(buffer[i].elem[0]))
+		{
+			for (int j = i - 1; j >= 0; --j)
+			{
+				if (end_set.count(buffer[j].head) != 0) break;
+				// if (builder[j].head == IrHead::label && IrType::is_func(builder[i].elem[0]) && IrType::is_beg(builder[i].elem[0])) break;
+				swap(buffer[j], buffer[j + 1]);
+			}
+		}
+	}
+
 	return buffer.build();
 }
