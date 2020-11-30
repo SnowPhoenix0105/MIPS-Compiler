@@ -20,6 +20,7 @@ UnitTest/TestResource/auto_samples/*/*.input
 *result.txt
 *.result
 *ir.asm
+*.ir
 *assembly.asm
 
 # Prerequisites
