@@ -62,6 +62,7 @@ void GCPRegisterAllocator::init_tmp_reg_pool()
 	for (irelem_t reg : tmp_regs)
 	{
 		tmp_reg_pool[reg] = IrType::NIL;
+		tmp_reg_dirty[reg] = false;
 	}
 }
 
@@ -246,7 +247,7 @@ void GCPRegisterAllocator::alloc_all_save_reg()
 		}
 		untracked_points.erase(max_count_point);
 	}
-	
+
 	while (stack.size() != 0)
 	{
 		size_t point = stack.top();
@@ -300,26 +301,27 @@ void GCPRegisterAllocator::walk()
 		// 整理 status
 		if (block_begs.count(current_index) != 0)
 		{
-			// 保存被分配至栈上的全局变量
-			for (const auto& pair : *var_status)
+#ifdef DEBUG_LEVEL
+			for (const auto& pair : tmp_reg_pool)
 			{
-				auto rlt = save_reg_alloc.find(pair.first);
-				if (rlt != save_reg_alloc.end() && rlt->second == IrType::NIL)
+				if (save_reg_alloc.count(pair.second) == 0
+					&& gvar_status.count(pair.second) == 0)
 				{
-					buffer.push_back(ir.protect(pair.second, pair.first));
+					ASSERT(4, false);
 				}
 			}
-			// 保存所有 gvar 变量
-			for (auto& pair : gvar_status)
+#endif // DEBUG_LEVEL
+
+			protect_all_vars_in_tmp_regs_to_stack();
+
+#ifdef DEBUG_LEVEL
+			for (const auto& pair : tmp_reg_pool)
 			{
-				if (allocator.is_reg(pair.second))
-				{
-					buffer.push_back(ir.protect(pair.second, pair.first));
-					pair.second = pair.first;
-				}
+				ASSERT(4, pair.second == IrType::NIL);
 			}
+#endif // DEBUG_LEVEL
+
 			var_status->clear();
-			init_tmp_reg_pool();
 			for (irelem_t var : var_activition_analyze_result->get_in(current_index))
 			{
 				irelem_t location = save_reg_alloc.at(var);
@@ -359,13 +361,13 @@ void GCPRegisterAllocator::walk()
 		case IrHead::less:
 		{
 			Ir new_code = code;
-			new_code.elem[0] = get_reg_of_var(code.elem[0]);
+			new_code.elem[0] = write_reg_of_var(code.elem[0]);
 			keep_in_tx.insert(new_code.elem[0]);
 
-			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
 			keep_in_tx.insert(new_code.elem[1]);
 
-			new_code.elem[2] = trans_val_to_reg_or_cst(code.elem[2]);
+			new_code.elem[2] = use_reg_or_cst_of_val(code.elem[2]);
 			buffer.push_back(new_code);
 
 			keep_in_tx.erase(new_code.elem[0]);
@@ -376,10 +378,10 @@ void GCPRegisterAllocator::walk()
 		case IrHead::lb:
 		{
 			Ir new_code = code;
-			new_code.elem[0] = get_reg_of_var(code.elem[0]);
+			new_code.elem[0] = write_reg_of_var(code.elem[0]);
 			keep_in_tx.insert(new_code.elem[0]);
 
-			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
 
 			new_code.elem[2] = code.elem[2];
 			buffer.push_back(new_code);
@@ -394,10 +396,10 @@ void GCPRegisterAllocator::walk()
 		{
 			Ir new_code = code;
 
-			new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
+			new_code.elem[0] = use_reg_or_cst_of_val(code.elem[0]);
 			keep_in_tx.insert(new_code.elem[0]);
 
-			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
 
 			new_code.elem[2] = code.elem[2];
 			buffer.push_back(new_code);
@@ -415,7 +417,7 @@ void GCPRegisterAllocator::walk()
 			{
 				// 直接压栈, 故不需要保护 $ax
 				Ir new_code = code;
-				new_code.elem[0] = trans_val_to_reg_or_cst(code.elem[0]);
+				new_code.elem[0] = use_reg_or_cst_of_val(code.elem[0]);
 				new_code.elem[1] = code.elem[1];
 				new_code.elem[2] = code.elem[2];
 				buffer.push_back(new_code);
@@ -466,6 +468,7 @@ void GCPRegisterAllocator::walk()
 						irelem_t reg = alloc_tmp_reg();
 						var_status->at(param_var) = reg;
 						tmp_reg_pool[reg] = param_var;
+						tmp_reg_dirty[reg] = true;
 						buffer.push_back(ir.add(reg, reg_ax, allocator.reg(Reg::zero)));
 					}
 					else
@@ -474,15 +477,70 @@ void GCPRegisterAllocator::walk()
 						buffer.push_back(ir.protect(reg_ax, param_var));
 					}
 				}
-				buffer.push_back(ir.add(reg_ax, allocator.reg(Reg::zero), trans_val_to_reg_or_cst(code.elem[0])));
+				buffer.push_back(ir.add(reg_ax, allocator.reg(Reg::zero), use_reg_or_cst_of_val(code.elem[0])));
 			}
 			--remain_push;
+			break;
+		}
+		case IrHead::call:
+		{
+			// TODO 如果有没被保护的仍有活性的 param_var, 将其保护
+			for (size_t i = 0; i != 4 && i < params.size(); ++i)
+			{
+				if (var_activition_analyze_result->get_out(current_index).count(params[i]) != 0)
+				{
+					if (allocator_ptr->is_reg(var_status->at(params[i])))
+					{
+						buffer.push_back(ir.protect(var_status->at(params[i]), params[i]));
+						var_status->at(params[i]) = params[i];
+					}
+				}
+			}
+
+			// TODO 如果 $tx 中局部变量有活性/保存着脏的全局变量/保存着脏的gvar, 将其保护
+			protect_all_vars_in_tmp_regs_to_stack();
+
+#ifdef DEBUG_LEVEL
+			for (const auto& pair : tmp_reg_pool)
+			{
+				ASSERT(4, pair.second == IrType::NIL);
+			}
+#endif // DEBUG_LEVEL
+
+			// TODO 调用目标函数
+			buffer.push_back(code);
+
+			// 重新加载活跃的 $ax
+			switch (params.size())
+			{
+# define CHECK_PARAM_REG(num)																\
+			{																				\
+				irelem_t reg = allocator_ptr->reg(Reg::a##num##);							\
+				irelem_t var = params[num];													\
+				if (var_activition_analyze_result->get_out(current_index).count(var) != 0)	\
+				{																			\
+					var_status->at(var) = reg;												\
+					buffer.push_back(ir.reload(reg, var));									\
+				}																			\
+			}
+			default:
+			case 4:
+				CHECK_PARAM_REG(3)
+			case 3:
+				CHECK_PARAM_REG(2)
+			case 2:
+				CHECK_PARAM_REG(1)
+			case 1:
+				CHECK_PARAM_REG(0)
+			case 0:
+				break;
+			}
 			break;
 		}
 		case IrHead::scanf:
 		{
 			Ir new_code = code;
-			new_code.elem[0] = get_reg_of_var(code.elem[0]);
+			new_code.elem[0] = write_reg_of_var(code.elem[0]);
 			new_code.elem[1] = code.elem[1];
 			new_code.elem[2] = code.elem[2];
 			buffer.push_back(new_code);
@@ -492,7 +550,7 @@ void GCPRegisterAllocator::walk()
 		{
 			Ir new_code = code;
 			new_code.elem[0] = code.elem[0];
-			new_code.elem[1] = trans_val_to_reg_or_cst(code.elem[1]);
+			new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
 			new_code.elem[2] = code.elem[2];
 			buffer.push_back(new_code);
 			break;
@@ -512,6 +570,36 @@ void GCPRegisterAllocator::walk()
 	}
 }
 
+void GCPRegisterAllocator::protect_all_vars_in_tmp_regs_to_stack()
+{
+	for (auto& pair : tmp_reg_pool)
+	{
+		if (save_reg_alloc.count(pair.second) != 0)
+		{
+			if (tmp_reg_dirty.at(pair.first))
+			{
+				buffer.push_back(ir.protect(pair.first, pair.second));
+			}
+			var_status->at(pair.second) = pair.second;
+			pair.second = IrType::NIL;
+		}
+		else if (gvar_status.count(pair.second) != 0)
+		{
+			if (tmp_reg_dirty.at(pair.first))
+			{
+				buffer.push_back(ir.protect(pair.first, pair.second));
+			}
+			gvar_status[pair.second] = pair.second;
+			pair.second = IrType::NIL;
+		}
+		else if (var_activition_analyze_result->get_out(current_index).count(pair.second) != 0)
+		{
+			buffer.push_back(ir.protect(pair.first, pair.second));
+			var_status->at(pair.second) = pair.second;
+			pair.second = IrType::NIL;
+		}
+	}
+}
 
 irelem_t GCPRegisterAllocator::alloc_tmp_reg()
 {
@@ -555,6 +643,10 @@ irelem_t GCPRegisterAllocator::alloc_tmp_reg()
 		irelem_t var = pair.second;
 		if (gvar_status.count(var) != 0)
 		{
+			if (tmp_reg_dirty.at(pair.first))
+			{
+				buffer.push_back(ir.protect(pair.first, pair.second));
+			}
 			gvar_status[var] = var;
 			pair.second = IrType::NIL;
 			ret = pair.first;
@@ -566,6 +658,22 @@ irelem_t GCPRegisterAllocator::alloc_tmp_reg()
 	}
 
 	// 将一个临时变量淘汰到栈上
+	// 优先淘汰不需保存的
+	for (auto& pair : tmp_reg_pool)
+	{
+		if (keep_in_tx.count(pair.first) != 0)
+		{
+			continue;
+		}
+		if (tmp_reg_dirty.at(pair.first))
+		{
+			continue;
+		}
+		var_status->at(pair.second) = pair.second;
+		pair.second = IrType::NIL;
+		return pair.first;
+	}
+	// 随机淘汰一个未被保护的
 	for (auto& pair : tmp_reg_pool)
 	{
 		if (keep_in_tx.count(pair.first) != 0)
@@ -580,7 +688,7 @@ irelem_t GCPRegisterAllocator::alloc_tmp_reg()
 }
 
 
-irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
+irelem_t GCPRegisterAllocator::write_reg_of_var(irelem_t var)
 {
 	// TODO 
 	if (var == allocator_ptr->zero())
@@ -599,37 +707,79 @@ irelem_t GCPRegisterAllocator::get_reg_of_var(irelem_t var)
 	{
 		return allocator_ptr->reg(Reg::gp);
 	}
+	// var_status 中, 表示已经在寄存器中/被保护到栈上
 	const auto& in_local = var_status->find(var);
-	const auto& in_global = gvar_status.find(var);
-	irelem_t location = IrType::NIL;
+	const auto& in_save = save_reg_alloc.find(var);
 	if (in_local != var_status->end())
 	{
-		location = in_local->second;
+		irelem_t location = in_local->second;
 		if (allocator_ptr->is_reg(location))
 		{
+			if (tmp_reg_pool.count(location) != 0)
+			{
+				tmp_reg_dirty.at(location) = true;
+			}
 			return location;
 		}
-		irelem_t reg = alloc_tmp_reg();
+		irelem_t reg;
+		if (in_save != save_reg_alloc.end() && allocator_ptr->is_reg(in_save->second))
+		{
+			// var 是一个保存在栈上且分配了寄存器的的全局寄存器
+			// 应该是 $ax ?
+			reg = in_save->second;
+		}
+		else
+		{
+			reg = alloc_tmp_reg();
+			tmp_reg_pool.at(reg) = var;
+			tmp_reg_dirty.at(reg) = true;
+		}
 		var_status->at(var) = reg;
 		return reg;
 	}
-	if (in_global != gvar_status.end())
+	// save_reg_alloc中, 表示是一个全局变量, 但是未被使用
+	if (in_save != save_reg_alloc.end())
 	{
-		location = in_global->second;
+		irelem_t location = in_save->second;
 		if (allocator_ptr->is_reg(location))
 		{
+			// 此时 location 是 $sx 或者 $ax, 不需要标记脏位
+			var_status->insert(make_pair(var, location));
 			return location;
 		}
 		irelem_t reg = alloc_tmp_reg();
 		var_status->at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
+		tmp_reg_dirty.at(reg) = true;
+		return reg;
+	}
+	// gvar_status 中, 表示是一个全局变量
+	const auto& in_global = gvar_status.find(var);
+	if (in_global != gvar_status.end())
+	{
+		irelem_t location = in_global->second;
+		if (allocator_ptr->is_reg(location))
+		{
+			if (tmp_reg_pool.count(location) != 0)
+			{
+				tmp_reg_dirty.at(location) = true;
+			}
+			return location;
+		}
+		irelem_t reg = alloc_tmp_reg();
+		var_status->at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
+		tmp_reg_dirty.at(reg) = true;
 		return reg;
 	}
 	irelem_t reg = alloc_tmp_reg();
 	var_status->insert(make_pair(var, reg));
+	tmp_reg_pool.at(reg) = var;
+	tmp_reg_dirty.at(reg) = true;
 	return reg;
 }
 
-irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
+irelem_t GCPRegisterAllocator::use_reg_of_var(irelem_t var)
 {
 	// TODO
 	if (var == allocator_ptr->zero())
@@ -648,7 +798,9 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 	{
 		return allocator_ptr->reg(Reg::gp);
 	}
+	// var_status 中, 表示已经在寄存器中/被保护到栈上
 	const auto& in_local = var_status->find(var);
+	const auto& in_save = save_reg_alloc.find(var);
 	if (in_local != var_status->end())
 	{
 		irelem_t location = in_local->second;
@@ -656,7 +808,19 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 		{
 			return location;
 		}
-		irelem_t reg = alloc_tmp_reg();
+		irelem_t reg;
+		if (in_save != save_reg_alloc.end() && allocator_ptr->is_reg(in_save->second))
+		{
+			// var 是一个保存在栈上且分配了寄存器的的全局寄存器
+			// 应该是 $ax ?
+			reg = in_save->second;
+		}
+		else
+		{
+			reg = alloc_tmp_reg();
+			tmp_reg_pool.at(reg) = var;
+			tmp_reg_dirty.at(reg) = false;
+		}
 		if (IrType::is_var(location))
 		{
 			buffer.push_back(ir.reload(reg, location));
@@ -664,6 +828,23 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 		var_status->at(var) = reg;
 		return reg;
 	}
+	// save_reg_alloc中, 表示是一个全局变量, 但是未被使用, 也未被初始化
+	if (in_save != save_reg_alloc.end())
+	{
+		irelem_t location = in_save->second;
+		if (allocator_ptr->is_reg(location))
+		{
+			var_status->insert(make_pair(var, location));
+			return location;
+		}
+		irelem_t reg = alloc_tmp_reg();
+		buffer.push_back(ir.reload(reg, location));
+		var_status->at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
+		tmp_reg_dirty.at(reg) = false;
+		return reg;
+	}
+	// gvar_status 中, 表示是一个全局变量
 	const auto& in_global = gvar_status.find(var);
 	if (in_global != gvar_status.end())
 	{
@@ -675,18 +856,22 @@ irelem_t GCPRegisterAllocator::ensure_var_in_reg(irelem_t var)
 		irelem_t reg = alloc_tmp_reg();
 		buffer.push_back(ir.reload(reg, location));
 		gvar_status.at(var) = reg;
+		tmp_reg_pool.at(reg) = var;
+		tmp_reg_dirty.at(reg) = false;
 		return reg;
 	}
 	irelem_t reg = alloc_tmp_reg();
-	gvar_status.at(var) = reg;
+	var_status->insert(make_pair(var, reg));
+	tmp_reg_pool.at(reg) = var;
+	tmp_reg_dirty.at(reg) = false;
 	return reg;
 }
 
-irelem_t GCPRegisterAllocator::trans_val_to_reg_or_cst(irelem_t val)
+irelem_t GCPRegisterAllocator::use_reg_or_cst_of_val(irelem_t val)
 {
 	if (IrType::is_var(val))
 	{
-		return ensure_var_in_reg(val);
+		return use_reg_of_var(val);
 	}
 	return val;
 }

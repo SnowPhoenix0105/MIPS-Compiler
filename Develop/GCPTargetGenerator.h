@@ -103,6 +103,8 @@ class GCPRegisterAllocator
 	/// </summary>
 	void init_tmp_reg_pool();
 
+	void protect_all_vars_in_tmp_regs_to_stack();
+
 	/// <summary>
 	/// 返回一个 free 的 $tx
 	/// 若临时寄存器池有寄存器, 则选择一个返回, 否则淘汰一个.
@@ -115,7 +117,7 @@ class GCPRegisterAllocator
 	/// </summary>
 	/// <param name="val"></param>
 	/// <returns></returns>
-	irelem_t trans_val_to_reg_or_cst(irelem_t val);
+	irelem_t use_reg_or_cst_of_val(irelem_t val);
 
 	/// <summary>
 	/// 更新 call_index 和 remain_push
@@ -134,7 +136,7 @@ class GCPRegisterAllocator
 	/// </summary>
 	/// <param name="var"></param>
 	/// <returns></returns>
-	irelem_t get_reg_of_var(irelem_t var);
+	irelem_t write_reg_of_var(irelem_t var);
 
 	/// <summary>
 	/// 确保某变量在寄存器中, 并返回保存其的寄存器.
@@ -142,7 +144,7 @@ class GCPRegisterAllocator
 	/// </summary>
 	/// <param name="var"> 变量 </param>
 	/// <returns>寄存器</returns>
-	irelem_t ensure_var_in_reg(irelem_t var);
+	irelem_t use_reg_of_var(irelem_t var);
 
 	shared_ptr<IrTable> fresh_code_builder()
 	{

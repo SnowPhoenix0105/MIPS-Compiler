@@ -37,7 +37,6 @@ func_mid_randomi:
 	$t6	=	$t1	<	8
 	if $t6 != $zero	goto	if_mid_0
 	protect	$t1,	__global_var_idx1
-	protect	$t5,	__global_var_idx2
 if_beg_0:
 	reload	$t1,	__global_var_idx1
 	$t0	=	$t1	-	8
@@ -87,7 +86,11 @@ func_mid_foo:
 	$t0	=	$a1	<	$a0
 	if $t0 == $zero	goto	if_mid_2
 if_beg_2:
+	protect	$a1,	foo_var_j
+	protect	$a2,	foo_var_k
 	call	func_beg_randomi
+	reload	$a2,	foo_var_k
+	reload	$a1,	foo_var_j
 	$t0	=	$v1	+	$zero
 	$t1	=	$s1	+	$t0
 	$t2	=	$t1	+	$zero
@@ -112,7 +115,9 @@ if_end_2:
 	$t0	=	$a2	<	$a1
 	if $t0 == $zero	goto	if_mid_3
 if_beg_3:
+	protect	$a3,	foo_var_l
 	call	func_beg_randomi
+	reload	$a3,	foo_var_l
 	$t0	=	$v1	+	$zero
 	$t1	=	$s0	+	$t0
 	$t2	=	$t1	+	$zero
@@ -122,7 +127,11 @@ if_mid_3:
 	$a0	=	$zero	+	0
 	goto	for_mid_0
 for_beg_0:
+	protect	$a0,	foo_var_i
+	protect	$a3,	foo_var_l
 	call	func_beg_get_increase
+	reload	$a3,	foo_var_l
+	reload	$a0,	foo_var_i
 	$t0	=	$v1	+	$zero
 	$t1	=	$s0	*	$t0
 	$t2	=	$t1	+	$zero
@@ -147,8 +156,8 @@ for_beg_1:
 	$t0	=	$v1	+	$zero
 	printf	NIL,	$t0,	int
 	call	func_beg_get_increase
-	$t1	=	$v1	+	$zero
-	printf	NIL,	$t1,	int
+	$t0	=	$v1	+	$zero
+	printf	NIL,	$t0,	int
 	$s0	=	$s0	+	1
 for_mid_1:
 	$t0	=	$s0	<	7
