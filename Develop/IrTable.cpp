@@ -6,7 +6,7 @@ using std::endl;
 
 const unordered_map<Reg, string> reg_name_trans =
 {
-	{	Reg::zero	, "$zero"		},
+	{	Reg::zero	, "$0"			},
 	{	Reg::at		, "$at"			},
 	{	Reg::v0		, "$v0"			},
 	{	Reg::v1		, "$v1"			},

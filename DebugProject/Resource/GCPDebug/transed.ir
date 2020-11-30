@@ -35,8 +35,8 @@ func_mid_randomi:
 	$t4	=	$t3	+	$zero
 	$t1	=	$t4	+	$zero
 	$t6	=	$t1	<	8
-	if $t6 != $zero	goto	if_mid_0
 	protect	$t1,	__global_var_idx1
+	if $t6 != $zero	goto	if_mid_0
 if_beg_0:
 	reload	$t1,	__global_var_idx1
 	$t0	=	$t1	-	8
@@ -50,8 +50,8 @@ if_end_0:
 	$t2	=	$t0	+	$zero
 	$t1	=	$t2	+	$zero
 	$t3	=	$t1	<	8
-	if $t3 != $zero	goto	if_mid_1
 	protect	$t1,	__global_var_idx2
+	if $t3 != $zero	goto	if_mid_1
 if_beg_1:
 	reload	$t1,	__global_var_idx2
 	$t0	=	$t1	-	8
@@ -75,6 +75,7 @@ func_mid_get_increase:
 	$t2	=	$t0	+	$zero
 	$t1	=	$t2	+	$zero
 	$v1	=	$t1	+	$zero
+	protect	$t1,	__global_var_a
 	ret
 func_end_get_increase:
 
@@ -84,11 +85,11 @@ func_end_get_increase:
 func_beg_increase:
 	func	void
 func_mid_increase:
-	protect	$t1,	__global_var_a
 	reload	$t1,	__global_var_a
 	$t0	=	$t1	+	1
 	$t2	=	$t0	+	$zero
 	$t1	=	$t2	+	$zero
+	protect	$t1,	__global_var_a
 func_end_increase:
 
 
@@ -103,7 +104,6 @@ func_beg_foo:
 	param	foo_var_m	$s1
 	param	foo_var_n	$s0
 func_mid_foo:
-	protect	$t1,	__global_var_a
 	$t0	=	$a1	<	$a0
 	if $t0 == $zero	goto	if_mid_2
 if_beg_2:

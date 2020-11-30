@@ -63,6 +63,7 @@ class GCPRegisterAllocator
 	size_t func_end_index = 0;
 	// 当前函数分析结果
 	unordered_set<size_t> block_begs;
+	unordered_set<size_t> block_lasts;
 	shared_ptr<const BlockDetectResult> block_detect_result;
 	shared_ptr<const BlockVarActivetionAnalyzeResult> block_var_activition_analyze_result;
 	shared_ptr<const VarActivetionAnalyzeResult> var_activition_analyze_result;
@@ -103,7 +104,34 @@ class GCPRegisterAllocator
 	/// </summary>
 	void init_tmp_reg_pool();
 
+	/// <summary>
+	/// 更新 call_index 和 remain_push
+	/// </summary>
+	void fresh_push_and_call_info();
+
+	/// <summary>
+	/// 遍历origin_ir_table并将所有非protect/reload语句中的变量名替换为寄存器名.
+	/// </summary>
+	void walk();
+
+	/// <summary>
+	/// 将 $tx 中的值同步到 svar/gvar 的栈上, 不会释放 $tx.
+	/// 只有 dirty 置位时才会进行同步.
+	/// </summary>
+	void sync_no_reg_svar_and_gvar_in_treg();
+
+	/// <summary>
+	/// 将 dirty 未置位的 svar/gvar 占用的 $tx 释放.
+	/// </summary>
+	void free_treg_of_sync_no_reg_svar_and_gvar();
+
 	void protect_all_vars_in_tmp_regs_to_stack();
+
+	/// <summary>
+	/// 回收所有不活跃的 $tx, 返回一个被回收的 $tx
+	/// </summary>
+	/// <returns></returns>
+	irelem_t tmp_reg_gc();
 
 	/// <summary>
 	/// 返回一个 free 的 $tx
@@ -119,15 +147,6 @@ class GCPRegisterAllocator
 	/// <returns></returns>
 	irelem_t use_reg_or_cst_of_val(irelem_t val);
 
-	/// <summary>
-	/// 更新 call_index 和 remain_push
-	/// </summary>
-	void fresh_push_and_call_info();
-
-	/// <summary>
-	/// 遍历origin_ir_table并将所有非protect/reload语句中的变量名替换为寄存器名.
-	/// </summary>
-	void walk();
 
 	/// <summary>
 	/// 获取分配给某变量的寄存器, 若当前变量未被分配寄存器, 则为其分配一个寄存器, 记录并返回.

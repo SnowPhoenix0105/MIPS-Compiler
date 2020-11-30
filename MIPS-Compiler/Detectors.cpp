@@ -74,7 +74,7 @@ namespace IrDetectors
 	{
 		unordered_map<irelem_t, size_t> label_index;
 		shared_ptr<BlockDetectResult> ret = make_shared<BlockDetectResult>();
-		const unordered_set<IrHead> end_set = { IrHead::label, IrHead::bne, IrHead::beq, IrHead::_goto };
+		const unordered_set<IrHead> end_set = { IrHead::label, IrHead::bne, IrHead::beq, IrHead::_goto, IrHead::ret };
 		auto& blocks = ret->blocks;
 
 		size_t index = func_beg_index;
@@ -106,7 +106,14 @@ namespace IrDetectors
 					if (IrType::is_func(label) && IrType::is_end(label))
 					{
 						// 函数结束
-						blocks.back().end = index;
+						if (blocks.back().beg == index)
+						{
+							blocks.pop_back();
+						}
+						else
+						{
+							blocks.back().end = index;
+						}
 						break;
 					}
 					if (unused_labels.count(label) != 0)
@@ -124,11 +131,15 @@ namespace IrDetectors
 					label_index.insert(make_pair(label, current_block_index + 1));
 				}
 				// TODO 基本块结束
+				if (blocks[current_block_index].end == idx)
+				{
+					continue;
+				}
 				blocks[current_block_index].end = idx;
 				blocks.emplace_back();
 				blocks.back().beg = idx;
 				init = true;
-				if (head != IrHead::_goto)
+				if (head != IrHead::_goto && head != IrHead::ret)
 				{
 					// 连接相连的两个基本块
 					blocks[current_block_index].nexts.insert(current_block_index + 1);
@@ -140,6 +151,7 @@ namespace IrDetectors
 				init = false;
 			}
 		}
+
 		for (size_t i = 0; i != blocks.size(); ++i)
 		{
 			auto& block = blocks[i];
@@ -416,6 +428,8 @@ namespace IrDetectors
 
 		return ret;
 	}
+
+
 
 
 	shared_ptr<const VarActivetionAnalyzeResult> var_activition_analyze(

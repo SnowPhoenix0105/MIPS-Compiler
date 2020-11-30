@@ -6,7 +6,7 @@ using std::endl;
 
 const unordered_map<Reg, string> reg_name_trans =
 {
-	{	Reg::zero	, "$zero"		},
+	{	Reg::zero	, "$0"			},
 	{	Reg::at		, "$at"			},
 	{	Reg::v0		, "$v0"			},
 	{	Reg::v1		, "$v1"			},
@@ -428,6 +428,10 @@ string IrTable::to_string(const IrElemAllocator& allocator)
 		{
 		case IrHead::label:
 			builder << allocator.label_to_string(code.elem[0]) << ':' << endl;
+			if (IrType::is_func(code.elem[0]) && IrType::is_end(code.elem[0]))
+			{
+				builder << "\n\n\n" << endl;
+			}
 			break;
 		case IrHead::gvar:
 			builder << "\tgvar\t" << allocator.var_to_string(code.elem[0]) << endl;

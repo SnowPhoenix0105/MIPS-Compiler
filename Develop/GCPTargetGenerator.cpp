@@ -113,6 +113,7 @@ void GCPRegisterAllocator::next_function_info()
 	for (const auto& block : block_detect_result->get_blocks())
 	{
 		block_begs.insert(block.beg);
+		block_lasts.insert(block.end - 1);
 	}
 
 	alloc_all_save_reg();
@@ -304,17 +305,23 @@ void GCPRegisterAllocator::walk()
 #ifdef DEBUG_LEVEL
 			for (auto& pair : tmp_reg_pool)
 			{
-				if (save_reg_alloc.count(pair.second) == 0
-					&& gvar_status.count(pair.second) == 0)
+				if (save_reg_alloc.count(pair.second) != 0
+					|| gvar_status.count(pair.second) != 0)
 				{
-					pair.second = IrType::NIL;
+					ASSERT(4, tmp_reg_dirty[pair.first] == false);
 				}
 			}
 #endif // DEBUG_LEVEL
 
-			protect_all_vars_in_tmp_regs_to_stack();
-
-
+			free_treg_of_sync_no_reg_svar_and_gvar();
+			tmp_reg_gc();
+#ifdef DEBUG_LEVEL
+			for (auto& pair : tmp_reg_pool)
+			{
+				ASSERT(4, pair.second = IrType::NIL);
+			}
+#endif // DEBUG_LEVEL
+			init_tmp_reg_pool();
 			var_status->clear();
 			for (irelem_t var : var_activition_analyze_result->get_in(current_index))
 			{
@@ -326,6 +333,8 @@ void GCPRegisterAllocator::walk()
 				var_status->insert(make_pair(var, location));
 			}
 		}
+
+		bool prepare_to_end = block_lasts.count(current_index) != 0;
 
 		// 翻译IR
 		const Ir& code = codes.at(current_index);
@@ -383,10 +392,13 @@ void GCPRegisterAllocator::walk()
 			keep_in_tx.erase(new_code.elem[0]);
 			break;
 		}
-		case IrHead::sw:
-		case IrHead::sb:
 		case IrHead::beq:
 		case IrHead::bne:
+			sync_no_reg_svar_and_gvar_in_treg();
+			prepare_to_end = false;
+			// 不要 break
+		case IrHead::sw:
+		case IrHead::sb:
 		{
 			Ir new_code = code;
 
@@ -534,6 +546,12 @@ void GCPRegisterAllocator::walk()
 			}
 			break;
 		}
+		case IrHead::_goto:
+		case IrHead::ret:
+			sync_no_reg_svar_and_gvar_in_treg();
+			prepare_to_end = false;
+			buffer.push_back(code);
+			break;
 		case IrHead::scanf:
 		{
 			Ir new_code = code;
@@ -552,8 +570,6 @@ void GCPRegisterAllocator::walk()
 			buffer.push_back(new_code);
 			break;
 		}
-		case IrHead::ret:
-			// TODO
 		case IrHead::label:
 		{
 			if (IrType::is_func(code.elem[0]) && IrType::is_beg(code.elem[0]))
@@ -566,6 +582,56 @@ void GCPRegisterAllocator::walk()
 			buffer.push_back(code);
 		}
 
+		if (prepare_to_end)
+		{
+			sync_no_reg_svar_and_gvar_in_treg();
+		}
+	}
+}
+
+void GCPRegisterAllocator::sync_no_reg_svar_and_gvar_in_treg()
+{
+	for (auto& pair : tmp_reg_pool)
+	{
+		if (save_reg_alloc.count(pair.second) != 0)
+		{
+			if (tmp_reg_dirty.at(pair.first))
+			{
+				buffer.push_back(ir.protect(pair.first, pair.second));
+				tmp_reg_dirty[pair.first] = false;
+			}
+		}
+		else if (gvar_status.count(pair.second) != 0)
+		{
+			if (tmp_reg_dirty.at(pair.first))
+			{
+				buffer.push_back(ir.protect(pair.first, pair.second));
+				tmp_reg_dirty[pair.first] = false;
+			}
+		}
+	}
+}
+
+void GCPRegisterAllocator::free_treg_of_sync_no_reg_svar_and_gvar()
+{
+	for (auto& pair : tmp_reg_pool)
+	{
+		if (save_reg_alloc.count(pair.second) != 0)
+		{
+			if (!tmp_reg_dirty.at(pair.first))
+			{
+				var_status->at(pair.second) = pair.second;
+				pair.second = IrType::NIL;
+			}
+		}
+		else if (gvar_status.count(pair.second) != 0)
+		{
+			if (!tmp_reg_dirty.at(pair.first))
+			{
+				gvar_status[pair.second] = pair.second;
+				pair.second = IrType::NIL;
+			}
+		}
 	}
 }
 
@@ -598,18 +664,8 @@ void GCPRegisterAllocator::protect_all_vars_in_tmp_regs_to_stack()
 	}
 }
 
-irelem_t GCPRegisterAllocator::alloc_tmp_reg()
+irelem_t GCPRegisterAllocator::tmp_reg_gc()
 {
-	// 有空闲的 $tx
-	for (auto& pair : tmp_reg_pool)
-	{
-		if (pair.second == IrType::NIL)
-		{
-			return pair.first;
-		}
-	}
-	
-	// 回收无用的 $tx
 	irelem_t ret = IrType::NIL;
 	const auto& in = var_activition_analyze_result->get_in(current_index);
 	for (auto& pair : tmp_reg_pool)
@@ -624,7 +680,22 @@ irelem_t GCPRegisterAllocator::alloc_tmp_reg()
 			pair.second = IrType::NIL;
 			ret = pair.first;
 		}
+	}return ret;
+}
+
+irelem_t GCPRegisterAllocator::alloc_tmp_reg()
+{
+	// 有空闲的 $tx
+	for (auto& pair : tmp_reg_pool)
+	{
+		if (pair.second == IrType::NIL)
+		{
+			return pair.first;
+		}
 	}
+	
+	// 回收无用的 $tx
+	irelem_t ret = tmp_reg_gc();
 	if (ret != IrType::NIL)
 	{
 		return ret;

@@ -131,6 +131,10 @@ namespace IrDetectors
 					label_index.insert(make_pair(label, current_block_index + 1));
 				}
 				// TODO »ù±¾¿é½áÊø
+				if (blocks[current_block_index].end == idx)
+				{
+					continue;
+				}
 				blocks[current_block_index].end = idx;
 				blocks.emplace_back();
 				blocks.back().beg = idx;
@@ -424,6 +428,8 @@ namespace IrDetectors
 
 		return ret;
 	}
+
+
 
 
 	shared_ptr<const VarActivetionAnalyzeResult> var_activition_analyze(
