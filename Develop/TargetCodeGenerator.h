@@ -162,6 +162,11 @@ struct MipsInstructionFormatter
 		return quaternary("slti", target, source1, to_string(source2));
 	}
 
+	string slt(const string& target, int source1, const string& source2) const
+	{
+		return quaternary("sgt", target, source2, to_string(source1));
+	}
+
 	string mul(const string& target, const string& source1, string source2) const
 	{
 		return quaternary("mul", target, source1, source2);

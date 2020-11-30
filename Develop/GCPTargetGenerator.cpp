@@ -340,10 +340,10 @@ void GCPTargetGenerator::beg_func()
 
 void GCPTargetGenerator::ret_func()
 {
-	buffer << mips.label(allocator_ptr->label_to_string(ir_table_ptr->at(func_end_index).elem[0])) << endl;
+	// buffer << mips.label(allocator_ptr->label_to_string(ir_table_ptr->at(func_end_index).elem[0])) << endl;
 	for (irelem_t sreg : used_sregs)
 	{
-		buffer << mips.lw(allocator_ptr->var_to_string(sreg), "$sp", func_var_offset_table.at(sreg));
+		buffer << mips.lw(allocator_ptr->var_to_string(sreg), "$sp", func_var_offset_table.at(sreg)) << endl;
 	}
 	if (!is_leaf) buffer << mips.lw("$ra", "$sp", stack_size - 4) << endl;
 	buffer << mips.addu("$sp", "$sp", stack_size) << endl;
@@ -396,9 +396,88 @@ void GCPTargetGenerator::func_body()
 			CASE(_or, _or);
 			CASE(_nor, _nor);
 			CASE(_xor, _xor);
-			CASE(sl, sll);
-			CASE(sr, sra);
-			CASE(less, slt);
+		case IrHead::sl:
+			if (IrType::is_cst(code.elem[2]))
+			{
+				buffer
+					<< mips.sll(
+						allocator.val_to_string(code.elem[0]),
+						allocator.val_to_string(code.elem[1]),
+						allocator.cst_to_value(code.elem[2]))
+					<< endl;
+			}
+			else
+			{
+				buffer
+					<< mips.sll(
+						allocator.val_to_string(code.elem[0]),
+						allocator.val_to_string(code.elem[1]),
+						allocator.val_to_string(code.elem[2]))
+					<< endl;
+			}
+			break;
+		case IrHead::sr:
+			if (IrType::is_cst(code.elem[2]))
+			{
+				buffer
+					<< mips.sra(
+						allocator.val_to_string(code.elem[0]),
+						allocator.val_to_string(code.elem[1]),
+						allocator.cst_to_value(code.elem[2]))
+					<< endl;
+			}
+			else
+			{
+				buffer
+					<< mips.sra(
+						allocator.val_to_string(code.elem[0]),
+						allocator.val_to_string(code.elem[1]),
+						allocator.val_to_string(code.elem[2]))
+					<< endl;
+			}
+			break;
+		case IrHead::less:
+		{
+			bool cst_1 = IrType::is_cst(code.elem[1]);
+			bool cst_2 = IrType::is_cst(code.elem[2]);
+			if (!cst_1 && !cst_2)
+			{
+				buffer
+					<< mips.slt(
+						allocator.val_to_string(code.elem[0]),
+						allocator.val_to_string(code.elem[1]),
+						allocator.val_to_string(code.elem[2]))
+					<< endl;
+			}
+			else if (cst_1 && !cst_2)
+			{
+				buffer
+					<< mips.slt(
+						allocator.val_to_string(code.elem[0]),
+						allocator.cst_to_value(code.elem[1]),
+						allocator.val_to_string(code.elem[2]))
+					<< endl;
+			}
+			else if (!cst_1 && cst_2)
+			{
+				buffer
+					<< mips.slt(
+						allocator.val_to_string(code.elem[0]),
+						allocator.val_to_string(code.elem[1]),
+						allocator.cst_to_value(code.elem[2]))
+					<< endl;
+			}
+			else
+			{
+				buffer
+					<< mips.slt(
+						allocator.val_to_string(code.elem[0]),
+						"$0",
+						allocator.cst_to_value(code.elem[2]) - allocator.cst_to_value(code.elem[1]))
+					<< endl;
+			}
+			break;
+		}
 		case IrHead::lw:
 			buffer 
 				<< mips.lw(
@@ -596,7 +675,7 @@ void GCPTargetGenerator::translate(ostream& os)
 		func_body();
 
 		os << fresh_buffer();
-		os << allocator_ptr->label_to_string(ir_table_ptr->at(func_end_index).elem[0]) << endl;
+		os << allocator_ptr->label_to_string(ir_table_ptr->at(func_end_index).elem[0]) << ':' << endl;
 		if (flag)
 		{
 			ret_func();
@@ -606,6 +685,7 @@ void GCPTargetGenerator::translate(ostream& os)
 			ret_main();
 		}
 		os << fresh_buffer();
+		os << "\n\n\n" << endl;
 	}
 }
 
