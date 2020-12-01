@@ -150,6 +150,7 @@
     <ClCompile Include="IrTable.cpp" />
     <ClCompile Include="LexicalAnalyzer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OptimizerFormat.cpp" />
     <ClCompile Include="SimpleTargetGenerator.cpp" />
     <ClCompile Include="SymbolType.cpp" />
     <ClCompile Include="SyntacticAnalyzer.cpp" />
@@ -165,8 +166,10 @@
     <ClInclude Include="Graph.h" />
     <ClInclude Include="IdentifierTable.h" />
     <ClInclude Include="InitializeListAnalyze.h" />
+    <ClInclude Include="IOptimizer.h" />
     <ClInclude Include="IrTable.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
+    <ClInclude Include="OptimizerFormat.h" />
     <ClInclude Include="SimpleTargetGenerator.h" />
     <ClInclude Include="SymbolToken.h" />
     <ClInclude Include="SymbolType.h" />

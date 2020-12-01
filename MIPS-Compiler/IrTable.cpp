@@ -316,6 +316,12 @@ irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
 		ASSERT(4, IrType::is_imm(cst_2));
 		irelem_t root = arr_root(cst_1);
 		int offset = imm_to_value(cst_2);
+		if (!IrType::is_pure_arr(cst_1))
+		{
+			size_t ord = IrType::get_ord(cst_1);
+			const auto& pair = arrs_with_offset.at(ord);
+			offset += pair.second;
+		}
 		arrs_with_offset.push_back(make_pair(root, offset));
 	}
 	else
@@ -324,6 +330,12 @@ irelem_t CstAllocator::cst_add(irelem_t cst_1, irelem_t cst_2)
 		ASSERT(4, IrType::is_imm(cst_1));
 		irelem_t root = arr_root(cst_2);
 		int offset = imm_to_value(cst_1);
+		if (!IrType::is_pure_arr(cst_2))
+		{
+			size_t ord = IrType::get_ord(cst_2);
+			const auto& pair = arrs_with_offset.at(ord);
+			offset += pair.second;
+		}
 		arrs_with_offset.push_back(make_pair(root, offset));
 	}
 	return ret;

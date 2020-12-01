@@ -126,7 +126,7 @@ struct MipsInstructionFormatter
 		return quaternary("xor", target, source1, source2);
 	}
 
-	string _xori(const string& target, const string& source1, int source2) const
+	string _xor(const string& target, const string& source1, int source2) const
 	{
 		return quaternary("xori", target, source1, to_string(source2));
 	}

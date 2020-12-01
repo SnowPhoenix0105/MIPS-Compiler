@@ -225,6 +225,7 @@ void SimpleCodeGenerator::init_func()
 	var_set.erase(allocator.gp());
 	var_set.erase(allocator.ret());
 	var_set.erase(allocator.zero());
+	func_var_offset_table.clear();	// TODO
 	for (auto v : var_set)
 	{
 		func_var_offset_table.insert(make_pair(v, offset));
