@@ -60,9 +60,6 @@
     <ClCompile Include="SyntacticAnalyzeUtil.cpp">
       <Filter>FrontEnd\Sources</Filter>
     </ClCompile>
-    <ClCompile Include="TargetCodeGenerator.cpp">
-      <Filter>BaackEnd\Sources</Filter>
-    </ClCompile>
     <ClCompile Include="SimpleTargetGenerator.cpp">
       <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
@@ -73,6 +70,9 @@
       <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
     <ClCompile Include="GCPTargetGenerator.cpp">
+      <Filter>BaackEnd\Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="OptimizerFormat.cpp">
       <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -127,6 +127,12 @@
     </ClInclude>
     <ClInclude Include="Graph.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IOptimizer.h">
+      <Filter>BaackEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="OptimizerFormat.h">
+      <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

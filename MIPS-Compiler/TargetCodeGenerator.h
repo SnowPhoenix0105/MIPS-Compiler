@@ -71,7 +71,7 @@ struct MipsInstructionFormatter
 	}
 
 	// 四元组
-	string addu(const string& target, const string& source1, string source2) const
+	string addu(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("addu", target, source1, source2);
 	}
@@ -81,7 +81,7 @@ struct MipsInstructionFormatter
 		return quaternary("addiu", target, source1, to_string(source2));
 	}
 
-	string subu(const string& target, const string& source1, string source2) const
+	string subu(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("subu", target, source1, source2);
 	}
@@ -91,7 +91,7 @@ struct MipsInstructionFormatter
 		return quaternary("addiu", target, source1, to_string(-source2));
 	}
 
-	string _and(const string& target, const string& source1, string source2) const
+	string _and(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("and", target, source1, source2);
 	}
@@ -101,7 +101,7 @@ struct MipsInstructionFormatter
 		return quaternary("andi", target, source1, to_string(source2));
 	}
 
-	string _or(const string& target, const string& source1, string source2) const
+	string _or(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("or", target, source1, source2);
 	}
@@ -111,7 +111,7 @@ struct MipsInstructionFormatter
 		return quaternary("ori", target, source1, to_string(source2));
 	}
 
-	string _nor(const string& target, const string& source1, string source2) const
+	string _nor(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("nor", target, source1, source2);
 	}
@@ -121,7 +121,7 @@ struct MipsInstructionFormatter
 		return quaternary("nori", target, source1, to_string(source2));
 	}
 
-	string _xor(const string& target, const string& source1, string source2) const
+	string _xor(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("xor", target, source1, source2);
 	}
@@ -131,7 +131,7 @@ struct MipsInstructionFormatter
 		return quaternary("xori", target, source1, to_string(source2));
 	}
 
-	string sll(const string& target, const string& source1, string source2) const
+	string sll(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("sllv", target, source1, source2);
 	}
@@ -141,7 +141,7 @@ struct MipsInstructionFormatter
 		return quaternary("sll", target, source1, to_string(source2));
 	}
 
-	string sra(const string& target, const string& source1, string source2) const
+	string sra(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("srav", target, source1, source2);
 	}
@@ -151,7 +151,7 @@ struct MipsInstructionFormatter
 		return quaternary("sra", target, source1, to_string(source2));
 	}
 
-	string slt(const string& target, const string& source1, string source2) const
+	string slt(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("slt", target, source1, source2);
 	}
@@ -161,7 +161,12 @@ struct MipsInstructionFormatter
 		return quaternary("slti", target, source1, to_string(source2));
 	}
 
-	string mul(const string& target, const string& source1, string source2) const
+	string slt(const string& target, int source1, const string& source2) const
+	{
+		return quaternary("sgt", target, source2, to_string(source1));
+	}
+
+	string mul(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("mul", target, source1, source2);
 	}
@@ -171,7 +176,7 @@ struct MipsInstructionFormatter
 		return quaternary("mul", target, source1, to_string(source2));
 	}
 
-	string div(const string& target, const string& source1, string source2) const
+	string div(const string& target, const string& source1, const string& source2) const
 	{
 		return quaternary("div", target, source1, source2);
 	}
@@ -181,12 +186,12 @@ struct MipsInstructionFormatter
 		return quaternary("div", target, source1, to_string(source2));
 	}
 
-	string beq(const string& reg1, const string& reg2, string label) const
+	string beq(const string& reg1, const string& reg2, const string& label) const
 	{
 		return quaternary("beq", reg1, reg2, label);
 	}
 
-	string bne(const string& reg1, const string& reg2, string label) const
+	string bne(const string& reg1, const string& reg2, const string& label) const
 	{
 		return quaternary("bne", reg1, reg2, label);
 	}

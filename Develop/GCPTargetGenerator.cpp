@@ -366,10 +366,18 @@ void GCPTargetGenerator::ret_main()
 #define CASE(head, type)									\
 case IrHead::head:											\
 	buffer													\
-		<< mips.type(										\
+		<< (												\
+			IrType::is_var(code.elem[2]) ?					\
+			mips.type(										\
 			allocator.val_to_string(code.elem[0]),			\
 			allocator.val_to_string(code.elem[1]),			\
-			allocator.val_to_string(code.elem[2]))			\
+				allocator.val_to_string(code.elem[2])) 		\
+			:												\
+			mips.type(										\
+			allocator.val_to_string(code.elem[0]),			\
+			allocator.val_to_string(code.elem[1]),			\
+				allocator.cst_to_value(code.elem[2]))		\
+				)											\
 		<< endl;											\
 	break	
 
@@ -396,88 +404,9 @@ void GCPTargetGenerator::func_body()
 			CASE(_or, _or);
 			CASE(_nor, _nor);
 			CASE(_xor, _xor);
-		case IrHead::sl:
-			if (IrType::is_cst(code.elem[2]))
-			{
-				buffer
-					<< mips.sll(
-						allocator.val_to_string(code.elem[0]),
-						allocator.val_to_string(code.elem[1]),
-						allocator.cst_to_value(code.elem[2]))
-					<< endl;
-			}
-			else
-			{
-				buffer
-					<< mips.sll(
-						allocator.val_to_string(code.elem[0]),
-						allocator.val_to_string(code.elem[1]),
-						allocator.val_to_string(code.elem[2]))
-					<< endl;
-			}
-			break;
-		case IrHead::sr:
-			if (IrType::is_cst(code.elem[2]))
-			{
-				buffer
-					<< mips.sra(
-						allocator.val_to_string(code.elem[0]),
-						allocator.val_to_string(code.elem[1]),
-						allocator.cst_to_value(code.elem[2]))
-					<< endl;
-			}
-			else
-			{
-				buffer
-					<< mips.sra(
-						allocator.val_to_string(code.elem[0]),
-						allocator.val_to_string(code.elem[1]),
-						allocator.val_to_string(code.elem[2]))
-					<< endl;
-			}
-			break;
-		case IrHead::less:
-		{
-			bool cst_1 = IrType::is_cst(code.elem[1]);
-			bool cst_2 = IrType::is_cst(code.elem[2]);
-			if (!cst_1 && !cst_2)
-			{
-				buffer
-					<< mips.slt(
-						allocator.val_to_string(code.elem[0]),
-						allocator.val_to_string(code.elem[1]),
-						allocator.val_to_string(code.elem[2]))
-					<< endl;
-			}
-			else if (cst_1 && !cst_2)
-			{
-				buffer
-					<< mips.slt(
-						allocator.val_to_string(code.elem[0]),
-						allocator.cst_to_value(code.elem[1]),
-						allocator.val_to_string(code.elem[2]))
-					<< endl;
-			}
-			else if (!cst_1 && cst_2)
-			{
-				buffer
-					<< mips.slt(
-						allocator.val_to_string(code.elem[0]),
-						allocator.val_to_string(code.elem[1]),
-						allocator.cst_to_value(code.elem[2]))
-					<< endl;
-			}
-			else
-			{
-				buffer
-					<< mips.slt(
-						allocator.val_to_string(code.elem[0]),
-						"$0",
-						allocator.cst_to_value(code.elem[2]) - allocator.cst_to_value(code.elem[1]))
-					<< endl;
-			}
-			break;
-		}
+			CASE(sl, sll);
+			CASE(sr, sra);
+			CASE(less, slt);
 		case IrHead::lw:
 			buffer 
 				<< mips.lw(
@@ -540,7 +469,15 @@ void GCPTargetGenerator::func_body()
 				push_count = 0;
 			}
 			int offset = -8 - push_count * 4;
-			buffer << mips.sw(allocator.val_to_string(code.elem[0]), "$sp", offset) << endl;
+			if (IrType::is_cst(code.elem[0]))
+			{
+				buffer << mips.li("$v0", allocator.cst_to_value(code.elem[0]));
+				buffer << mips.sw("$v0", "$sp", offset) << endl;
+			}
+			else
+			{
+				buffer << mips.sw(allocator.var_to_string(code.elem[0]), "$sp", offset) << endl;
+			}
 			break;
 		}
 		case IrHead::call:
@@ -1108,7 +1045,20 @@ void GCPRegisterAllocator::walk()
 			{
 				// 直接压栈, 故不需要保护 $ax
 				Ir new_code = code;
-				new_code.elem[0] = use_reg_or_cst_of_val(code.elem[0]);
+				if (IrType::is_var(code.elem[0]))
+				{
+					new_code.elem[0] = use_reg_or_cst_of_val(code.elem[0]);
+				}
+				else
+				{
+					irelem_t cst = code.elem[0];
+					ASSERT(4, IrType::is_cst(cst));
+					irelem_t reg = alloc_tmp_reg();
+					buffer.push_back(ir.add(reg, allocator.reg(Reg::zero), cst));
+					new_code.elem[0] = reg;
+					tmp_reg_pool[reg] = IrType::NIL;
+					tmp_reg_dirty[reg] = false;
+				}
 				new_code.elem[1] = code.elem[1];
 				new_code.elem[2] = code.elem[2];
 				buffer.push_back(new_code);
@@ -1206,7 +1156,7 @@ void GCPRegisterAllocator::walk()
 			{
 # define CHECK_PARAM_REG(num)																\
 			{																				\
-				irelem_t reg = allocator_ptr->reg(Reg::a##num##);							\
+				irelem_t reg = allocator_ptr->reg(Reg::a##num);							\
 				irelem_t var = params[num];													\
 				if (var_activition_analyze_result->get_out(current_index).count(var) != 0)	\
 				{																			\
@@ -1349,6 +1299,7 @@ void GCPRegisterAllocator::protect_all_vars_in_tmp_regs_to_stack()
 			if (tmp_reg_dirty.at(pair.first))
 			{
 				buffer.push_back(ir.protect(pair.first, pair.second));
+				tmp_reg_dirty[pair.first] = false;
 			}
 			var_status->at(pair.second) = pair.second;
 		}
@@ -1357,12 +1308,14 @@ void GCPRegisterAllocator::protect_all_vars_in_tmp_regs_to_stack()
 			if (tmp_reg_dirty.at(pair.first))
 			{
 				buffer.push_back(ir.protect(pair.first, pair.second));
+				tmp_reg_dirty[pair.first] = false;
 			}
 			gvar_status[pair.second] = pair.second;
 		}
 		else if (var_activition_analyze_result->get_out(current_index).count(pair.second) != 0)
 		{
 			buffer.push_back(ir.protect(pair.first, pair.second));
+			tmp_reg_dirty[pair.first] = false;
 			var_status->at(pair.second) = pair.second;
 		}
 		pair.second = IrType::NIL;
@@ -1419,6 +1372,7 @@ irelem_t GCPRegisterAllocator::alloc_tmp_reg()
 			if (tmp_reg_dirty.at(pair.first))
 			{
 				buffer.push_back(ir.protect(pair.first, pair.second));
+				tmp_reg_dirty[pair.first] = false;
 			}
 			gvar_status[var] = var;
 			pair.second = IrType::NIL;
@@ -1454,6 +1408,7 @@ irelem_t GCPRegisterAllocator::alloc_tmp_reg()
 			continue;
 		}
 		buffer.push_back(ir.protect(pair.first, pair.second));
+		tmp_reg_dirty[pair.first] = false;
 		var_status->at(pair.second) = pair.second;
 		pair.second = IrType::NIL;
 		return pair.first;

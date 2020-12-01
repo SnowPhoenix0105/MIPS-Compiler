@@ -143,6 +143,7 @@
     <ClCompile Include="compile_controller.cpp" />
     <ClCompile Include="Detectors.cpp" />
     <ClCompile Include="ErrorType.cpp" />
+    <ClCompile Include="OptimizerFormat.cpp" />
     <ClCompile Include="GCPTargetGenerator.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
     <ClCompile Include="InitializeListAnalyze.cpp" />
@@ -152,18 +153,19 @@
     <ClCompile Include="SyntacticAnalyzeUtil.cpp" />
     <ClCompile Include="SymbolType.cpp" />
     <ClCompile Include="SyntacticAnalyzer.cpp" />
-    <ClCompile Include="TargetCodeGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbstractSyntacticAnalyzeTactics.h" />
     <ClInclude Include="compile_controller.h" />
     <ClInclude Include="Detectors.h" />
     <ClInclude Include="ErrorType.h" />
+    <ClInclude Include="OptimizerFormat.h" />
     <ClInclude Include="GCPTargetGenerator.h" />
     <ClInclude Include="global_control.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="IdentifierTable.h" />
     <ClInclude Include="InitializeListAnalyze.h" />
+    <ClInclude Include="IOptimizer.h" />
     <ClInclude Include="IrTable.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
     <ClInclude Include="SimpleTargetGenerator.h" />
