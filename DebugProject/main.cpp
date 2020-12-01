@@ -3,6 +3,7 @@
 #include "../Develop/SyntacticAnalyzer.h"
 #include "../Develop/compile_controller.h"
 #include "../Develop/GCPTargetGenerator.h"
+#include "../Develop/OptimizerFormat.h"
 
 #define DEBUG_006
 
@@ -133,10 +134,17 @@ int main(int argc, char* argv[])
 	}
 	shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
 	shared_ptr<IrTable> ir_table_ptr = syntactic_analyzer.get_ir_table();
+
 	ofstream origin_ir_os("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\GCPDebug2\\origin.ir");
+	ofstream format_ir_os("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\GCPDebug2\\formatted.ir");
 	ofstream transed_ir_os("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\GCPDebug2\\transed.ir");
 	origin_ir_os << ir_table_ptr->to_string(*allocator_ptr);
-	GCPRegisterAllocator gcp_registre_allocator(allocator_ptr, ir_table_ptr);
+
+	shared_ptr<IrTable> formatted_ir_table = OptimizerFormat().parse(*ir_table_ptr, allocator_ptr);
+
+	format_ir_os << formatted_ir_table->to_string(*allocator_ptr);
+
+	GCPRegisterAllocator gcp_registre_allocator(allocator_ptr, formatted_ir_table);
 	shared_ptr<IrTable> transed_table = gcp_registre_allocator.build();
 	transed_ir_os << transed_table->to_string(*allocator_ptr);
 

@@ -290,6 +290,7 @@ void GCPTargetGenerator::init_func()
 	ASSERT(4, var_set.count(allocator.gp()) == 0);
 	ASSERT(4, var_set.count(allocator.zero()) == 0);
 	ASSERT(4, var_set.count(allocator.ret()) == 0);
+	func_var_offset_table.clear();
 	for (auto v : var_set)
 	{
 		func_var_offset_table.insert(make_pair(v, offset));
@@ -386,7 +387,7 @@ void GCPTargetGenerator::func_body()
 	const IrElemAllocator& allocator = *allocator_ptr;
 	const IrTable& ir_table = *ir_table_ptr;
 
-	bool last_is_push = false;
+	bool pushing = false;
 	int push_count = 0;
 	for (size_t index = func_mid_index; index < func_end_index; ++index)
 	{
@@ -460,7 +461,7 @@ void GCPTargetGenerator::func_body()
 			break;
 		case IrHead::push:
 		{
-			if (last_is_push)
+			if (pushing)
 			{
 				++push_count;
 			}
@@ -468,6 +469,7 @@ void GCPTargetGenerator::func_body()
 			{
 				push_count = 0;
 			}
+			pushing = true;
 			int offset = -8 - push_count * 4;
 			if (IrType::is_cst(code.elem[0]))
 			{
@@ -483,6 +485,7 @@ void GCPTargetGenerator::func_body()
 		case IrHead::call:
 			// buffer << mips.sw("$v0", "$sp", stack_size - 8) << endl;
 			buffer << mips.jal(allocator.label_to_string(code.elem[0])) << endl;
+			pushing = false;
 			// buffer << mips.lw("$v0", "$sp", stack_size - 8) << endl;
 			break;
 		case IrHead::ret:
@@ -513,7 +516,7 @@ void GCPTargetGenerator::func_body()
 			}
 			if (val)
 			{
-				buffer << mips.addu("$a0", "$0", allocator.val_to_string(code.elem[1]));
+				buffer << mips.addu("$a0", "$0", allocator.val_to_string(code.elem[1])) << endl;
 				buffer << mips.li("$v0", code.elem[2] == IrType::_int ? mips.print_int : mips.print_char) << endl;
 				buffer << mips.syscall() << endl;
 			}
@@ -571,7 +574,6 @@ void GCPTargetGenerator::func_body()
 		default:
 			PANIC();
 		}
-		last_is_push = code.head == IrHead::push;
 	}
 }
 
