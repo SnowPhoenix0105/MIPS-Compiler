@@ -9,11 +9,15 @@
 #include "SyntacticAnalyzer.h"
 #include "TargetCodeGenerator.h"
 #include "SimpleTargetGenerator.h"
+#include "GCPTargetGenerator.h"
+#include "OptimizerFormat.h"
 
 
 
 
 void start_compile(unique_ptr<istream> input_file, ostream& output_file);
+
+void start_compile_without_optimization(unique_ptr<istream> input_file, ostream& output_file);
 
 void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream& target_file);
 

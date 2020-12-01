@@ -26,240 +26,506 @@
 func_beg_main:
 	func	void
 func_mid_main:
-	main_c9	=	#zero	+	101
-	main_c10	=	#zero	+	49
-	main_a6	=	#zero	+	6
-	main_a7	=	#zero	+	7
-	main_a8	=	#zero	+	8
-	main_a9	=	#zero	+	9
-	main_a10	=	#zero	+	10
-	main_a11	=	#zero	+	11
-	scanf	main_a3,	int
-	printf	NIL,	main_a3,	int
-	t1	=	#zero	-	51
-	t2	=	3	*	t1
-	t3	=	t2	*	main_a3
-	t0	=	t3	+	#zero
-	main_a3	=	t0	+	#zero
-	printf	NIL,	main_a3,	int
-	scanf	main_a6,	int
-	t4	=	18	+	#zero
-	main_a7	=	t4	+	#zero
-	scanf	main_a7,	int
-	scanf	G_c1,	char
-	scanf	main_c7,	char
-	t6	=	#zero	-	G_a2
-	t5	=	t6	+	#zero
-	main_a3	=	t5	+	#zero
-	printf	NIL,	main_a3,	int
-	t8	=	main_a3	*	main_a3
-	t7	=	t8	+	#zero
-	main_a3	=	t7	+	#zero
-	printf	NIL,	main_a3,	int
-	t9	=	main_a3	+	#zero
-	main_a3	=	t9	+	#zero
-	printf	NIL,	main_a3,	int
-	t11	=	#zero	-	97
-	t12	=	#zero	-	97
-	t13	=	#zero	-	97
-	t14	=	t12	-	t13
-	t15	=	t11	-	t14
-	t16	=	12	/	2
-	t17	=	t16	*	43
-	t18	=	t15	-	t17
-	t19	=	G_a1	+	14
-	t20	=	t19	*	13
-	t21	=	t18	+	t20
-	t10	=	t21	+	#zero
-	main_a3	=	t10	+	#zero
-	printf	NIL,	main_a3,	int
-	t22	=	3	+	4
-	t23	=	t22	+	5
-	t24	=	t23	+	6
-	t25	=	t24	-	7
-	t26	=	t25	-	8
-	t27	=	4	*	9
-	t28	=	4	*	t27
-	t29	=	t28	/	3
-	t30	=	t29	/	2
-	t31	=	2	+	3
-	t32	=	t31	*	t30
-	t33	=	t26	-	t32
-	printf	NIL,	t33,	int
-	t34	=	main_c10	+	#zero
-	main_c8	=	t34	+	#zero
-	t35	=	G_c1	+	#zero
-	main_c4	=	t35	+	#zero
-	t36	=	12	+	#zero
-	G_a1	=	t36	+	#zero
-	t37	=	13	+	#zero
-	G_a2	=	t37	+	#zero
-	t38	=	14	+	#zero
-	main_a3	=	t38	+	#zero
-	t39	=	15	+	#zero
-	main_a4	=	t39	+	#zero
-	t40	=	16	+	#zero
-	G_a5	=	t40	+	#zero
-	t41	=	17	+	#zero
-	main_a6	=	t41	+	#zero
-	t42	=	19	+	#zero
-	main_a8	=	t42	+	#zero
-	t44	=	20	+	main_a9
-	t43	=	t44	+	#zero
-	main_a9	=	t43	+	#zero
-	t46	=	G_a1	+	21
-	t45	=	t46	+	#zero
-	main_a10	=	t45	+	#zero
-	t48	=	G_a1	+	main_a10
-	t47	=	t48	+	#zero
-	main_a11	=	t47	+	#zero
+	$t0	=	$0	+	101
+	$t1	=	$0	+	49
+	$t2	=	$0	+	6
+	$t3	=	$0	+	7
+	$t4	=	$0	+	8
+	$t5	=	$0	+	9
+	$t6	=	$0	+	10
+	$t7	=	$0	+	11
+	scanf	$t8,	int
+	printf	NIL,	$t8,	int
+	$t9	=	$0	-	51
+	protect	$t0,	main_c9
+	$t0	=	$t9	*	3
+	protect	$t0,	t2
+	protect	$t1,	main_c10
+	reload	$t1,	t2
+	$t0	=	$t1	*	$t8
+	$t1	=	$t0	+	$0
+	$t8	=	$t1	+	$0
+	printf	NIL,	$t8,	int
+	scanf	$t2,	int
+	protect	$t0,	t3
+	$t0	=	$0	+	18
+	$t3	=	$t0	+	$0
+	scanf	$t3,	int
+	protect	$t0,	t4
+	scanf	$t0,	char
+	scanf	$t0,	char
+	protect	$t0,	main_c7
+	protect	$t1,	t0
+	reload	$t1,	G_a2
+	$t0	=	$0	-	$t1
+	$t1	=	$t0	+	$0
+	$t8	=	$t1	+	$0
+	printf	NIL,	$t8,	int
+	protect	$t0,	t6
+	$t0	=	$t8	*	$t8
+	protect	$t0,	t8
+	protect	$t1,	t5
+	reload	$t1,	t8
+	$t0	=	$t1	+	$0
+	$t8	=	$t0	+	$0
+	printf	NIL,	$t8,	int
+	$t1	=	$t8	+	$0
+	$t8	=	$t1	+	$0
+	printf	NIL,	$t8,	int
+	protect	$t0,	t7
+	$t0	=	$0	-	97
+	protect	$t0,	t11
+	$t0	=	$0	-	97
+	protect	$t0,	t12
+	$t0	=	$0	-	97
+	protect	$t0,	t13
+	protect	$t1,	t9
+	reload	$t1,	t12
+	protect	$t2,	main_a6
+	reload	$t2,	t13
+	$t0	=	$t1	-	$t2
+	reload	$t2,	t11
+	$t1	=	$t2	-	$t0
+	$t2	=	$0	+	6
+	protect	$t0,	t14
+	$t0	=	$t2	*	43
+	protect	$t0,	t17
+	protect	$t2,	t16
+	reload	$t2,	t17
+	$t0	=	$t1	-	$t2
+	protect	$t0,	t18
+	reload	$t0,	G_a1
+	$t2	=	$t0	+	14
+	$t0	=	$t2	*	13
+	protect	$t0,	t20
+	protect	$t1,	t15
+	reload	$t1,	t18
+	protect	$t2,	t19
+	reload	$t2,	t20
+	$t0	=	$t1	+	$t2
+	$t1	=	$t0	+	$0
+	$t8	=	$t1	+	$0
+	printf	NIL,	$t8,	int
+	$t2	=	$0	+	7
+	protect	$t0,	t21
+	$t0	=	$t2	+	5
+	protect	$t0,	t23
+	protect	$t1,	t10
+	reload	$t1,	t23
+	$t0	=	$t1	+	6
+	$t1	=	$t0	-	7
+	protect	$t0,	t24
+	$t0	=	$t1	-	8
+	protect	$t0,	t26
+	$t0	=	$0	+	36
+	protect	$t0,	t27
+	protect	$t1,	t25
+	reload	$t1,	t27
+	$t0	=	$t1	*	4
+	$t1	=	$t0	/	3
+	protect	$t0,	t28
+	$t0	=	$t1	/	2
+	protect	$t0,	t30
+	$t0	=	$0	+	5
+	protect	$t0,	t31
+	protect	$t1,	t29
+	reload	$t1,	t31
+	protect	$t2,	t22
+	reload	$t2,	t30
+	$t0	=	$t1	*	$t2
+	reload	$t2,	t26
+	$t1	=	$t2	-	$t0
+	printf	NIL,	$t1,	int
+	protect	$t0,	t32
+	reload	$t0,	main_c10
+	$t2	=	$t0	+	$0
+	$t0	=	$t2	+	$0
+	protect	$t0,	main_c8
+	$t0	=	$t0	+	$0
+	protect	$t0,	t35
+	protect	$t1,	t33
+	reload	$t1,	t35
+	$t0	=	$t1	+	$0
+	$t1	=	$0	+	12
+	$t0	=	$t1	+	$0
+	protect	$t0,	main_c4
+	$t0	=	$0	+	13
+	$t1	=	$t0	+	$0
+	protect	$t0,	t37
+	$t0	=	$0	+	14
+	$t8	=	$t0	+	$0
+	protect	$t0,	t38
+	$t0	=	$0	+	15
+	protect	$t0,	t39
+	protect	$t1,	t36
+	reload	$t1,	t39
+	$t0	=	$t1	+	$0
+	$t1	=	$0	+	16
+	protect	$t0,	main_a4
+	$t0	=	$t1	+	$0
+	$t0	=	$0	+	17
+	protect	$t0,	t41
+	protect	$t1,	t40
+	reload	$t1,	t41
+	$t0	=	$t1	+	$0
+	$t1	=	$0	+	19
+	$t4	=	$t1	+	$0
+	protect	$t0,	main_a6
+	$t0	=	$t5	+	20
+	protect	$t0,	t44
+	protect	$t1,	t42
+	reload	$t1,	t44
+	$t0	=	$t1	+	$0
+	$t5	=	$t0	+	$0
+	$t1	=	$t0	+	21
+	protect	$t0,	t43
+	$t0	=	$t1	+	$0
+	$t6	=	$t0	+	$0
+	protect	$t0,	t45
+	$t0	=	$t0	+	$t6
+	protect	$t0,	t48
+	protect	$t1,	t46
+	reload	$t1,	t48
+	$t0	=	$t1	+	$0
+	$t7	=	$t0	+	$0
 	printf	NIL,	97,	char
-	printf	NIL,	G_a1,	int
-	t49	=	G_a1	+	97
-	printf	NIL,	t49,	int
-	t50	=	#zero	-	5
-	t51	=	t50	*	5
-	t52	=	#zero	-	t51
-	printf	NIL,	t52,	int
-	printf	"a4",	main_a4,	int
+	printf	NIL,	$t0,	int
+	$t1	=	$t0	+	97
+	printf	NIL,	$t1,	int
+	protect	$t0,	t47
+	$t0	=	$0	-	5
+	protect	$t0,	t50
+	protect	$t1,	t49
+	reload	$t1,	t50
+	$t0	=	$t1	*	5
+	$t1	=	$0	-	$t0
+	printf	NIL,	$t1,	int
+	protect	$t0,	t51
+	reload	$t0,	main_a4
+	printf	"a4",	$t0,	int
 	printf	NIL,	3,	int
 	printf	"18231217",	18231217,	int
 	printf	NIL,	49,	char
 	printf	NIL,	57,	char
-	t53	=	#zero	-	49
-	t54	=	main_a3	*	57
-	t55	=	t53	-	t54
-	t56	=	#zero	-	3
-	t57	=	t56	*	14
-	t58	=	t55	+	t57
-	t59	=	3	-	4
-	t60	=	t59	+	2
-	t61	=	t60	-	52
-	t62	=	t61	+	60
-	t63	=	4	*	t62
-	t64	=	t63	/	1
-	t65	=	t64	/	1
-	t66	=	t65	/	1
-	t67	=	t58	+	t66
-	printf	NIL,	t67,	int
-	printf	NIL,	G_a1,	int
-	printf	NIL,	G_a2,	int
-	printf	NIL,	main_a3,	int
-	printf	NIL,	main_a8,	int
-	printf	NIL,	main_a9,	int
-	printf	NIL,	main_a10,	int
-	printf	NIL,	main_a11,	int
+	$t0	=	$0	-	49
+	protect	$t0,	t53
+	$t0	=	$t8	*	57
+	protect	$t0,	t54
+	protect	$t1,	t52
+	reload	$t1,	t53
+	protect	$t2,	t34
+	reload	$t2,	t54
+	$t0	=	$t1	-	$t2
+	$t1	=	$0	-	3
+	$t2	=	$t1	*	14
+	protect	$t0,	t55
+	protect	$t1,	t56
+	reload	$t1,	t55
+	$t0	=	$t1	+	$t2
+	$t1	=	$0	+	-1
+	protect	$t0,	t58
+	$t0	=	$t1	+	2
+	protect	$t0,	t60
+	protect	$t1,	t59
+	reload	$t1,	t60
+	$t0	=	$t1	-	52
+	$t1	=	$t0	+	60
+	protect	$t0,	t61
+	$t0	=	$t1	*	4
+	protect	$t0,	t63
+	protect	$t1,	t62
+	reload	$t1,	t63
+	$t0	=	$t1	/	1
+	$t1	=	$t0	/	1
+	protect	$t0,	t64
+	$t0	=	$t1	/	1
+	protect	$t0,	t66
+	protect	$t1,	t65
+	reload	$t1,	t58
+	protect	$t2,	t57
+	reload	$t2,	t66
+	$t0	=	$t1	+	$t2
+	printf	NIL,	$t0,	int
+	printf	NIL,	$t0,	int
+	printf	NIL,	$t1,	int
+	printf	NIL,	$t8,	int
+	printf	NIL,	$t4,	int
+	printf	NIL,	$t5,	int
+	printf	NIL,	$t6,	int
+	printf	NIL,	$t7,	int
 	printf	"134214321432143214321",	NIL,	char
-	t68	=	#zero	-	G_a2
-	t69	=	t68	+	G_a5
-	t70	=	t69	*	G_a1
-	t71	=	G_a2	+	G_a1
-	t72	=	t71	+	2
-	t73	=	t70	/	t72
-	t74	=	main_a3	-	t73
-	t75	=	#zero	-	G_a1
-	t76	=	t75	*	G_a1
-	t77	=	t74	-	t76
-	t78	=	5	*	3
-	t79	=	t77	+	t78
-	t80	=	t79	+	main_a6
-	t81	=	t80	*	main_a11
-	t82	=	#zero	-	t81
-	t83	=	#zero	-	main_a4
-	t84	=	t83	+	G_a2
-	t85	=	t84	*	main_a3
-	t86	=	t82	+	t85
-	t87	=	t86	+	main_a7
-	printf	NIL,	t87,	int
-	t89	=	main_a6	*	main_c9
-	t90	=	47	+	t89
-	t91	=	main_a4	+	t90
-	t92	=	50	*	main_a9
-	t93	=	49	*	12
-	t94	=	t93	*	10
-	t95	=	t94	/	4
-	t96	=	t92	-	t95
-	t97	=	t96	*	3
-	t98	=	45	*	1
-	t99	=	#zero	-	t98
-	t100	=	G_a1	+	G_a2
-	t101	=	t99	-	t100
-	t102	=	3	*	23
-	t103	=	G_c1	+	main_a4
-	t104	=	G_c3	+	main_a9
-	t105	=	t104	*	t103
-	t106	=	t105	/	100
-	t107	=	t102	-	t106
-	t108	=	main_a9	-	14
-	t109	=	t108	*	main_a6
-	t110	=	342	-	t109
-	t111	=	t110	*	t107
-	t112	=	t111	/	4
-	t113	=	t101	-	t112
-	t114	=	t113	*	t97
-	t115	=	t91	-	t114
-	t116	=	t115	*	97
-	t117	=	t116	+	42
-	t118	=	#zero	-	t117
-	t119	=	t118	-	0
-	t120	=	G_a1	*	4
-	t121	=	t119	+	t120
-	t88	=	t121	+	#zero
-	G_a1	=	t88	+	#zero
-	printf	NIL,	G_a1,	int
-	printf	NIL,	main_a4,	int
-	printf	NIL,	main_a8,	int
-	printf	NIL,	G_c1,	char
-	t123	=	G_a1	+	G_a1
-	t122	=	t123	+	#zero
-	G_a2	=	t122	+	#zero
-	t125	=	main_a10	+	G_c3
-	t126	=	-36000	/	t125
-	t127	=	G_a2	-	4
-	t128	=	t127	*	12
-	t129	=	t128	*	13
-	t130	=	main_a6	+	24
-	t131	=	t130	*	main_a4
-	t132	=	t131	/	49
-	t133	=	10	*	t132
-	t134	=	t129	+	t133
-	t135	=	t134	-	14
-	t136	=	G_a2	*	42
-	t137	=	t135	+	t136
-	t138	=	main_a9	*	14
-	t139	=	t137	-	t138
-	t140	=	t139	+	G_c1
-	t141	=	t140	+	G_c2
-	t142	=	main_a6	+	t141
-	t143	=	G_a1	-	main_a3
-	t144	=	12	+	49
-	t145	=	t144	*	G_a2
-	t146	=	t145	/	12
-	t147	=	G_a5	-	t146
-	t148	=	main_a3	+	t147
-	t149	=	t148	+	42
-	t150	=	t149	*	t143
-	t151	=	t142	+	t150
-	t152	=	t151	+	0
-	t153	=	t152	*	-4
-	t154	=	12	*	24
-	t155	=	t153	+	t154
-	t156	=	G_a5	*	main_a3
-	t157	=	t156	+	G_c1
-	t158	=	2	*	t157
-	t159	=	t155	+	t158
-	t160	=	t126	/	t159
-	t161	=	main_a4	-	12
-	t162	=	t161	+	G_a5
-	t163	=	t162	*	main_a3
-	t164	=	2	+	G_a2
-	t165	=	t163	/	t164
-	t166	=	t160	+	t165
-	t124	=	t166	+	#zero
-	main_a3	=	t124	+	#zero
-	printf	NIL,	main_a3,	int
-	printf	"yes",	G_a2,	int
-	printf	NIL,	main_a4,	int
+	$t1	=	$0	-	$t1
+	$t2	=	$t1	+	$t0
+	protect	$t0,	t67
+	$t0	=	$t2	*	$t0
+	protect	$t0,	t70
+	$t0	=	$t1	+	$t0
+	protect	$t0,	t71
+	protect	$t1,	t68
+	reload	$t1,	t71
+	$t0	=	$t1	+	2
+	protect	$t0,	t72
+	reload	$t0,	t70
+	protect	$t2,	t69
+	reload	$t2,	t72
+	$t1	=	$t0	/	$t2
+	$t0	=	$t8	-	$t1
+	$t2	=	$0	-	$t0
+	protect	$t0,	t74
+	$t0	=	$t2	*	$t0
+	protect	$t0,	t76
+	protect	$t1,	t73
+	reload	$t1,	t74
+	protect	$t2,	t75
+	reload	$t2,	t76
+	$t0	=	$t1	-	$t2
+	$t1	=	$0	+	15
+	$t2	=	$t0	+	$t1
+	protect	$t0,	t77
+	protect	$t1,	t78
+	reload	$t1,	main_a6
+	$t0	=	$t2	+	$t1
+	$t1	=	$t0	*	$t7
+	protect	$t0,	t80
+	$t0	=	$0	-	$t1
+	protect	$t0,	t82
+	protect	$t1,	t81
+	reload	$t1,	main_a4
+	$t0	=	$0	-	$t1
+	$t1	=	$t0	+	$t1
+	protect	$t0,	t83
+	$t0	=	$t1	*	$t8
+	protect	$t0,	t85
+	protect	$t1,	t84
+	reload	$t1,	t82
+	protect	$t2,	t79
+	reload	$t2,	t85
+	$t0	=	$t1	+	$t2
+	$t1	=	$t0	+	$t3
+	printf	NIL,	$t1,	int
+	protect	$t0,	t86
+	reload	$t0,	main_a6
+	protect	$t1,	t87
+	reload	$t1,	main_c9
+	$t2	=	$t0	*	$t1
+	$t0	=	$t2	+	47
+	protect	$t0,	t90
+	reload	$t0,	main_a4
+	protect	$t2,	t89
+	reload	$t2,	t90
+	$t1	=	$t0	+	$t2
+	$t0	=	$t5	*	50
+	$t2	=	$0	+	588
+	protect	$t0,	t92
+	$t0	=	$t2	*	10
+	protect	$t0,	t94
+	protect	$t1,	t91
+	reload	$t1,	t94
+	$t0	=	$t1	/	4
+	protect	$t0,	t95
+	reload	$t0,	t92
+	protect	$t2,	t93
+	reload	$t2,	t95
+	$t1	=	$t0	-	$t2
+	$t0	=	$t1	*	3
+	$t2	=	$0	+	45
+	protect	$t0,	t97
+	$t0	=	$0	-	$t2
+	protect	$t0,	t99
+	$t0	=	$t0	+	$t1
+	protect	$t0,	t100
+	protect	$t1,	t96
+	reload	$t1,	t99
+	protect	$t2,	t98
+	reload	$t2,	t100
+	$t0	=	$t1	-	$t2
+	$t1	=	$0	+	69
+	protect	$t1,	t102
+	reload	$t1,	main_a4
+	$t2	=	$t0	+	$t1
+	protect	$t0,	t101
+	reload	$t0,	G_c3
+	$t1	=	$t0	+	$t5
+	$t0	=	$t1	*	$t2
+	protect	$t0,	t105
+	protect	$t1,	t104
+	reload	$t1,	t105
+	$t0	=	$t1	/	100
+	protect	$t0,	t106
+	reload	$t0,	t102
+	protect	$t2,	t103
+	reload	$t2,	t106
+	$t1	=	$t0	-	$t2
+	$t0	=	$t5	-	14
+	protect	$t1,	t107
+	reload	$t1,	main_a6
+	$t2	=	$t0	*	$t1
+	$t1	=	$0	+	342
+	protect	$t0,	t108
+	$t0	=	$t1	-	$t2
+	protect	$t0,	t110
+	protect	$t1,	t167
+	reload	$t1,	t110
+	protect	$t2,	t109
+	reload	$t2,	t107
+	$t0	=	$t1	*	$t2
+	$t1	=	$t0	/	4
+	protect	$t0,	t111
+	reload	$t0,	t101
+	$t2	=	$t0	-	$t1
+	protect	$t1,	t112
+	reload	$t1,	t97
+	$t0	=	$t2	*	$t1
+	protect	$t0,	t114
+	reload	$t0,	t91
+	protect	$t2,	t113
+	reload	$t2,	t114
+	$t1	=	$t0	-	$t2
+	$t0	=	$t1	*	97
+	$t2	=	$t0	+	42
+	protect	$t0,	t116
+	$t0	=	$0	-	$t2
+	protect	$t0,	t118
+	protect	$t1,	t115
+	reload	$t1,	t118
+	$t0	=	$t1	-	0
+	$t1	=	$t0	*	4
+	protect	$t0,	t119
+	protect	$t1,	t120
+	reload	$t1,	t119
+	protect	$t2,	t117
+	reload	$t2,	t120
+	$t0	=	$t1	+	$t2
+	$t1	=	$t0	+	$0
+	$t0	=	$t1	+	$0
+	printf	NIL,	$t0,	int
+	reload	$t2,	main_a4
+	printf	NIL,	$t2,	int
+	printf	NIL,	$t4,	int
+	printf	NIL,	$t0,	char
+	$t2	=	$t0	+	$t0
+	protect	$t0,	t121
+	$t0	=	$t2	+	$0
+	$t1	=	$t0	+	$0
+	protect	$t0,	t122
+	$t0	=	$t6	+	$t0
+	protect	$t0,	t125
+	$t0	=	$0	+	-36000
+	protect	$t0,	t168
+	protect	$t1,	t88
+	reload	$t1,	t168
+	protect	$t2,	t123
+	reload	$t2,	t125
+	$t0	=	$t1	/	$t2
+	$t1	=	$t1	-	4
+	$t2	=	$t1	*	12
+	protect	$t0,	t126
+	$t0	=	$t2	*	13
+	protect	$t0,	t129
+	protect	$t1,	t127
+	reload	$t1,	main_a6
+	$t0	=	$t1	+	24
+	protect	$t2,	t128
+	reload	$t2,	main_a4
+	$t1	=	$t0	*	$t2
+	$t2	=	$t1	/	49
+	protect	$t0,	t130
+	$t0	=	$t2	*	10
+	protect	$t0,	t133
+	protect	$t1,	t131
+	reload	$t1,	t129
+	protect	$t2,	t132
+	reload	$t2,	t133
+	$t0	=	$t1	+	$t2
+	$t1	=	$t0	-	14
+	$t2	=	$t1	*	42
+	protect	$t0,	t134
+	$t0	=	$t1	+	$t2
+	protect	$t0,	t137
+	$t0	=	$t5	*	14
+	protect	$t0,	t138
+	protect	$t1,	t135
+	reload	$t1,	t137
+	protect	$t2,	t136
+	reload	$t2,	t138
+	$t0	=	$t1	-	$t2
+	$t1	=	$t0	+	$t0
+	protect	$t0,	t139
+	reload	$t0,	G_c2
+	$t2	=	$t1	+	$t0
+	protect	$t1,	t140
+	reload	$t1,	main_a6
+	$t0	=	$t1	+	$t2
+	$t1	=	$t0	-	$t8
+	protect	$t0,	t142
+	$t0	=	$0	+	61
+	protect	$t0,	t144
+	protect	$t1,	t143
+	reload	$t1,	t144
+	$t0	=	$t1	*	$t1
+	$t1	=	$t0	/	12
+	protect	$t0,	t145
+	$t0	=	$t0	-	$t1
+	protect	$t0,	t147
+	protect	$t1,	t146
+	reload	$t1,	t147
+	$t0	=	$t8	+	$t1
+	$t1	=	$t0	+	42
+	protect	$t0,	t148
+	protect	$t2,	t141
+	reload	$t2,	t143
+	$t0	=	$t1	*	$t2
+	protect	$t0,	t150
+	reload	$t0,	t142
+	protect	$t1,	t149
+	reload	$t1,	t150
+	$t2	=	$t0	+	$t1
+	$t0	=	$t2	+	0
+	$t1	=	$t0	*	-4
+	protect	$t0,	t152
+	$t0	=	$0	+	288
+	protect	$t0,	t154
+	protect	$t2,	t151
+	reload	$t2,	t154
+	$t0	=	$t1	+	$t2
+	$t2	=	$t0	*	$t8
+	protect	$t0,	t155
+	$t0	=	$t2	+	$t0
+	protect	$t0,	t157
+	protect	$t1,	t153
+	reload	$t1,	t157
+	$t0	=	$t1	*	2
+	protect	$t0,	t158
+	reload	$t0,	t155
+	protect	$t2,	t156
+	reload	$t2,	t158
+	$t1	=	$t0	+	$t2
+	reload	$t2,	t126
+	$t0	=	$t2	/	$t1
+	protect	$t0,	t160
+	reload	$t0,	main_a4
+	$t2	=	$t0	-	12
+	$t0	=	$t2	+	$t0
+	protect	$t0,	t162
+	protect	$t1,	t159
+	reload	$t1,	t162
+	$t0	=	$t1	*	$t8
+	$t1	=	$t1	+	2
+	protect	$t0,	t163
+	protect	$t1,	t164
+	reload	$t1,	t163
+	protect	$t2,	t161
+	reload	$t2,	t164
+	$t0	=	$t1	/	$t2
+	reload	$t2,	t160
+	$t1	=	$t2	+	$t0
+	$t2	=	$t1	+	$0
+	$t8	=	$t2	+	$0
+	printf	NIL,	$t8,	int
+	printf	"yes",	$t1,	int
+	protect	$t0,	t165
+	reload	$t0,	main_a4
+	printf	NIL,	$t0,	int
 	printf	NIL,	-1,	int
 func_end_main:
 

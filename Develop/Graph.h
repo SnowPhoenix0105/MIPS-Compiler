@@ -79,7 +79,7 @@ public:
 	Graph& operator=(const Graph<T>& other)
 	{
 		delete[] data;
-		capacity = other.capacity;
+		_capacity = other._capacity;
 		_size = other._size;
 		data = (T*)::operator new[](_capacity * _capacity * sizeof(T));
 		for (size_t i = 0; i != _capacity * _capacity; ++i)

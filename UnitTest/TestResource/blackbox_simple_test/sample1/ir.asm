@@ -23,22 +23,26 @@ func_beg_main:
 	init	1881110987
 	init	-1
 func_mid_main:
-	t0	=	1	*	2
-	t1	=	t0	+	1
-	t2	=	#sp	+	t1
-	t3	|=	t2[main_a_larr1]
-	printf	NIL,	t3,	char
-	scanf	main_buffer,	int
-	t4	=	main_buffer	+	#zero
-	t6	=	2	<<	2
-	t5	=	#sp	+	t6
-	t5[main_a_larr3]	=	t4
-	t9	=	2	<<	2
-	t8	=	#sp	+	t9
-	t10	=	t8[main_a_larr3]
-	t7	=	t10	+	#zero
-	main_tmp	=	t7	+	#zero
-	printf	"your input is ",	main_tmp,	int
+	$t0	=	$0	+	2
+	$t1	=	$t0	+	1
+	$t2	=	$sp	+	$t1
+	$t3	|=	$t2[main_a_larr1]
+	printf	NIL,	$t3,	char
+	scanf	$t4,	int
+	$t5	=	$t4	+	$0
+	$t6	=	$0	+	8
+	$t7	=	$sp	+	$t6
+	$t7[main_a_larr3]	=	$t5
+	$t8	=	$0	+	8
+	$t9	=	$sp	+	$t8
+	protect	$t0,	t0
+	$t0	=	$t9[main_a_larr3]
+	protect	$t0,	t10
+	protect	$t1,	t1
+	reload	$t1,	t10
+	$t0	=	$t1	+	$0
+	$t1	=	$t0	+	$0
+	printf	"your input is ",	$t1,	int
 func_end_main:
 
 

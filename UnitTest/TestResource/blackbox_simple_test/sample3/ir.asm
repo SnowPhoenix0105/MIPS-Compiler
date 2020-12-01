@@ -1,25 +1,29 @@
 func_beg_main:
 	func	void
 func_mid_main:
-	main_a1	=	#zero	+	4
-	t1	=	main_a1	*	97
-	t0	=	t1	+	#zero
-	main_a1	=	t0	+	#zero
-	printf	NIL,	main_a1,	int
-	t2	=	4	+	#zero
-	main_a1	=	t2	+	#zero
-	t4	=	main_a1	*	97
-	t5	=	#zero	-	t4
-	t3	=	t5	+	#zero
-	main_a1	=	t3	+	#zero
-	printf	NIL,	main_a1,	int
-	t6	=	4	+	#zero
-	main_a1	=	t6	+	#zero
-	t8	=	97	*	-1
-	t9	=	main_a1	*	t8
-	t7	=	t9	+	#zero
-	main_a1	=	t7	+	#zero
-	printf	NIL,	main_a1,	int
+	$t0	=	$0	+	4
+	$t1	=	$t0	*	97
+	$t2	=	$t1	+	$0
+	$t0	=	$t2	+	$0
+	printf	NIL,	$t0,	int
+	$t3	=	$0	+	4
+	$t0	=	$t3	+	$0
+	$t4	=	$t0	*	97
+	$t5	=	$0	-	$t4
+	$t6	=	$t5	+	$0
+	$t0	=	$t6	+	$0
+	printf	NIL,	$t0,	int
+	$t7	=	$0	+	4
+	$t0	=	$t7	+	$0
+	$t8	=	$0	+	-97
+	$t9	=	$t0	*	$t8
+	protect	$t0,	main_a1
+	$t0	=	$t9	+	$0
+	protect	$t0,	t7
+	protect	$t1,	t1
+	reload	$t1,	t7
+	$t0	=	$t1	+	$0
+	printf	NIL,	$t0,	int
 func_end_main:
 
 
