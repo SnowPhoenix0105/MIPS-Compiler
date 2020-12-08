@@ -21,6 +21,8 @@ void start_compile_without_optimization(unique_ptr<istream> input_file, ostream&
 
 void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream& target_file);
 
+void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostream& fmtir_file, ostream& target_file);
+
 string formated_content(LexicalAnalyzer& analyzer);
 
 std::unique_ptr<std::ostream> lexical_analyze(std::unique_ptr<std::istream> input_file, std::unique_ptr<std::ostream> output_file);

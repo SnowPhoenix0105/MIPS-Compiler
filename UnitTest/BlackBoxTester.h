@@ -130,12 +130,14 @@ namespace MarsTester
 	inline void test(const string& series_name, int count)
 	{
 		string source_file_name = test_resource_path + "\\" + series_name + "\\source.c";
-		string ir_file_name = test_resource_path + "\\" + series_name + "\\ir.asm";
+		string ir_file_name = test_resource_path + "\\" + series_name + "\\origin.ir";
+		string fmtir_file_name = test_resource_path + "\\" + series_name + "\\fmt.ir";
 		string assembly_file_name = test_resource_path + "\\" + series_name + "\\assembly.asm";
 		unique_ptr<istream> source_file(new ifstream(source_file_name));
 		ofstream assembly_file(assembly_file_name);
 		ofstream ir_file(ir_file_name);
-		get_ir_and_target(std::move(source_file), ir_file, assembly_file);
+		ofstream fmtir_file(fmtir_file_name);
+		get_ir_fmtir_target(std::move(source_file), ir_file, fmtir_file, assembly_file);
 		ir_file.close();
 		assembly_file.close();
 
@@ -162,11 +164,13 @@ namespace MarsTester
 		string result_file_name = test_resource_path + "\\" + series_name + "\\result.txt";
 		string expect_file_name = test_resource_path + "\\" + series_name + "\\expect.txt";
 		string assembly_file_name = test_resource_path + "\\" + series_name + "\\assembly.asm";
-		string ir_file_name = test_resource_path + "\\" + series_name + "\\ir.asm";
+		string ir_file_name = test_resource_path + "\\" + series_name + "\\origin.ir";
+		string fmtir_file_name = test_resource_path + "\\" + series_name + "\\fmt.ir";
 		unique_ptr<istream> source_file(new ifstream(source_file_name));
 		ofstream assembly_file(assembly_file_name);
 		ofstream ir_file(ir_file_name);
-		get_ir_and_target(std::move(source_file), ir_file, assembly_file);
+		ofstream fmtir_file(fmtir_file_name);
+		get_ir_fmtir_target(std::move(source_file), ir_file, fmtir_file, assembly_file);
 		ir_file.close();
 		assembly_file.close();
 		assembly_and_simulate(

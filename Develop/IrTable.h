@@ -9,7 +9,9 @@
 #include <unordered_set>
 #include <vector>
 #include <string>
+#include <sstream>
 
+using std::ostringstream;
 using std::string;
 using std::vector;
 using std::pair;
@@ -282,9 +284,14 @@ struct IrTable
 	vector<Ir>::const_iterator begin() const { return table.cbegin(); }
 	vector<Ir>::const_iterator end() const { return table.cend(); }
 	size_t size() const { return table.size(); }
-	string to_string(const IrElemAllocator& allocator);
+	string to_string(const IrElemAllocator& allocator) const;
+	string to_string(const IrElemAllocator& allocator, const Ir& code) const;
+	string to_string(const IrElemAllocator& allocator, size_t index) const { return to_string(allocator, table.at(index)); }
+	string to_string_without_tab(const IrElemAllocator& allocator, size_t index) const;
 private:
 	const vector<Ir> table;
+
+	void to_string(ostringstream& builder, const IrElemAllocator& allocator, const Ir& code) const;
 };
 
 struct IrTableBuilder : vector<Ir>
