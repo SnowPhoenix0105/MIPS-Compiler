@@ -11,6 +11,7 @@
 // global defines /////////////////////////////////////////////////////////////////////
 #ifndef __DELETE_ALL_GLOBAL_MACROS__
 
+#define ENABLE_OPTIMIZE
 
 #define HW_2
 

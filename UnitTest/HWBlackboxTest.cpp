@@ -135,6 +135,10 @@ namespace BlackboxTest
 		TEST_CASE(hw_2_3_6)
 		TEST_CASE(hw_2_3_7)
 		TEST_CASE(hw_2_3_8)
+
+		TEST_CASE(hw_o1_1)
+		TEST_CASE(hw_o1_2)
+		TEST_CASE(hw_o1_3)
 	};
 
 	const string HWBlackboxTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\hw_samples");

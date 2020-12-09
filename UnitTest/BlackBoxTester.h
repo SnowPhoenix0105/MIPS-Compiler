@@ -137,7 +137,16 @@ namespace MarsTester
 		ofstream assembly_file(assembly_file_name);
 		ofstream ir_file(ir_file_name);
 		ofstream fmtir_file(fmtir_file_name);
-		get_ir_fmtir_target(std::move(source_file), ir_file, fmtir_file, assembly_file);
+		try
+		{
+			get_ir_fmtir_target(std::move(source_file), ir_file, fmtir_file, assembly_file);
+		}
+		catch (...)
+		{
+			ir_file.close();
+			assembly_file.close();
+			throw;
+		}
 		ir_file.close();
 		assembly_file.close();
 

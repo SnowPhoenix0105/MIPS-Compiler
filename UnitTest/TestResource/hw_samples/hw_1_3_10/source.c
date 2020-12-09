@@ -13,7 +13,11 @@ void main() {
 	printf("18373489");
 	for (i=0;i<5;i=i+1) {
 		for (j=0;j<5;j=j+1){
-			max[i][j] = temp[i] * zero / negtive + tempp[j] - temp[i] + China;
+			max[i][j] = 
+				temp[i] * zero / negtive 
+				+ tempp[j] 
+				- temp[i] 
+				+ China;
 		}
 	}
 	printf("1");

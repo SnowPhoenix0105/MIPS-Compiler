@@ -133,12 +133,13 @@ class InputAndExpectGenerator:
         command = self.exe_file_name() + " > " + self.expect_file_name(num) + " < " + self.input_file_name(num)
         os.system(command)
             
-    def auto_gen(self, count: int):
+    def auto_gen(self, count: int, need_input: bool=True):
         self.scan_scanfs()
         self.format_source_from_c_to_cpp()
         self.compile_cpp_to_exe()
         for i in range(count):
-            self.gen_input(i)
+            if need_input:
+                self.gen_input(i)
             self.run_exe_and_reencode(i)
         
 
@@ -159,7 +160,6 @@ if __name__ == "__main__":
     # generator.auto_gen(4)
     # generator = InputAndExpectGenerator("auto_samples\\sample8")
     # generator.auto_gen(1)
-    # generator = InputAndExpectGenerator("auto_samples\\sample9")
-    # generator.auto_gen(1)
-    generator = InputAndExpectGenerator("auto_samples\\sample10")
-    generator.auto_gen(4)
+    generator = InputAndExpectGenerator("auto_samples\\sample9")
+    generator.auto_gen(1, False)
+    

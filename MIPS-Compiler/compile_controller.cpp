@@ -25,11 +25,20 @@ void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 		std::cout << ir_table_ptr->to_string(*allocator_ptr) << endl;
 #endif // DEBUG_LEVEL
 
+#ifdef ENABLE_OPTIMIZE
 		shared_ptr<IrTable> formatted_ir = OptimizerFormat().parse(*ir_table_ptr, allocator_ptr);
 		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, formatted_ir).build();
 
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
 		target_code_generator->translate(output_file);
+
+#else
+		unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
+		target_code_generator->translate(output_file);
+
+#endif // ENABLE_OPTIMIZE
+
+
 	}
 	catch (const std::exception& e)
 	{
@@ -80,15 +89,24 @@ void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream
 		shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
 		shared_ptr<IrTable> ir_table_ptr = syntactic_analyzer.get_ir_table();
 
-		ir_file << ir_table_ptr->to_string(*allocator_ptr) << endl;
 
 		/*unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
 		target_code_generator->translate(target_file);*/
+#ifdef ENABLE_OPTIMIZE
 		shared_ptr<IrTable> formatted_ir = OptimizerFormat().parse(*ir_table_ptr, allocator_ptr);
 		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, formatted_ir).build();
 
+		ir_file << registered_ir->to_string(*allocator_ptr) << endl;
+
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
 		target_code_generator->translate(target_file);
+#else
+		ir_file << ir_table_ptr->to_string(*allocator_ptr) << endl;
+		unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
+		target_code_generator->translate(target_file);
+
+#endif // DEABLE_OPTIMIZE
+
 	}
 	catch (const std::exception& e)
 	{
@@ -99,6 +117,48 @@ void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream
 	{
 
 	}
+}
+
+void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostream& fmtir_file, ostream& target_file)
+{
+	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
+	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
+	//try
+	{
+		syntactic_analyzer.parse();
+		shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
+		shared_ptr<IrTable> ir_table_ptr = syntactic_analyzer.get_ir_table();
+		ir_file << ir_table_ptr->to_string(*allocator_ptr) << endl;
+
+
+		/*unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
+		target_code_generator->translate(target_file);*/
+
+#ifdef ENABLE_OPTIMIZE
+
+		shared_ptr<IrTable> formatted_ir = OptimizerFormat().parse(*ir_table_ptr, allocator_ptr);
+		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, formatted_ir).build();
+
+		fmtir_file << registered_ir->to_string(*allocator_ptr) << endl;
+
+		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
+		target_code_generator->translate(target_file);
+
+#else
+		unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
+		target_code_generator->translate(target_file);
+#endif // ENABLE_OPTIMIZE
+
+	}
+	//catch (const std::exception& e)
+	//{
+	//	// *output_file << "1 " << e.what() << endl;
+	//	std::cout << "WRONG" << e.what() << endl;
+	//}
+	//catch (...)
+	//{
+
+	//}
 }
 
 string formated_content(LexicalAnalyzer& analyzer)

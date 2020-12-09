@@ -988,16 +988,18 @@ void GCPRegisterAllocator::walk()
 		case IrHead::less:
 		{
 			Ir new_code = code;
-			new_code.elem[0] = write_reg_of_var(code.elem[0]);
-			keep_in_tx.insert(new_code.elem[0]);
 
 			new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
 			keep_in_tx.insert(new_code.elem[1]);
 
 			new_code.elem[2] = use_reg_or_cst_of_val(code.elem[2]);
+			keep_in_tx.insert(new_code.elem[2]);
+
+			new_code.elem[0] = write_reg_of_var(code.elem[0]);
+
 			buffer.push_back(new_code);
 
-			keep_in_tx.erase(new_code.elem[0]);
+			keep_in_tx.erase(new_code.elem[2]);
 			keep_in_tx.erase(new_code.elem[1]);
 			break;
 		}
@@ -1005,15 +1007,17 @@ void GCPRegisterAllocator::walk()
 		case IrHead::lb:
 		{
 			Ir new_code = code;
-			new_code.elem[0] = write_reg_of_var(code.elem[0]);
-			keep_in_tx.insert(new_code.elem[0]);
 
 			new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
+			keep_in_tx.insert(new_code.elem[1]);
 
 			new_code.elem[2] = code.elem[2];
+
+			new_code.elem[0] = write_reg_of_var(code.elem[0]);
+
 			buffer.push_back(new_code);
 
-			keep_in_tx.erase(new_code.elem[0]);
+			keep_in_tx.erase(new_code.elem[1]);
 			break;
 		}
 		case IrHead::beq:
@@ -1273,6 +1277,10 @@ void GCPRegisterAllocator::free_treg_of_sync_no_reg_svar_and_gvar()
 {
 	for (auto& pair : tmp_reg_pool)
 	{
+		if (keep_in_tx.count(pair.first))
+		{
+			continue;
+		}
 		if (save_reg_alloc.count(pair.second) != 0)
 		{
 			if (!tmp_reg_dirty.at(pair.first))
@@ -1319,6 +1327,10 @@ void GCPRegisterAllocator::protect_all_vars_in_tmp_regs_to_stack()
 			buffer.push_back(ir.protect(pair.first, pair.second));
 			tmp_reg_dirty[pair.first] = false;
 			var_status->at(pair.second) = pair.second;
+		}
+		else
+		{
+			var_status->erase(pair.second);
 		}
 		pair.second = IrType::NIL;
 	}

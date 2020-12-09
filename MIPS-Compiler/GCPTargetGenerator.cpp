@@ -1335,12 +1335,14 @@ irelem_t GCPRegisterAllocator::tmp_reg_gc()
 			continue;
 		}
 		irelem_t var = pair.second;
-		if (gvar_status.count(var) != 0 && in.count(var) == 0)
+		if (gvar_status.count(var) == 0 && in.count(var) == 0)
 		{
+			var_status->erase(var);
 			pair.second = IrType::NIL;
 			ret = pair.first;
 		}
-	}return ret;
+	}
+	return ret;
 }
 
 irelem_t GCPRegisterAllocator::alloc_tmp_reg()
