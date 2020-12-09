@@ -112,10 +112,11 @@ void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream
 	{
 		// *output_file << "1 " << e.what() << endl;
 		std::cout << "WRONG" << e.what() << endl;
+		throw;
 	}
 	catch (...)
 	{
-
+		throw;
 	}
 }
 
@@ -123,7 +124,7 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 {
 	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
 	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
-	//try
+	try
 	{
 		syntactic_analyzer.parse();
 		shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
@@ -137,6 +138,7 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 #ifdef ENABLE_OPTIMIZE
 
 		shared_ptr<IrTable> formatted_ir = OptimizerFormat().parse(*ir_table_ptr, allocator_ptr);
+		ir_file << "\n\n\n\n\n\n\n\n\n\n\n\n\nn\n\n\n\n\n\n\n\n" << formatted_ir->to_string(*allocator_ptr) << endl;
 		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, formatted_ir).build();
 
 		fmtir_file << registered_ir->to_string(*allocator_ptr) << endl;
@@ -150,15 +152,16 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 #endif // ENABLE_OPTIMIZE
 
 	}
-	//catch (const std::exception& e)
-	//{
-	//	// *output_file << "1 " << e.what() << endl;
-	//	std::cout << "WRONG" << e.what() << endl;
-	//}
-	//catch (...)
-	//{
-
-	//}
+	catch (const std::exception& e)
+	{
+		// *output_file << "1 " << e.what() << endl;
+		std::cout << "WRONG" << e.what() << endl;
+		throw;
+	}
+	catch (...)
+	{
+		throw;
+	}
 }
 
 string formated_content(LexicalAnalyzer& analyzer)

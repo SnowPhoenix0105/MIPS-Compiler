@@ -9,6 +9,8 @@
 class OptimizerFormat : IOptimizer
 {
 public:
+	const int MAX_SIGNED_16 = 0x7fff;
+	const int MIN_SIGNED_16 = ~0x7fff;
 	virtual ~OptimizerFormat() = default;
 	virtual shared_ptr<IrTable> parse(const IrTable& origin, shared_ptr<IrElemAllocator> allocator);
 };

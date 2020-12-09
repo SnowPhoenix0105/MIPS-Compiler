@@ -138,6 +138,7 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 #ifdef ENABLE_OPTIMIZE
 
 		shared_ptr<IrTable> formatted_ir = OptimizerFormat().parse(*ir_table_ptr, allocator_ptr);
+		ir_file << "\n\n\n\n\n\n\n\n\n\n\n\n\nn\n\n\n\n\n\n\n\n" << formatted_ir->to_string(*allocator_ptr) << endl;
 		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, formatted_ir).build();
 
 		fmtir_file << registered_ir->to_string(*allocator_ptr) << endl;

@@ -313,6 +313,17 @@ shared_ptr<IrTable> OptimizerFormat::parse(const IrTable& origin, shared_ptr<IrE
 			bool cst_2 = IrType::is_cst(code.elem[2]);
 			if (!cst_1)
 			{
+				if (cst_2)
+				{
+					int value = allocator.imm_to_value(code.elem[2]);
+					if (value > MAX_SIGNED_16 || value < MIN_SIGNED_16)
+					{
+						irelem_t tmp = allocator.alloc_tmp();
+						builder.push_back(ir.add(tmp, allocator.zero(), code.elem[2]));
+						builder.push_back(ir.less(code.elem[0], code.elem[1], tmp));
+						break;
+					}
+				}
 				builder.push_back(code);
 				break;
 			}
