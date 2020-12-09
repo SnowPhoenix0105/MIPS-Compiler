@@ -774,8 +774,11 @@ int analyze_function(
 	id_type->base_type = return_type;
 	id_type->extern_type = ExternType::function;
 	id_type->param_type_list = param_type_list;
-	shared_ptr<IdentifierInfo> function_info = make_shared<FunctionIdentifierInfo>();
+	shared_ptr<FunctionIdentifierInfo> function_info = make_shared<FunctionIdentifierInfo>();
 	function_info->return_type = id_type;
+	function_info->ir_id = beg;
+	function_info->mid_label = mid;
+	function_info->end_label = end;
 	function_info->id = function_id;
 	if (need_insert)
 	{

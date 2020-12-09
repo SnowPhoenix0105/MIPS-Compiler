@@ -75,6 +75,9 @@
     <ClCompile Include="OptimizerFormat.cpp">
       <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="OptimizerRemoveEmptyFunction.cpp">
+      <Filter>BaackEnd\Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compile_controller.h">
@@ -132,6 +135,9 @@
       <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="OptimizerFormat.h">
+      <Filter>BaackEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="OptimizerRemoveEmptyFunction.h">
       <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
   </ItemGroup>
