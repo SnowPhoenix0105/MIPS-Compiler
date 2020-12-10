@@ -3,6 +3,7 @@
 #include "OptimizerFormat.h"
 #include "OptimizerRemoveEmptyFunction.h"
 #include "OptimizerRemoveNearbyCopy.h"
+#include "OptimizerCalculateStrengthReduction.h"
 #include <iostream>
 #include <memory>
 
@@ -14,6 +15,15 @@ using std::cin;
 using std::endl;
 using std::istream;
 using std::ostream;
+
+shared_ptr<IOptimizer> optimizers[] =
+{
+	make_shared<OptimizerCalculateStrengthReduction>(),
+	make_shared<OptimizerRemoveEmptyFunction>(),
+	make_shared<OptimizerFormat>(),
+	make_shared<OptimizerRemoveNearbyCopy>(),
+	make_shared<OptimizerFormat>()
+};
 
 void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 {
@@ -29,14 +39,7 @@ void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 #endif // DEBUG_LEVEL
 
 #ifdef ENABLE_OPTIMIZE
-		shared_ptr<IOptimizer> optimizers[] = 
-		{
-			make_shared<OptimizerRemoveEmptyFunction>(),
-			make_shared<OptimizerFormat>(),
-			make_shared<OptimizerRemoveNearbyCopy>(),
-			make_shared<OptimizerFormat>()
-		};
-		
+
 		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
 		{
 			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
@@ -107,13 +110,7 @@ void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream
 		/*unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
 		target_code_generator->translate(target_file);*/
 #ifdef ENABLE_OPTIMIZE
-		shared_ptr<IOptimizer> optimizers[] =
-		{
-			make_shared<OptimizerRemoveEmptyFunction>(),
-			make_shared<OptimizerFormat>(),
-			make_shared<OptimizerRemoveNearbyCopy>(),
-			make_shared<OptimizerFormat>()
-		};
+
 		ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
 		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
 		{
@@ -161,13 +158,7 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 		target_code_generator->translate(target_file);*/
 
 #ifdef ENABLE_OPTIMIZE
-		shared_ptr<IOptimizer> optimizers[] =
-		{
-			make_shared<OptimizerRemoveEmptyFunction>(),
-			make_shared<OptimizerFormat>(),
-			make_shared<OptimizerRemoveNearbyCopy>(),
-			make_shared<OptimizerFormat>()
-		};
+
 		ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
 		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
 		{

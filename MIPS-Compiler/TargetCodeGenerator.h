@@ -78,6 +78,10 @@ struct MipsInstructionFormatter
 
 	string addu(const string& target, const string& source1, int source2) const
 	{
+		if (source1 == "$0" || source1 == "0" || source1 == "$zero")
+		{
+			return triple("li", target, to_string(source2));
+		}
 		return quaternary("addiu", target, source1, to_string(source2));
 	}
 

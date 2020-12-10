@@ -85,7 +85,7 @@
       <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
     <ClCompile Include="OptimizerCalculateStrengthReduction.cpp">
-      <Filter>源文件</Filter>
+      <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -156,7 +156,7 @@
       <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="OptimizerCalculateStrengthReduction.h">
-      <Filter>头文件</Filter>
+      <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

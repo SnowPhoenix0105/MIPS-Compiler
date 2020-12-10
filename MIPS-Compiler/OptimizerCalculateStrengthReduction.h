@@ -1,4 +1,3 @@
-#pragma once
 
 #ifndef __OPTIMIZER_CALCULATE_STRENGTH_REDUCTION_H__
 #define __OPTIMIZER_CALCULATE_STRENGTH_REDUCTION_H__
@@ -9,7 +8,7 @@ class OptimizerCalculateStrengthReduction :
 {
 private:
 	/// <summary>
-	/// 如果存在 n < 32, 使得 num == 2^n, 则返回n, 否则返回 -1
+	/// 濡傛灉瀛樺湪 n < 32, 浣垮緱 num == 2^n, 鍒欒繑鍥瀗, 鍚﹀垯杩斿洖 -1
 	/// </summary>
 	/// <param name="num"></param>
 	/// <returns></returns>
