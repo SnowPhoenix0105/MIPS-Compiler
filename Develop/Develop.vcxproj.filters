@@ -84,6 +84,9 @@
     <ClCompile Include="OptimizerRemoveNearbyCopy.cpp">
       <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="OptimizerCalculateStrengthReduction.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compile_controller.h">
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="OptimizerRemoveNearbyCopy.h">
       <Filter>BaackEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="OptimizerCalculateStrengthReduction.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

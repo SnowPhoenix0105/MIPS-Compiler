@@ -144,6 +144,7 @@
     <ClCompile Include="Detectors.cpp" />
     <ClCompile Include="ErrorType.cpp" />
     <ClCompile Include="OpitimizerCommonSubexpressionRemove.cpp" />
+    <ClCompile Include="OptimizerCalculateStrengthReduction.cpp" />
     <ClCompile Include="OptimizerFormat.cpp" />
     <ClCompile Include="GCPTargetGenerator.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="Detectors.h" />
     <ClInclude Include="ErrorType.h" />
     <ClInclude Include="OpitimizerCommonSubexpressionRemove.h" />
+    <ClInclude Include="OptimizerCalculateStrengthReduction.h" />
     <ClInclude Include="OptimizerFormat.h" />
     <ClInclude Include="GCPTargetGenerator.h" />
     <ClInclude Include="global_control.h" />
