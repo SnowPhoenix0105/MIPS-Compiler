@@ -102,7 +102,7 @@ void OptimizerCalculateStrengthReduction::trans_div(const Ir& origin)
     {
         rlt.head = IrHead::add;
         rlt.elem[1] = allocator_ptr->zero();
-        int mult_rlt = allocator_ptr->imm_to_value(origin.elem[1]) * allocator_ptr->imm_to_value(origin.elem[2]);
+        int mult_rlt = allocator_ptr->imm_to_value(origin.elem[1]) / allocator_ptr->imm_to_value(origin.elem[2]);
         rlt.elem[2] = allocator_ptr->alloc_imm(mult_rlt);
         buffer.push_back(rlt);
         return;
