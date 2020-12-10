@@ -1,0 +1,31 @@
+void main() {
+    int num;
+    scanf(num);
+    printf(num / 1);
+    scanf(num);
+    printf(num / 2);
+    scanf(num);
+    printf(num / 4);
+    scanf(num);
+    printf(num / 8);
+    scanf(num);
+    printf(num / 64);
+    scanf(num);
+    printf(num / 1024);
+    scanf(num);
+    printf(num / 1879048192);
+    scanf(num);
+    printf(num / -1);
+    scanf(num);
+    printf(num / -2);
+    scanf(num);
+    printf(num / -4);
+    scanf(num);
+    printf(num / -8);
+    scanf(num);
+    printf(num / -64);
+    scanf(num);
+    printf(num / -1024);
+    scanf(num);
+    printf(num / -1879048192);
+}
