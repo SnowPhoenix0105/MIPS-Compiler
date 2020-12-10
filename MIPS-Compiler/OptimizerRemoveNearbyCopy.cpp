@@ -74,17 +74,17 @@ irelem_t OptimizerRemoveNearbyCopy::copy_target(const IrTable& origin)
 		unique_ptr<FromToInfo> cpinfo = detect_copy(origin.at(next_index));
 		if (cpinfo == nullptr)
 		{
-			// Î´·¢Éú¸´ÖÆ
+			// æœªå‘ç”Ÿå¤åˆ¶
 			return ret;
 		}
 		if (var_activition_analyze_result->get_out(next_index).count(ret) != 0)
 		{
-			// ¸´ÖÆºó, Ô´ÈÔÈ»»îÔ¾
+			// å¤åˆ¶åŽ, æºä»ç„¶æ´»è·ƒ
 			return ret;
 		}
 		if (cpinfo->from != ret)
 		{
-			// ²¢·Ç´Óµ±Ç°Öµ½øÐÐµÄ¸´ÖÆ
+			// å¹¶éžä»Žå½“å‰å€¼è¿›è¡Œçš„å¤åˆ¶
 			return ret;
 		}
 		ret = cpinfo->to;

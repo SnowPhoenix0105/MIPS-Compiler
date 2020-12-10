@@ -5,7 +5,7 @@
 
 #include "IOptimizer.h"
 
-class OptimizerFormat : IOptimizer
+class OptimizerFormat : public IOptimizer
 {
 public:
 	const int MAX_SIGNED_16 = 0x7fff;

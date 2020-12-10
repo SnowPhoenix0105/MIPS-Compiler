@@ -32,8 +32,8 @@ void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 		shared_ptr<IOptimizer> optimizers[] = 
 		{
 			make_shared<OptimizerRemoveEmptyFunction>(),
-			// make_shared<OptimizerFormat>(),
-			// make_shared<OptimizerRemoveNearbyCopy>(),
+			make_shared<OptimizerFormat>(),
+			make_shared<OptimizerRemoveNearbyCopy>(),
 			make_shared<OptimizerFormat>()
 		};
 		
@@ -43,7 +43,7 @@ void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 		}
 
 		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, ir_table_ptr).build();
-		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, ir_table_ptr));
+		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
 		target_code_generator->translate(output_file);
 
 #else
@@ -110,8 +110,8 @@ void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream
 		shared_ptr<IOptimizer> optimizers[] =
 		{
 			make_shared<OptimizerRemoveEmptyFunction>(),
-			// make_shared<OptimizerFormat>(),
-			// make_shared<OptimizerRemoveNearbyCopy>(),
+			make_shared<OptimizerFormat>(),
+			make_shared<OptimizerRemoveNearbyCopy>(),
 			make_shared<OptimizerFormat>()
 		};
 		ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
@@ -164,8 +164,8 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 		shared_ptr<IOptimizer> optimizers[] =
 		{
 			make_shared<OptimizerRemoveEmptyFunction>(),
-			// make_shared<OptimizerFormat>(),
-			// make_shared<OptimizerRemoveNearbyCopy>(),
+			make_shared<OptimizerFormat>(),
+			make_shared<OptimizerRemoveNearbyCopy>(),
 			make_shared<OptimizerFormat>()
 		};
 		ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;

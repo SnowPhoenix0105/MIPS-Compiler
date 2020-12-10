@@ -1,6 +1,8 @@
 #include "global_control.h"
 #include "compile_controller.h"
+#include "OptimizerFormat.h"
 #include "OptimizerRemoveEmptyFunction.h"
+#include "OptimizerRemoveNearbyCopy.h"
 #include <iostream>
 #include <memory>
 
@@ -27,10 +29,20 @@ void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 #endif // DEBUG_LEVEL
 
 #ifdef ENABLE_OPTIMIZE
-		shared_ptr<IrTable> no_empty_func = OptimizerRemoveEmptyFunction().parse(*ir_table_ptr, allocator_ptr);
-		shared_ptr<IrTable> formatted_ir = OptimizerFormat().parse(*no_empty_func, allocator_ptr);
-		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, formatted_ir).build();
+		shared_ptr<IOptimizer> optimizers[] = 
+		{
+			make_shared<OptimizerRemoveEmptyFunction>(),
+			make_shared<OptimizerFormat>(),
+			make_shared<OptimizerRemoveNearbyCopy>(),
+			make_shared<OptimizerFormat>()
+		};
+		
+		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
+		{
+			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
+		}
 
+		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, ir_table_ptr).build();
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
 		target_code_generator->translate(output_file);
 
@@ -95,12 +107,22 @@ void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream
 		/*unique_ptr<ITargetCodeGenerator> target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
 		target_code_generator->translate(target_file);*/
 #ifdef ENABLE_OPTIMIZE
-		shared_ptr<IrTable> no_empty_func = OptimizerRemoveEmptyFunction().parse(*ir_table_ptr, allocator_ptr);
-		shared_ptr<IrTable> formatted_ir = OptimizerFormat().parse(*no_empty_func, allocator_ptr);
-		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, formatted_ir).build();
+		shared_ptr<IOptimizer> optimizers[] =
+		{
+			make_shared<OptimizerRemoveEmptyFunction>(),
+			make_shared<OptimizerFormat>(),
+			make_shared<OptimizerRemoveNearbyCopy>(),
+			make_shared<OptimizerFormat>()
+		};
+		ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
+		{
+			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
+			ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+		}
 
+		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, ir_table_ptr).build();
 		ir_file << registered_ir->to_string(*allocator_ptr) << endl;
-
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
 		target_code_generator->translate(target_file);
 #else
@@ -139,13 +161,21 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 		target_code_generator->translate(target_file);*/
 
 #ifdef ENABLE_OPTIMIZE
+		shared_ptr<IOptimizer> optimizers[] =
+		{
+			make_shared<OptimizerRemoveEmptyFunction>(),
+			make_shared<OptimizerFormat>(),
+			make_shared<OptimizerRemoveNearbyCopy>(),
+			make_shared<OptimizerFormat>()
+		};
+		ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
+		{
+			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
+			ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+		}
 
-		shared_ptr<IrTable> no_empty_func = OptimizerRemoveEmptyFunction().parse(*ir_table_ptr, allocator_ptr);
-		ir_file << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << no_empty_func->to_string(*allocator_ptr) << endl;
-		shared_ptr<IrTable> formatted_ir = OptimizerFormat().parse(*no_empty_func, allocator_ptr);
-		ir_file << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << formatted_ir->to_string(*allocator_ptr) << endl;
-		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, formatted_ir).build();
-
+		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, ir_table_ptr).build();
 		fmtir_file << registered_ir->to_string(*allocator_ptr) << endl;
 
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
