@@ -151,6 +151,7 @@
     <ClCompile Include="LexicalAnalyzer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OpitimizerCommonSubexpressionRemove.cpp" />
+    <ClCompile Include="OptimizerCalculateStrengthReduction.cpp" />
     <ClCompile Include="OptimizerFormat.cpp" />
     <ClCompile Include="OptimizerRemoveEmptyFunction.cpp" />
     <ClCompile Include="OptimizerRemoveNearbyCopy.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="IrTable.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
     <ClInclude Include="OpitimizerCommonSubexpressionRemove.h" />
+    <ClInclude Include="OptimizerCalculateStrengthReduction.h" />
     <ClInclude Include="OptimizerFormat.h" />
     <ClInclude Include="OptimizerRemoveEmptyFunction.h" />
     <ClInclude Include="OptimizerRemoveNearbyCopy.h" />
