@@ -87,6 +87,9 @@
     <ClCompile Include="OptimizerCalculateStrengthReduction.cpp">
       <Filter>BaackEnd\Sources</Filter>
     </ClCompile>
+    <ClCompile Include="ReplaceByMov.cpp">
+      <Filter>BaackEnd\Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compile_controller.h">
@@ -156,6 +159,9 @@
       <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
     <ClInclude Include="OptimizerCalculateStrengthReduction.h">
+      <Filter>BaackEnd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplaceByMov.h">
       <Filter>BaackEnd\Headers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -137,8 +137,6 @@ void OptimizerCalculateStrengthReduction::trans_div(const Ir& origin)
         int pow = pow2(imm_value);
         if (pow < 0)
         {
-            rlt.elem[1] = var;
-            rlt.elem[2] = imm;
             buffer.push_back(rlt);
             return;
         }
@@ -150,7 +148,7 @@ void OptimizerCalculateStrengthReduction::trans_div(const Ir& origin)
         irelem_t mid = allocator_ptr->mid();
         irelem_t end = allocator_ptr->end();
         irelem_t tmp = allocator_ptr->alloc_tmp();
-        buffer.push_back(ir.add(tmp, var, allocator_ptr->alloc_imm((1 << pow) - 1)));
+        buffer.push_back(ir.add(tmp, var, allocator_ptr->alloc_imm((1 << static_cast<unsigned>(pow)) - 1)));
         irelem_t cmp = allocator_ptr->alloc_tmp();
         buffer.push_back(ir.less(cmp, var, allocator_ptr->zero()));
         buffer.push_back(ir.bne(cmp, allocator_ptr->zero(), mid));

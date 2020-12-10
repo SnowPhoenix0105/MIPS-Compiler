@@ -676,6 +676,22 @@ void IrTable::to_string(ostringstream& builder, const IrElemAllocator& allocator
 			<< (code.elem[2] == IrType::_int ? "int" : "char")
 			<< endl;
 		break;
+	case IrHead::movn:
+		builder << "\tif " << allocator.var_to_string(code.elem[2])
+			<< " != 0"
+			<< allocator.var_to_string(code.elem[0])
+			<< "\t=\t"
+			<< allocator.var_to_string(code.elem[1])
+			<< endl;
+		break;
+	case IrHead::movz:
+		builder << "\tif " << allocator.var_to_string(code.elem[2])
+			<< " == 0"
+			<< allocator.var_to_string(code.elem[0])
+			<< "\t=\t"
+			<< allocator.var_to_string(code.elem[1])
+			<< endl;
+		break;
 	case IrHead::protect:
 		builder << "\tprotect\t"
 			<< (code.elem[0] == IrType::NIL ? "NIL" : allocator.var_to_string(code.elem[0]))

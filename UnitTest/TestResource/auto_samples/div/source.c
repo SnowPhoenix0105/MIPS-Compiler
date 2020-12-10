@@ -13,7 +13,7 @@ void main() {
     scanf(num);
     printf(num / 1024);
     scanf(num);
-    printf(num / 1879048192);
+    printf(num / 1073741824);
     scanf(num);
     printf(num / -1);
     scanf(num);
@@ -27,5 +27,5 @@ void main() {
     scanf(num);
     printf(num / -1024);
     scanf(num);
-    printf(num / -1879048192);
+    printf(num / -1073741824);
 }

@@ -1,69 +1,10 @@
 #include "OptimizerRemoveNearbyCopy.h"
 #include <unordered_set>
+#include "Detectors.h"
 
 using std::unordered_set;
-
-unique_ptr<FromToInfo> OptimizerRemoveNearbyCopy::detect_copy(const Ir& code)
-{
-	const auto& allocator = *allocator_ptr;
-	switch (code.head)
-	{
-	case IrHead::add:
-	case IrHead::_or:
-		if (IrType::is_imm(code.elem[1]) && allocator.imm_to_value(code.elem[1]) == 0 && IrType::is_var(code.elem[2]))
-		{
-			return FromToInfo::build_unique(code.elem[2], code.elem[0]);
-		}
-		if (code.elem[1] == allocator.zero() && IrType::is_var(code.elem[2]))
-		{
-			return FromToInfo::build_unique(code.elem[2], code.elem[0]);
-		}
-		if (IrType::is_imm(code.elem[2]) && allocator.imm_to_value(code.elem[2]) == 0 && IrType::is_var(code.elem[1]))
-		{
-			return FromToInfo::build_unique(code.elem[1], code.elem[0]);
-		}
-		if (code.elem[2] == allocator.zero() && IrType::is_var(code.elem[1]))
-		{
-			return FromToInfo::build_unique(code.elem[1], code.elem[0]);
-		}
-		return nullptr;
-	case IrHead::mult:
-		if (IrType::is_imm(code.elem[1]) && allocator.imm_to_value(code.elem[1]) == 1 && IrType::is_var(code.elem[2]))
-		{
-			return FromToInfo::build_unique(code.elem[2], code.elem[0]);
-		}
-	case IrHead::div:
-		if (IrType::is_imm(code.elem[2]) && allocator.imm_to_value(code.elem[2]) == 1 && IrType::is_var(code.elem[1]))
-		{
-			return FromToInfo::build_unique(code.elem[1], code.elem[0]);
-		}
-		return nullptr;
-	case IrHead::_and:
-		if (IrType::is_imm(code.elem[1]) && allocator.imm_to_value(code.elem[1]) == ~0 && IrType::is_var(code.elem[2]))
-		{
-			return FromToInfo::build_unique(code.elem[2], code.elem[0]);
-		}
-		if (IrType::is_imm(code.elem[2]) && allocator.imm_to_value(code.elem[2]) == ~0 && IrType::is_var(code.elem[1]))
-		{
-			return FromToInfo::build_unique(code.elem[1], code.elem[0]);
-		}
-		return nullptr;
-	case IrHead::sub:
-	case IrHead::sl:
-	case IrHead::sr:
-		if (IrType::is_imm(code.elem[2]) && allocator.imm_to_value(code.elem[2]) == 0 && IrType::is_var(code.elem[1]))
-		{
-			return FromToInfo::build_unique(code.elem[1], code.elem[0]);
-		}
-		if (code.elem[2] == allocator.zero() && IrType::is_var(code.elem[1]))
-		{
-			return FromToInfo::build_unique(code.elem[1], code.elem[0]);
-		}
-		return nullptr;
-	default:
-		return nullptr;
-	}
-}
+using IrDetectors::FromToInfo;
+using IrDetectors::detect_copy;
 
 irelem_t OptimizerRemoveNearbyCopy::copy_target(const IrTable& origin)
 {
@@ -71,7 +12,7 @@ irelem_t OptimizerRemoveNearbyCopy::copy_target(const IrTable& origin)
 	while (true)
 	{
 		size_t next_index = current_index + 1;
-		unique_ptr<FromToInfo> cpinfo = detect_copy(origin.at(next_index));
+		unique_ptr<FromToInfo> cpinfo = detect_copy(origin.at(next_index), *allocator_ptr);
 		if (cpinfo == nullptr)
 		{
 			// Î´·¢Éú¸´ÖÆ

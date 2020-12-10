@@ -1,0 +1,472 @@
+.data
+__GP__:
+.space 4000
+.word 19971231
+.word 19981013
+.word 1000000007
+.word	0
+
+
+
+
+
+.text
+	j	func_beg_main
+
+func_beg_myscanf:
+	addiu	$sp,$sp,-4
+func_mid_myscanf:
+	li	$v0,5
+	syscall
+	addu	$v1,$v0,$0
+	addiu	$sp,$sp,4
+	jr	$ra
+func_end_myscanf:
+	addiu	$sp,$sp,4
+	jr	$ra
+
+
+
+
+func_beg_myprintf:
+	addiu	$sp,$sp,-8
+func_mid_myprintf:
+	addu	$t0,$a0,$0
+	addu	$a0,$0,$t0
+	li	$v0,1
+	syscall
+	li	$a0,10
+	li	$v0,11
+	syscall
+	addu	$a0,$t0,$0
+	addiu	$sp,$sp,8
+	jr	$ra
+func_end_myprintf:
+	addiu	$sp,$sp,8
+	jr	$ra
+
+
+
+
+func_beg_set:
+	addiu	$sp,$sp,-180
+	sw	$s0,136($sp)
+	sw	$s1,140($sp)
+	sw	$s2,144($sp)
+	sw	$s3,148($sp)
+	sw	$s4,152($sp)
+	sw	$s5,156($sp)
+	sw	$s6,160($sp)
+	sw	$s7,164($sp)
+func_mid_set:
+	li	$t0,10
+	li	$s7,0
+	li	$t1,1
+	li	$t2,0
+	addu	$t3,$sp,$t2
+	sw	$t1,0($t3)
+	li	$t4,0
+	addu	$t5,$sp,$t4
+	lw	$t6,0($t5)
+	sll	$t7,$t6,1
+	li	$t8,4
+	addu	$t9,$sp,$t8
+	sw	$t7,0($t9)
+	li	$t9,4
+	addu	$t1,$sp,$t9
+	lw	$t2,0($t1)
+	sll	$t3,$t2,1
+	li	$t4,8
+	addu	$t5,$sp,$t4
+	sw	$t3,0($t5)
+	li	$t6,8
+	addu	$t7,$sp,$t6
+	lw	$t8,0($t7)
+	sll	$t9,$t8,1
+	li	$t1,12
+	addu	$t2,$sp,$t1
+	sw	$t9,0($t2)
+	li	$t3,12
+	addu	$t4,$sp,$t3
+	lw	$t5,0($t4)
+	sll	$t6,$t5,1
+	li	$t7,16
+	addu	$t9,$sp,$t7
+	sw	$t6,0($t9)
+	li	$t1,16
+	addu	$t2,$sp,$t1
+	lw	$t3,0($t2)
+	sll	$t4,$t3,1
+	li	$t5,20
+	addu	$t8,$sp,$t5
+	sw	$t4,0($t8)
+	li	$t9,20
+	addu	$t1,$sp,$t9
+	lw	$t2,0($t1)
+	sll	$t3,$t2,1
+	li	$t4,24
+	addu	$t5,$sp,$t4
+	sw	$t3,0($t5)
+	li	$t6,24
+	addu	$t7,$sp,$t6
+	lw	$t8,0($t7)
+	sll	$t9,$t8,1
+	li	$t1,28
+	addu	$t2,$sp,$t1
+	sw	$t9,0($t2)
+	li	$t3,28
+	addu	$t4,$sp,$t3
+	lw	$t5,0($t4)
+	sll	$t6,$t5,1
+	li	$t7,32
+	addu	$t9,$sp,$t7
+	sw	$t6,0($t9)
+	li	$t1,32
+	addu	$t2,$sp,$t1
+	lw	$t3,0($t2)
+	sll	$t4,$t3,1
+	li	$t5,36
+	addu	$t8,$sp,$t5
+	sw	$t4,0($t8)
+	li	$t9,36
+	addu	$t1,$sp,$t9
+	lw	$t2,0($t1)
+	sll	$t3,$t2,1
+	li	$t4,40
+	addu	$t5,$sp,$t4
+	sw	$t3,0($t5)
+	sw	$t0,132($sp)
+	j	while_mid_0
+while_beg_0:
+	lw	$t0,132($sp)
+	addiu	$t0,$t0,1
+	addiu	$t1,$t0,-1
+	sll	$t2,$t1,2
+	addu	$t3,$sp,$t2
+	lw	$t4,0($t3)
+	sll	$t5,$t4,1
+	sll	$t6,$t0,2
+	addu	$t7,$sp,$t6
+	sw	$t5,0($t7)
+	sw	$t0,132($sp)
+while_mid_0:
+	lw	$t0,132($sp)
+	slti	$t1,$t0,30
+	bne	$t1,$0,while_beg_0
+while_end_0:
+	div	$t0,$a0,30
+	slti	$t1,$t0,1000
+	bne	$t1,$0,if_mid_0
+if_beg_0:
+	li	$v1,0
+	lw	$s0,136($sp)
+	lw	$s1,140($sp)
+	lw	$s2,144($sp)
+	lw	$s3,148($sp)
+	lw	$s4,152($sp)
+	lw	$s5,156($sp)
+	lw	$s6,160($sp)
+	lw	$s7,164($sp)
+	addiu	$sp,$sp,180
+	jr	$ra
+if_mid_0:
+if_end_0:
+	div	$t0,$a0,30
+	sll	$t1,$t0,2
+	addu	$t2,$gp,$t1
+	lw	$t3,0($t2)
+	div	$t4,$a0,30
+	mul	$t5,$t4,30
+	subu	$t6,$a0,$t5
+	sll	$t7,$t6,2
+	addu	$t8,$sp,$t7
+	lw	$t9,0($t8)
+	div	$t8,$t3,$t9
+	div	$t0,$a0,30
+	sll	$t1,$t0,2
+	addu	$t2,$gp,$t1
+	lw	$t4,0($t2)
+	div	$t5,$a0,30
+	mul	$t6,$t5,30
+	subu	$t7,$a0,$t6
+	sll	$t9,$t7,2
+	addu	$t0,$sp,$t9
+	lw	$t1,0($t0)
+	div	$s6,$t4,$t1
+	addiu	$s5,$s6,1
+	slt	$t2,$s6,$0
+	sw	$t8,124($sp)
+	bne	$t2,$0,if_mid_7
+if_beg_7:
+	addu	$s5,$0,$s6
+if_mid_7:
+if_end_7:
+	sra	$t0,$s5,1
+	sll	$t1,$t0,1
+	lw	$t2,124($sp)
+	subu	$t3,$t2,$t1
+	beq	$t3,$a1,if_mid_1
+if_beg_1:
+	div	$t0,$a0,30
+	sll	$t1,$t0,2
+	addu	$t2,$gp,$t1
+	lw	$t3,0($t2)
+	div	$t4,$a0,30
+	mul	$t5,$t4,30
+	subu	$t6,$a0,$t5
+	sll	$t7,$t6,2
+	addu	$t8,$sp,$t7
+	lw	$t9,0($t8)
+	div	$s2,$t3,$t9
+	div	$t9,$a0,30
+	sll	$t0,$t9,2
+	addu	$t1,$gp,$t0
+	lw	$t2,0($t1)
+	div	$t3,$a0,30
+	mul	$t4,$t3,30
+	subu	$t5,$a0,$t4
+	sll	$t6,$t5,2
+	addu	$t7,$sp,$t6
+	lw	$t8,0($t7)
+	div	$s4,$t2,$t8
+	addiu	$s3,$s4,1
+	slt	$t9,$s4,$0
+	bne	$t9,$0,if_mid_8
+if_beg_8:
+	addu	$s3,$0,$s4
+if_mid_8:
+if_end_8:
+	sra	$t0,$s3,1
+	sll	$t1,$t0,1
+	subu	$t2,$s2,$t1
+	li	$t3,0
+	bne	$t2,$t3,if_mid_2
+if_beg_2:
+	li	$t0,1
+	bne	$a1,$t0,if_mid_3
+if_beg_3:
+	div	$t0,$a0,30
+	mul	$t1,$t0,30
+	subu	$t2,$a0,$t1
+	sll	$t3,$t2,2
+	addu	$t4,$sp,$t3
+	lw	$s7,0($t4)
+if_mid_3:
+if_end_3:
+if_mid_2:
+if_end_2:
+	div	$t0,$a0,30
+	sll	$t1,$t0,2
+	addu	$t2,$gp,$t1
+	lw	$t3,0($t2)
+	div	$t4,$a0,30
+	mul	$t5,$t4,30
+	subu	$t6,$a0,$t5
+	sll	$t7,$t6,2
+	addu	$t8,$sp,$t7
+	lw	$t9,0($t8)
+	div	$t8,$t3,$t9
+	div	$t0,$a0,30
+	sll	$t1,$t0,2
+	addu	$t2,$gp,$t1
+	lw	$t4,0($t2)
+	div	$t5,$a0,30
+	mul	$t6,$t5,30
+	subu	$t7,$a0,$t6
+	sll	$t9,$t7,2
+	addu	$t0,$sp,$t9
+	lw	$t1,0($t0)
+	div	$s1,$t4,$t1
+	addiu	$s0,$s1,1
+	slt	$t2,$s1,$0
+	sw	$t8,128($sp)
+	bne	$t2,$0,if_mid_9
+if_beg_9:
+	addu	$s0,$0,$s1
+if_mid_9:
+if_end_9:
+	sra	$t0,$s0,1
+	sll	$t1,$t0,1
+	lw	$t2,128($sp)
+	subu	$t3,$t2,$t1
+	li	$t4,1
+	bne	$t3,$t4,if_mid_4
+if_beg_4:
+	li	$t0,0
+	bne	$a1,$t0,if_mid_5
+if_beg_5:
+	div	$t0,$a0,30
+	mul	$t1,$t0,30
+	subu	$t2,$a0,$t1
+	sll	$t3,$t2,2
+	addu	$t4,$sp,$t3
+	lw	$t5,0($t4)
+	subu	$s7,$s7,$t5
+if_mid_5:
+if_end_5:
+if_mid_4:
+if_end_4:
+if_mid_1:
+if_end_1:
+	div	$t0,$a0,30
+	sll	$t1,$t0,2
+	addu	$t2,$gp,$t1
+	lw	$t3,0($t2)
+	addu	$t4,$t3,$s7
+	div	$t5,$a0,30
+	sll	$t6,$t5,2
+	addu	$t7,$gp,$t6
+	sw	$t4,0($t7)
+	li	$v1,0
+	lw	$s0,136($sp)
+	lw	$s1,140($sp)
+	lw	$s2,144($sp)
+	lw	$s3,148($sp)
+	lw	$s4,152($sp)
+	lw	$s5,156($sp)
+	lw	$s6,160($sp)
+	lw	$s7,164($sp)
+	addiu	$sp,$sp,180
+	jr	$ra
+func_end_set:
+	lw	$s0,136($sp)
+	lw	$s1,140($sp)
+	lw	$s2,144($sp)
+	lw	$s3,148($sp)
+	lw	$s4,152($sp)
+	lw	$s5,156($sp)
+	lw	$s6,160($sp)
+	lw	$s7,164($sp)
+	addiu	$sp,$sp,180
+	jr	$ra
+
+
+
+
+func_beg_rand:
+	addiu	$sp,$sp,-4
+func_mid_rand:
+	li	$t0,0
+	addu	$t1,$gp,$t0
+	lw	$t2,4000($t1)
+	lw	$t3,4012($gp)
+	mul	$t4,$t2,$t3
+	li	$t5,4
+	addu	$t6,$gp,$t5
+	lw	$t7,4000($t6)
+	addu	$t3,$t4,$t7
+	li	$t8,8
+	addu	$t9,$gp,$t8
+	lw	$t8,4000($t9)
+	div	$t0,$t3,$t8
+	li	$t1,8
+	addu	$t2,$gp,$t1
+	lw	$t4,4000($t2)
+	mul	$t5,$t4,$t0
+	subu	$t3,$t3,$t5
+	slti	$t6,$t3,0
+	sw	$t3,4012($gp)
+	beq	$t6,$0,if_mid_6
+if_beg_6:
+	li	$t0,8
+	addu	$t1,$gp,$t0
+	lw	$t2,4000($t1)
+	lw	$t3,4012($gp)
+	addu	$t3,$t2,$t3
+	sw	$t3,4012($gp)
+if_mid_6:
+if_end_6:
+	lw	$t0,4012($gp)
+	addu	$v1,$t0,$0
+	addiu	$sp,$sp,4
+	jr	$ra
+func_end_rand:
+	addiu	$sp,$sp,4
+	jr	$ra
+
+
+
+
+func_beg_main:
+	la	$gp,__GP__
+	addiu	$sp,$sp,-32
+func_mid_main:
+	li	$s4,0
+	li	$s5,0
+	li	$s6,0
+	j	while_mid_1
+while_beg_1:
+	li	$t0,0
+	sll	$t1,$s6,2
+	addu	$t2,$gp,$t1
+	sw	$t0,0($t2)
+	addiu	$s6,$s6,1
+while_mid_1:
+	slti	$t0,$s6,1000
+	bne	$t0,$0,while_beg_1
+while_end_1:
+	jal	func_beg_myscanf
+	addu	$s3,$v1,$0
+	jal	func_beg_myscanf
+	addu	$t0,$v1,$0
+	sw	$t0,4012($gp)
+	j	while_mid_2
+while_beg_2:
+	addiu	$s3,$s3,-1
+	jal	func_beg_rand
+	addu	$s2,$v1,$0
+	div	$t0,$s2,300000
+	mul	$t1,$t0,300000
+	subu	$s0,$s2,$t1
+	jal	func_beg_rand
+	addu	$s2,$v1,$0
+	addiu	$s1,$s2,1
+	slt	$t0,$s2,$0
+	bne	$t0,$0,if_mid_10
+if_beg_10:
+	addu	$s1,$0,$s2
+if_mid_10:
+if_end_10:
+	sra	$t0,$s1,1
+	sll	$t1,$t0,1
+	subu	$t2,$s2,$t1
+	addu	$a1,$0,$t2
+	addu	$a0,$0,$s0
+	jal	func_beg_set
+	addu	$t0,$v1,$0
+while_mid_2:
+	li	$t0,0
+	slt	$t1,$t0,$s3
+	bne	$t1,$0,while_beg_2
+while_end_2:
+	j	while_mid_3
+while_beg_3:
+	sll	$t0,$s5,2
+	addu	$t1,$gp,$t0
+	lw	$t2,0($t1)
+	sll	$t3,$s5,2
+	addu	$t4,$gp,$t3
+	lw	$t5,0($t4)
+	div	$t6,$t5,100000
+	mul	$t7,$t6,100000
+	subu	$t8,$t2,$t7
+	addu	$s4,$s4,$t8
+	div	$t9,$s4,100000
+	mul	$t8,$t9,100000
+	subu	$s4,$s4,$t8
+	addiu	$s5,$s5,1
+while_mid_3:
+	slti	$t0,$s5,1000
+	bne	$t0,$0,while_beg_3
+while_end_3:
+	addu	$a0,$0,$s4
+	jal	func_beg_myprintf
+	li	$v0,10
+	syscall
+func_end_main:
+	li	$v0,10
+	syscall
+
+
+
+

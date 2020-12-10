@@ -137,8 +137,6 @@ void OptimizerCalculateStrengthReduction::trans_div(const Ir& origin)
         int pow = pow2(imm_value);
         if (pow < 0)
         {
-            rlt.elem[1] = var;
-            rlt.elem[2] = imm;
             buffer.push_back(rlt);
             return;
         }
@@ -178,10 +176,10 @@ shared_ptr<IrTable> OptimizerCalculateStrengthReduction::parse(const IrTable& or
         {
             trans_mult(code);
         }
-        else if (code.head == IrHead::div)
-        {
-            trans_div(code);
-        }
+        //else if (code.head == IrHead::div)
+        //{
+        //    trans_div(code);
+        //}
         else
         {
             buffer.push_back(code);
