@@ -143,6 +143,7 @@
     <ClCompile Include="compile_controller.cpp" />
     <ClCompile Include="Detectors.cpp" />
     <ClCompile Include="ErrorType.cpp" />
+    <ClCompile Include="OpitimizerCommonSubexpressionRemove.cpp" />
     <ClCompile Include="OptimizerFormat.cpp" />
     <ClCompile Include="GCPTargetGenerator.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="IrTable.cpp" />
     <ClCompile Include="LexicalAnalyzer.cpp" />
     <ClCompile Include="OptimizerRemoveEmptyFunction.cpp" />
+    <ClCompile Include="OptimizerRemoveNearbyCopy.cpp" />
     <ClCompile Include="SimpleTargetGenerator.cpp" />
     <ClCompile Include="SyntacticAnalyzeUtil.cpp" />
     <ClCompile Include="SymbolType.cpp" />
@@ -160,6 +162,7 @@
     <ClInclude Include="compile_controller.h" />
     <ClInclude Include="Detectors.h" />
     <ClInclude Include="ErrorType.h" />
+    <ClInclude Include="OpitimizerCommonSubexpressionRemove.h" />
     <ClInclude Include="OptimizerFormat.h" />
     <ClInclude Include="GCPTargetGenerator.h" />
     <ClInclude Include="global_control.h" />
@@ -170,6 +173,7 @@
     <ClInclude Include="IrTable.h" />
     <ClInclude Include="LexicalAnalyzer.h" />
     <ClInclude Include="OptimizerRemoveEmptyFunction.h" />
+    <ClInclude Include="OptimizerRemoveNearbyCopy.h" />
     <ClInclude Include="SimpleTargetGenerator.h" />
     <ClInclude Include="SyntacticAnalyzeUtil.h" />
     <ClInclude Include="SymbolToken.h" />
