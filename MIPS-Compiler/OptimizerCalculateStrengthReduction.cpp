@@ -148,7 +148,7 @@ void OptimizerCalculateStrengthReduction::trans_div(const Ir& origin)
         irelem_t mid = allocator_ptr->mid();
         irelem_t end = allocator_ptr->end();
         irelem_t tmp = allocator_ptr->alloc_tmp();
-        buffer.push_back(ir.add(tmp, var, allocator_ptr->alloc_imm((1 << pow) - 1)));
+        buffer.push_back(ir.add(tmp, var, allocator_ptr->alloc_imm((1 << static_cast<unsigned>(pow)) - 1)));
         irelem_t cmp = allocator_ptr->alloc_tmp();
         buffer.push_back(ir.less(cmp, var, allocator_ptr->zero()));
         buffer.push_back(ir.bne(cmp, allocator_ptr->zero(), mid));
@@ -176,10 +176,10 @@ shared_ptr<IrTable> OptimizerCalculateStrengthReduction::parse(const IrTable& or
         {
             trans_mult(code);
         }
-        //else if (code.head == IrHead::div)
-        //{
-        //    trans_div(code);
-        //}
+        else if (code.head == IrHead::div)
+        {
+            trans_div(code);
+        }
         else
         {
             buffer.push_back(code);

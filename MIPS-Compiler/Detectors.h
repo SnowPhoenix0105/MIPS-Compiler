@@ -8,6 +8,7 @@
 
 using std::shared_ptr;
 using std::vector;
+using std::unique_ptr;
 
 namespace IrDetectors
 {
@@ -94,6 +95,20 @@ namespace IrDetectors
 				const BlockVarActivetionAnalyzeResult& block_var_activition_analyze_result);
 	};
 
+	struct FromToInfo
+	{
+		irelem_t from;
+		irelem_t to;
+		FromToInfo() = default;
+		FromToInfo(irelem_t from, irelem_t to) : from(from), to(to) {}
+		static unique_ptr<FromToInfo> build_unique(irelem_t from, irelem_t to)
+		{
+			return unique_ptr<FromToInfo>(new FromToInfo(from, to));
+		}
+	};
+
+	unique_ptr<FromToInfo> detect_copy(const Ir& code, const IrElemAllocator& allocator);
+
 	irelem_t get_redef_elem(const Ir& ir, const IrElemAllocator& elems);
 
 	void get_def_and_use_elem(
@@ -101,7 +116,8 @@ namespace IrDetectors
 		const IrElemAllocator& elems,
 		irelem_t* def_elem,
 		irelem_t* use_elem_1, 
-		irelem_t* use_elem_2);
+		irelem_t* use_elem_2,
+		irelem_t* use_elem_3);
 
 	shared_ptr<const unordered_set<irelem_t>> detect_unused_label(
 		const IrTable& codes, 

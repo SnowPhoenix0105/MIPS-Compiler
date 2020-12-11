@@ -16,6 +16,68 @@ using std::make_pair;
 
 namespace IrDetectors
 {
+
+	unique_ptr<FromToInfo> detect_copy(const Ir& code, const IrElemAllocator& allocator)
+	{
+		switch (code.head)
+		{
+		case IrHead::add:
+		case IrHead::_or:
+			if (IrType::is_imm(code.elem[1]) && allocator.imm_to_value(code.elem[1]) == 0 && IrType::is_var(code.elem[2]))
+			{
+				return FromToInfo::build_unique(code.elem[2], code.elem[0]);
+			}
+			if (code.elem[1] == allocator.zero() && IrType::is_var(code.elem[2]))
+			{
+				return FromToInfo::build_unique(code.elem[2], code.elem[0]);
+			}
+			if (IrType::is_imm(code.elem[2]) && allocator.imm_to_value(code.elem[2]) == 0 && IrType::is_var(code.elem[1]))
+			{
+				return FromToInfo::build_unique(code.elem[1], code.elem[0]);
+			}
+			if (code.elem[2] == allocator.zero() && IrType::is_var(code.elem[1]))
+			{
+				return FromToInfo::build_unique(code.elem[1], code.elem[0]);
+			}
+			return nullptr;
+		case IrHead::mult:
+			if (IrType::is_imm(code.elem[1]) && allocator.imm_to_value(code.elem[1]) == 1 && IrType::is_var(code.elem[2]))
+			{
+				return FromToInfo::build_unique(code.elem[2], code.elem[0]);
+			}
+		case IrHead::div:
+			if (IrType::is_imm(code.elem[2]) && allocator.imm_to_value(code.elem[2]) == 1 && IrType::is_var(code.elem[1]))
+			{
+				return FromToInfo::build_unique(code.elem[1], code.elem[0]);
+			}
+			return nullptr;
+		case IrHead::_and:
+			if (IrType::is_imm(code.elem[1]) && allocator.imm_to_value(code.elem[1]) == ~0 && IrType::is_var(code.elem[2]))
+			{
+				return FromToInfo::build_unique(code.elem[2], code.elem[0]);
+			}
+			if (IrType::is_imm(code.elem[2]) && allocator.imm_to_value(code.elem[2]) == ~0 && IrType::is_var(code.elem[1]))
+			{
+				return FromToInfo::build_unique(code.elem[1], code.elem[0]);
+			}
+			return nullptr;
+		case IrHead::sub:
+		case IrHead::sl:
+		case IrHead::sr:
+			if (IrType::is_imm(code.elem[2]) && allocator.imm_to_value(code.elem[2]) == 0 && IrType::is_var(code.elem[1]))
+			{
+				return FromToInfo::build_unique(code.elem[1], code.elem[0]);
+			}
+			if (code.elem[2] == allocator.zero() && IrType::is_var(code.elem[1]))
+			{
+				return FromToInfo::build_unique(code.elem[1], code.elem[0]);
+			}
+			return nullptr;
+		default:
+			return nullptr;
+		}
+	}
+
 	shared_ptr<const unordered_set<irelem_t>> detect_unused_label(const IrTable& codes, const IrElemAllocator& elems)
 	{
 		shared_ptr<unordered_set<irelem_t>> ret = make_shared<unordered_set<irelem_t>>();
@@ -196,6 +258,8 @@ namespace IrDetectors
 		case IrHead::less:
 		case IrHead::lw:
 		case IrHead::lb:
+		case IrHead::movn:
+		case IrHead::movz:
 			return ir.elem[0];
 		case IrHead::sw:
 		case IrHead::sb:
@@ -271,8 +335,10 @@ namespace IrDetectors
 		const IrElemAllocator& elems,
 		irelem_t* def_elem,
 		irelem_t* use_elem_1,
-		irelem_t* use_elem_2)
+		irelem_t* use_elem_2,
+		irelem_t* use_elem_3)
 	{
+		*use_elem_3 = IrType::NIL;
 		switch (ir.head)
 		{
 		case IrHead::add:	
@@ -323,6 +389,13 @@ namespace IrDetectors
 			*use_elem_1 = ir.elem[1];
 			*use_elem_2 = IrType::NIL;
 			return;
+		case IrHead::movn:
+		case IrHead::movz:
+			*def_elem = ir.elem[0];
+			*use_elem_1 = ir.elem[1];
+			*use_elem_2 = ir.elem[2];
+			*use_elem_3 = ir.elem[0];
+			return;
 		default:
 			*def_elem = IrType::NIL;
 			*use_elem_1 = IrType::NIL;
@@ -360,8 +433,9 @@ namespace IrDetectors
 				irelem_t def_elem;
 				irelem_t use_elem_1;
 				irelem_t use_elem_2;
+				irelem_t use_elem_3;
 				const auto& ir = codes.at(j);
-				get_def_and_use_elem(ir, elems, &def_elem, &use_elem_1, &use_elem_2);
+				get_def_and_use_elem(ir, elems, &def_elem, &use_elem_1, &use_elem_2, &use_elem_3);
 				if (use_elem_1 != IrType::NIL 
 					&& IrType::is_var(use_elem_1) 
 					&& !elems.is_global_var(use_elem_1) 
@@ -377,6 +451,14 @@ namespace IrDetectors
 					&& def[i].count(use_elem_2) == 0)
 				{
 					use[i].insert(use_elem_2);
+				}
+				if (use_elem_3 != IrType::NIL
+					&& IrType::is_var(use_elem_3)
+					&& !elems.is_global_var(use_elem_3)
+					&& !elems.is_reserved_var(use_elem_3)
+					&& def[i].count(use_elem_3) == 0)
+				{
+					use[i].insert(use_elem_3);
 				}
 				if (def_elem != IrType::NIL 
 					&& IrType::is_var(def_elem) 
@@ -464,8 +546,9 @@ namespace IrDetectors
 				irelem_t def_elem;
 				irelem_t use_elem_1;
 				irelem_t use_elem_2;
+				irelem_t use_elem_3;
 				const auto& ir = codes.at(block.end - 1 - j);
-				get_def_and_use_elem(ir, elems, &def_elem, &use_elem_1, &use_elem_2);
+				get_def_and_use_elem(ir, elems, &def_elem, &use_elem_1, &use_elem_2, &use_elem_3);
 				if (def_elem != IrType::NIL 
 					&& IrType::is_var(def_elem) 
 					&& !elems.is_global_var(def_elem)
@@ -486,6 +569,13 @@ namespace IrDetectors
 					&& !elems.is_reserved_var(use_elem_2))
 				{
 					in[current].insert(use_elem_2);
+				}
+				if (use_elem_3 != IrType::NIL
+					&& IrType::is_var(use_elem_3)
+					&& !elems.is_global_var(use_elem_3)
+					&& !elems.is_reserved_var(use_elem_3))
+				{
+					in[current].insert(use_elem_3);
 				}
 
 				if (j != block.end - block.beg - 1)

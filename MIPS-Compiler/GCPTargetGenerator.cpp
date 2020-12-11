@@ -525,6 +525,22 @@ void GCPTargetGenerator::func_body()
 			buffer << mips.syscall() << endl;
 			break;
 		}
+		case IrHead::movn:
+			buffer
+				<< mips.movn(
+					allocator.var_to_string(code.elem[0]),
+					allocator.var_to_string(code.elem[1]),
+					allocator.var_to_string(code.elem[2]))
+				<< endl;
+			break;
+		case IrHead::movz:
+			buffer
+				<< mips.movz(
+					allocator.var_to_string(code.elem[0]),
+					allocator.var_to_string(code.elem[1]),
+					allocator.var_to_string(code.elem[2]))
+				<< endl;
+			break;
 		case IrHead::reload:
 		{
 			auto rlt = func_var_offset_table.find(code.elem[1]);
@@ -1100,7 +1116,8 @@ void GCPRegisterAllocator::walk()
 						irelem_t def_elem;
 						irelem_t use_elem_1;
 						irelem_t use_elem_2;
-						IrDetectors::get_def_and_use_elem(origin_ir_table_ptr->at(i), *allocator_ptr, &def_elem, &use_elem_1, &use_elem_2);
+						irelem_t use_elem_3;
+						IrDetectors::get_def_and_use_elem(origin_ir_table_ptr->at(i), *allocator_ptr, &def_elem, &use_elem_1, &use_elem_2, &use_elem_3);
 
 						if (use_elem_1 == param_var || use_elem_2 == param_var)
 						{
@@ -1239,6 +1256,32 @@ void GCPRegisterAllocator::walk()
 			}
 			// 不要 break
 		}
+		case IrHead::movn:
+		case IrHead::movz:
+			{
+				Ir new_code = code;
+				//use_reg_or_cst_of_val(code.elem[0]);
+				//keep_in_tx.insert(new_code.elem[0]);
+
+				new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
+				keep_in_tx.insert(new_code.elem[1]);
+
+				new_code.elem[2] = use_reg_or_cst_of_val(code.elem[2]);
+				keep_in_tx.insert(new_code.elem[2]);
+
+				irelem_t target = use_reg_or_cst_of_val(code.elem[0]);
+				if (tmp_reg_dirty.count(target) != 0)
+				{
+					tmp_reg_dirty[target] = true;
+				}
+				new_code.elem[0] = target;
+
+				buffer.push_back(new_code);
+
+				keep_in_tx.erase(new_code.elem[2]);
+				keep_in_tx.erase(new_code.elem[1]);
+				break;
+			}
 		default:
 			buffer.push_back(code);
 		}

@@ -62,6 +62,8 @@ enum class IrHead
 	scanf,		//  <var> <type>
 	printf,		//  [<string>] [<var> <type>]	
 
+	movz,		// <var> <var> <var>
+	movn,		// <var> <var> <var>
 	protect,	// <reg> <var>
 	reload,		// <reg> <var>
 };
@@ -494,6 +496,22 @@ struct IrFactory
 	Ir printf(const string& str, irelem_t var, irelem_t type) const
 	{
 		return Ir(IrHead::printf, allocator().alloc_string(str), var, type);
+	}
+
+	Ir movz(irelem_t target, irelem_t origin, irelem_t cmp)
+	{
+		ASSERT(4, IrType::is_var(target));
+		ASSERT(4, IrType::is_var(origin));
+		ASSERT(4, IrType::is_var(cmp));
+		return Ir(IrHead::movz, target, origin, cmp);
+	}
+
+	Ir movn(irelem_t target, irelem_t origin, irelem_t cmp)
+	{
+		ASSERT(4, IrType::is_var(target));
+		ASSERT(4, IrType::is_var(origin));
+		ASSERT(4, IrType::is_var(cmp));
+		return Ir(IrHead::movn, target, origin, cmp);
 	}
 
 	Ir protect(irelem_t reg, irelem_t var)

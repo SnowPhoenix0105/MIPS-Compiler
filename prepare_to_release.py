@@ -45,6 +45,10 @@ def zip_up():
     target_dir = current_dir + "\\Zips"
     source_files = os.listdir(source_dir)
     target_file = target_dir + "\\" + get_time_stamp() + ".zip"
+    print("\n".join(source_dir + "\\" + file_name                        \
+            for file_name in source_files                               \
+                if file_name[-2:] == ".h" or file_name[-4:] == ".cpp"   \
+                ))
     command =                                                           \
         "7z a -tzip  "                                                   \
         + target_file + " "                                             \

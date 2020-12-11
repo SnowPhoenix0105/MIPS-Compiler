@@ -1002,8 +1002,6 @@ void GCPRegisterAllocator::walk()
 		case IrHead::sl:
 		case IrHead::sr:
 		case IrHead::less:
-		case IrHead::movn:
-		case IrHead::movz:
 		{
 			Ir new_code = code;
 
@@ -1258,6 +1256,32 @@ void GCPRegisterAllocator::walk()
 			}
 			// ²»Òª break
 		}
+		case IrHead::movn:
+		case IrHead::movz:
+			{
+				Ir new_code = code;
+				//use_reg_or_cst_of_val(code.elem[0]);
+				//keep_in_tx.insert(new_code.elem[0]);
+
+				new_code.elem[1] = use_reg_or_cst_of_val(code.elem[1]);
+				keep_in_tx.insert(new_code.elem[1]);
+
+				new_code.elem[2] = use_reg_or_cst_of_val(code.elem[2]);
+				keep_in_tx.insert(new_code.elem[2]);
+
+				irelem_t target = use_reg_or_cst_of_val(code.elem[0]);
+				if (tmp_reg_dirty.count(target) != 0)
+				{
+					tmp_reg_dirty[target] = true;
+				}
+				new_code.elem[0] = target;
+
+				buffer.push_back(new_code);
+
+				keep_in_tx.erase(new_code.elem[2]);
+				keep_in_tx.erase(new_code.elem[1]);
+				break;
+			}
 		default:
 			buffer.push_back(code);
 		}

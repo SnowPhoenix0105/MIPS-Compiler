@@ -155,6 +155,7 @@
     <ClCompile Include="OptimizerFormat.cpp" />
     <ClCompile Include="OptimizerRemoveEmptyFunction.cpp" />
     <ClCompile Include="OptimizerRemoveNearbyCopy.cpp" />
+    <ClCompile Include="ReplaceByMov.cpp" />
     <ClCompile Include="SimpleTargetGenerator.cpp" />
     <ClCompile Include="SymbolType.cpp" />
     <ClCompile Include="SyntacticAnalyzer.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="OptimizerFormat.h" />
     <ClInclude Include="OptimizerRemoveEmptyFunction.h" />
     <ClInclude Include="OptimizerRemoveNearbyCopy.h" />
+    <ClInclude Include="ReplaceByMov.h" />
     <ClInclude Include="SimpleTargetGenerator.h" />
     <ClInclude Include="SymbolToken.h" />
     <ClInclude Include="SymbolType.h" />

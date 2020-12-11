@@ -1,5 +1,6 @@
 #include "global_control.h"
 #include "compile_controller.h"
+#include "ReplaceByMov.h"
 #include "OptimizerFormat.h"
 #include "OptimizerRemoveEmptyFunction.h"
 #include "OptimizerRemoveNearbyCopy.h"
@@ -45,7 +46,8 @@ void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
 		}
 
-		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, ir_table_ptr).build();
+		shared_ptr<IrTable> moved_ir = ReplaceByMov().parse(*ir_table_ptr, allocator_ptr);
+		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, moved_ir).build();
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
 		target_code_generator->translate(output_file);
 
@@ -118,7 +120,10 @@ void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream
 			ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
 		}
 
-		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, ir_table_ptr).build();
+
+		shared_ptr<IrTable> moved_ir = ReplaceByMov().parse(*ir_table_ptr, allocator_ptr);
+		ir_file << moved_ir->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, moved_ir).build();
 		ir_file << registered_ir->to_string(*allocator_ptr) << endl;
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
 		target_code_generator->translate(target_file);
@@ -166,7 +171,10 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 			ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
 		}
 
-		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, ir_table_ptr).build();
+
+		shared_ptr<IrTable> moved_ir = ReplaceByMov().parse(*ir_table_ptr, allocator_ptr);
+		ir_file << moved_ir->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, moved_ir).build();
 		fmtir_file << registered_ir->to_string(*allocator_ptr) << endl;
 
 		unique_ptr<ITargetCodeGenerator> target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));

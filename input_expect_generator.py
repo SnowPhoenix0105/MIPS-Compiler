@@ -162,6 +162,8 @@ if __name__ == "__main__":
     # generator.auto_gen(1)
     # generator = InputAndExpectGenerator("auto_samples\\sample9")
     # generator.auto_gen(1, False)
-    generator = InputAndExpectGenerator("auto_samples\\div")
-    generator.auto_gen(10, True)
+    # generator = InputAndExpectGenerator("auto_samples\\div")
+    # generator.auto_gen(10, True)
+    generator = InputAndExpectGenerator("auto_samples\\o1_3")
+    generator.auto_gen(1, False)
     

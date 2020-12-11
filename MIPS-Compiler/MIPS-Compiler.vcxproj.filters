@@ -78,6 +78,9 @@
     <ClCompile Include="OptimizerCalculateStrengthReduction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="ReplaceByMov.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compile_controller.h">
@@ -144,6 +147,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="OptimizerCalculateStrengthReduction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ReplaceByMov.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

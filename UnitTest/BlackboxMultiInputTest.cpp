@@ -51,7 +51,8 @@ namespace BlackboxTest
 		TEST_CASE(sample8, 1)
 		TEST_CASE(sample9, 1)
 		TEST_CASE(sample10, 4)
-		TEST_CASE(div, 4)
+		TEST_CASE(div, 10)
+		TEST_CASE(o1_3, 1)
 	};
 
 	const string BlackboxMultiInputTest::test_resource_path("D:\\Projects\\C++\\MIPS-Compiler\\UnitTest\\TestResource\\auto_samples");

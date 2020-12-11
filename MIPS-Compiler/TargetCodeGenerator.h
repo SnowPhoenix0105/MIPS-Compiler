@@ -190,6 +190,16 @@ struct MipsInstructionFormatter
 		return quaternary("div", target, source1, to_string(source2));
 	}
 
+	string movz(const string& target, const string& source, const string& cmp) const
+	{
+		return quaternary("movz", target, source, cmp);
+	}
+
+	string movn(const string& target, const string& source, const string& cmp) const
+	{
+		return quaternary("movn", target, source, cmp);
+	}
+
 	string beq(const string& reg1, const string& reg2, const string& label) const
 	{
 		return quaternary("beq", reg1, reg2, label);
