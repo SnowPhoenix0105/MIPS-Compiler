@@ -18,6 +18,7 @@ private:
 	IrTableBuilder builder;
 
 	void check_bne(const IrTable& origin);
+	void check_beq(const IrTable& origin);
 public:
 	shared_ptr<IrTable> parse(const IrTable& origin, shared_ptr<IrElemAllocator> allocator);
 };
