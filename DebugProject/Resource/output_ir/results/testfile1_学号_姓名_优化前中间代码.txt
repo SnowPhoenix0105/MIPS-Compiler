@@ -1,0 +1,411 @@
+	aar	G_a_a,	int,	1000
+	aar	G_a_seed,	int,	3
+	init	19971231
+	init	19981013
+	init	1000000007
+	gvar	G_staticvalue
+	init	0
+func_beg_myscanf:
+	func	int
+func_mid_myscanf:
+	scanf	myscanf_n,	int
+	#ret	=	myscanf_n	+	#zero
+	ret
+func_end_myscanf:
+
+
+
+
+func_beg_myprintf:
+	func	void
+	param	myprintf_n
+func_mid_myprintf:
+	printf	NIL,	myprintf_n,	int
+	ret
+func_end_myprintf:
+
+
+
+
+func_beg_set:
+	func	int
+	param	set_pos
+	param	set_d
+	aar	set_a_x,	int,	31
+func_mid_set:
+	set_i	=	#zero	+	10
+	set_v	=	#zero	+	0
+	t0	=	1	+	#zero
+	t2	=	0	<<	2
+	t1	=	#sp	+	t2
+	t1[set_a_x]	=	t0
+	t7	=	0	<<	2
+	t6	=	#sp	+	t7
+	t8	=	t6[set_a_x]
+	t9	=	2	*	t8
+	t3	=	t9	+	#zero
+	t5	=	1	<<	2
+	t4	=	#sp	+	t5
+	t4[set_a_x]	=	t3
+	t14	=	1	<<	2
+	t13	=	#sp	+	t14
+	t15	=	t13[set_a_x]
+	t16	=	2	*	t15
+	t10	=	t16	+	#zero
+	t12	=	2	<<	2
+	t11	=	#sp	+	t12
+	t11[set_a_x]	=	t10
+	t21	=	2	<<	2
+	t20	=	#sp	+	t21
+	t22	=	t20[set_a_x]
+	t23	=	2	*	t22
+	t17	=	t23	+	#zero
+	t19	=	3	<<	2
+	t18	=	#sp	+	t19
+	t18[set_a_x]	=	t17
+	t28	=	3	<<	2
+	t27	=	#sp	+	t28
+	t29	=	t27[set_a_x]
+	t30	=	2	*	t29
+	t24	=	t30	+	#zero
+	t26	=	4	<<	2
+	t25	=	#sp	+	t26
+	t25[set_a_x]	=	t24
+	t35	=	4	<<	2
+	t34	=	#sp	+	t35
+	t36	=	t34[set_a_x]
+	t37	=	2	*	t36
+	t31	=	t37	+	#zero
+	t33	=	5	<<	2
+	t32	=	#sp	+	t33
+	t32[set_a_x]	=	t31
+	t42	=	5	<<	2
+	t41	=	#sp	+	t42
+	t43	=	t41[set_a_x]
+	t44	=	2	*	t43
+	t38	=	t44	+	#zero
+	t40	=	6	<<	2
+	t39	=	#sp	+	t40
+	t39[set_a_x]	=	t38
+	t49	=	6	<<	2
+	t48	=	#sp	+	t49
+	t50	=	t48[set_a_x]
+	t51	=	2	*	t50
+	t45	=	t51	+	#zero
+	t47	=	7	<<	2
+	t46	=	#sp	+	t47
+	t46[set_a_x]	=	t45
+	t56	=	7	<<	2
+	t55	=	#sp	+	t56
+	t57	=	t55[set_a_x]
+	t58	=	2	*	t57
+	t52	=	t58	+	#zero
+	t54	=	8	<<	2
+	t53	=	#sp	+	t54
+	t53[set_a_x]	=	t52
+	t63	=	8	<<	2
+	t62	=	#sp	+	t63
+	t64	=	t62[set_a_x]
+	t65	=	2	*	t64
+	t59	=	t65	+	#zero
+	t61	=	9	<<	2
+	t60	=	#sp	+	t61
+	t60[set_a_x]	=	t59
+	t70	=	9	<<	2
+	t69	=	#sp	+	t70
+	t71	=	t69[set_a_x]
+	t72	=	2	*	t71
+	t66	=	t72	+	#zero
+	t68	=	10	<<	2
+	t67	=	#sp	+	t68
+	t67[set_a_x]	=	t66
+	goto	while_mid_0
+while_beg_0:
+	t75	=	set_i	+	1
+	t74	=	t75	+	#zero
+	set_i	=	t74	+	#zero
+	t79	=	set_i	-	1
+	t81	=	t79	<<	2
+	t80	=	#sp	+	t81
+	t82	=	t80[set_a_x]
+	t83	=	2	*	t82
+	t76	=	t83	+	#zero
+	t78	=	set_i	<<	2
+	t77	=	#sp	+	t78
+	t77[set_a_x]	=	t76
+while_mid_0:
+	t73	=	set_i	<	30
+	if t73 != #zero	goto	while_beg_0
+while_end_0:
+	t84	=	set_pos	/	30
+	t85	=	t84	<	1000
+	if t85 != #zero	goto	if_mid_0
+if_beg_0:
+	#ret	=	0	+	#zero
+	ret
+if_mid_0:
+if_end_0:
+	t86	=	set_pos	/	30
+	t88	=	t86	<<	2
+	t87	=	#gp	+	t88
+	t89	=	t87[G_a_a]
+	t90	=	set_pos	/	30
+	t91	=	30	*	t90
+	t92	=	set_pos	-	t91
+	t94	=	t92	<<	2
+	t93	=	#sp	+	t94
+	t95	=	t93[set_a_x]
+	t96	=	t89	/	t95
+	t97	=	set_pos	/	30
+	t99	=	t97	<<	2
+	t98	=	#gp	+	t99
+	t100	=	t98[G_a_a]
+	t101	=	set_pos	/	30
+	t102	=	30	*	t101
+	t103	=	set_pos	-	t102
+	t105	=	t103	<<	2
+	t104	=	#sp	+	t105
+	t106	=	t104[set_a_x]
+	t107	=	t100	/	t106
+	t108	=	t107	/	2
+	t109	=	2	*	t108
+	t110	=	t96	-	t109
+	if t110 == set_d	goto	if_mid_1
+if_beg_1:
+	t111	=	set_pos	/	30
+	t113	=	t111	<<	2
+	t112	=	#gp	+	t113
+	t114	=	t112[G_a_a]
+	t115	=	set_pos	/	30
+	t116	=	30	*	t115
+	t117	=	set_pos	-	t116
+	t119	=	t117	<<	2
+	t118	=	#sp	+	t119
+	t120	=	t118[set_a_x]
+	t121	=	t114	/	t120
+	t122	=	set_pos	/	30
+	t124	=	t122	<<	2
+	t123	=	#gp	+	t124
+	t125	=	t123[G_a_a]
+	t126	=	set_pos	/	30
+	t127	=	30	*	t126
+	t128	=	set_pos	-	t127
+	t130	=	t128	<<	2
+	t129	=	#sp	+	t130
+	t131	=	t129[set_a_x]
+	t132	=	t125	/	t131
+	t133	=	t132	/	2
+	t134	=	2	*	t133
+	t135	=	t121	-	t134
+	if t135 != 0	goto	if_mid_2
+if_beg_2:
+	if set_d != 1	goto	if_mid_3
+if_beg_3:
+	t137	=	set_pos	/	30
+	t138	=	30	*	t137
+	t139	=	set_pos	-	t138
+	t141	=	t139	<<	2
+	t140	=	#sp	+	t141
+	t142	=	t140[set_a_x]
+	t136	=	t142	+	#zero
+	set_v	=	t136	+	#zero
+if_mid_3:
+if_end_3:
+if_mid_2:
+if_end_2:
+	t143	=	set_pos	/	30
+	t145	=	t143	<<	2
+	t144	=	#gp	+	t145
+	t146	=	t144[G_a_a]
+	t147	=	set_pos	/	30
+	t148	=	30	*	t147
+	t149	=	set_pos	-	t148
+	t151	=	t149	<<	2
+	t150	=	#sp	+	t151
+	t152	=	t150[set_a_x]
+	t153	=	t146	/	t152
+	t154	=	set_pos	/	30
+	t156	=	t154	<<	2
+	t155	=	#gp	+	t156
+	t157	=	t155[G_a_a]
+	t158	=	set_pos	/	30
+	t159	=	30	*	t158
+	t160	=	set_pos	-	t159
+	t162	=	t160	<<	2
+	t161	=	#sp	+	t162
+	t163	=	t161[set_a_x]
+	t164	=	t157	/	t163
+	t165	=	t164	/	2
+	t166	=	2	*	t165
+	t167	=	t153	-	t166
+	if t167 != 1	goto	if_mid_4
+if_beg_4:
+	if set_d != 0	goto	if_mid_5
+if_beg_5:
+	t169	=	set_pos	/	30
+	t170	=	30	*	t169
+	t171	=	set_pos	-	t170
+	t173	=	t171	<<	2
+	t172	=	#sp	+	t173
+	t174	=	t172[set_a_x]
+	t175	=	set_v	-	t174
+	t168	=	t175	+	#zero
+	set_v	=	t168	+	#zero
+if_mid_5:
+if_end_5:
+if_mid_4:
+if_end_4:
+if_mid_1:
+if_end_1:
+	t180	=	set_pos	/	30
+	t182	=	t180	<<	2
+	t181	=	#gp	+	t182
+	t183	=	t181[G_a_a]
+	t184	=	t183	+	set_v
+	t176	=	t184	+	#zero
+	t177	=	set_pos	/	30
+	t179	=	t177	<<	2
+	t178	=	#gp	+	t179
+	t178[G_a_a]	=	t176
+	#ret	=	0	+	#zero
+	ret
+func_end_set:
+
+
+
+
+func_beg_rand:
+	func	int
+func_mid_rand:
+	t187	=	0	<<	2
+	t186	=	#gp	+	t187
+	t188	=	t186[G_a_seed]
+	t189	=	t188	*	G_staticvalue
+	t191	=	1	<<	2
+	t190	=	#gp	+	t191
+	t192	=	t190[G_a_seed]
+	t193	=	t189	+	t192
+	t185	=	t193	+	#zero
+	G_staticvalue	=	t185	+	#zero
+	t196	=	2	<<	2
+	t195	=	#gp	+	t196
+	t197	=	t195[G_a_seed]
+	t198	=	G_staticvalue	/	t197
+	t200	=	2	<<	2
+	t199	=	#gp	+	t200
+	t201	=	t199[G_a_seed]
+	t202	=	t201	*	t198
+	t203	=	G_staticvalue	-	t202
+	t194	=	t203	+	#zero
+	G_staticvalue	=	t194	+	#zero
+	t204	=	G_staticvalue	<	0
+	if t204 == #zero	goto	if_mid_6
+if_beg_6:
+	t207	=	2	<<	2
+	t206	=	#gp	+	t207
+	t208	=	t206[G_a_seed]
+	t209	=	t208	+	G_staticvalue
+	t205	=	t209	+	#zero
+	G_staticvalue	=	t205	+	#zero
+if_mid_6:
+if_end_6:
+	#ret	=	G_staticvalue	+	#zero
+	ret
+func_end_rand:
+
+
+
+
+func_beg_main:
+	func	void
+func_mid_main:
+	main_tmp	=	#zero	+	0
+	main_i	=	#zero	+	0
+	main_j	=	#zero	+	0
+	goto	while_mid_1
+while_beg_1:
+	t211	=	0	+	#zero
+	t213	=	main_j	<<	2
+	t212	=	#gp	+	t213
+	t212[G_a_a]	=	t211
+	t215	=	main_j	+	1
+	t214	=	t215	+	#zero
+	main_j	=	t214	+	#zero
+while_mid_1:
+	t210	=	main_j	<	1000
+	if t210 != #zero	goto	while_beg_1
+while_end_1:
+	call	func_beg_myscanf
+	t217	=	#ret	+	#zero
+	t216	=	t217	+	#zero
+	main_n	=	t216	+	#zero
+	call	func_beg_myscanf
+	t219	=	#ret	+	#zero
+	t218	=	t219	+	#zero
+	G_staticvalue	=	t218	+	#zero
+	goto	while_mid_2
+while_beg_2:
+	t222	=	main_n	-	1
+	t221	=	t222	+	#zero
+	main_n	=	t221	+	#zero
+	call	func_beg_rand
+	t224	=	#ret	+	#zero
+	t223	=	t224	+	#zero
+	main_z	=	t223	+	#zero
+	t226	=	main_z	/	300000
+	t227	=	300000	*	t226
+	t228	=	main_z	-	t227
+	t225	=	t228	+	#zero
+	main_x	=	t225	+	#zero
+	call	func_beg_rand
+	t230	=	#ret	+	#zero
+	t229	=	t230	+	#zero
+	main_z	=	t229	+	#zero
+	t232	=	main_z	/	2
+	t233	=	2	*	t232
+	t234	=	main_z	-	t233
+	t231	=	t234	+	#zero
+	main_y	=	t231	+	#zero
+	push	main_y
+	push	main_x
+	call	func_beg_set
+	t235	=	#ret	+	#zero
+while_mid_2:
+	t220	=	0	<	main_n
+	if t220 != #zero	goto	while_beg_2
+while_end_2:
+	goto	while_mid_3
+while_beg_3:
+	t239	=	main_i	<<	2
+	t238	=	#gp	+	t239
+	t240	=	t238[G_a_a]
+	t242	=	main_i	<<	2
+	t241	=	#gp	+	t242
+	t243	=	t241[G_a_a]
+	t244	=	t243	/	100000
+	t245	=	100000	*	t244
+	t246	=	t240	-	t245
+	t247	=	main_tmp	+	t246
+	t237	=	t247	+	#zero
+	main_tmp	=	t237	+	#zero
+	t249	=	main_tmp	/	100000
+	t250	=	100000	*	t249
+	t251	=	main_tmp	-	t250
+	t248	=	t251	+	#zero
+	main_tmp	=	t248	+	#zero
+	t253	=	main_i	+	1
+	t252	=	t253	+	#zero
+	main_i	=	t252	+	#zero
+while_mid_3:
+	t236	=	main_i	<	1000
+	if t236 != #zero	goto	while_beg_3
+while_end_3:
+	push	main_tmp
+	call	func_beg_myprintf
+	ret
+func_end_main:
+
+
+
+
+

@@ -17,7 +17,7 @@ using std::endl;
 using std::istream;
 using std::ostream;
 
-shared_ptr<IOptimizer> optimizers[] =
+vector<shared_ptr<IOptimizer>> optimizers =
 {
 	make_shared<OptimizerCalculateStrengthReduction>(),
 	make_shared<OptimizerRemoveEmptyFunction>(),
@@ -41,7 +41,7 @@ void start_compile(unique_ptr<istream> input_file, ostream& output_file)
 
 #ifdef ENABLE_OPTIMIZE
 
-		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
+		for (size_t i = 0; i != optimizers.size(); ++i)
 		{
 			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
 		}
@@ -114,7 +114,7 @@ void get_ir_and_target(unique_ptr<istream> input_file, ostream& ir_file, ostream
 #ifdef ENABLE_OPTIMIZE
 
 		ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
-		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
+		for (size_t i = 0; i != optimizers.size(); ++i)
 		{
 			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
 			ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
@@ -165,7 +165,7 @@ void get_ir_fmtir_target(unique_ptr<istream> input_file, ostream& ir_file, ostre
 #ifdef ENABLE_OPTIMIZE
 
 		ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
-		for (size_t i = 0; i != sizeof(optimizers) / sizeof(shared_ptr<IOptimizer>); ++i)
+		for (size_t i = 0; i != optimizers.size(); ++i)
 		{
 			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
 			ir_file << ir_table_ptr->to_string(*allocator_ptr) << "\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;

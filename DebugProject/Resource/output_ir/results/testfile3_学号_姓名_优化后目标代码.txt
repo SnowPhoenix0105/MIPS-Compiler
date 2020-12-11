@@ -1,0 +1,592 @@
+.data
+__GP__:
+.space 4000
+.space 4000
+.space 160
+
+
+
+
+
+.text
+	j	func_beg_main
+
+func_beg_myscanf:
+	addiu	$sp,$sp,-4
+func_mid_myscanf:
+	li	$v0,5
+	syscall
+	addu	$v1,$v0,$0
+	addiu	$sp,$sp,4
+	jr	$ra
+func_end_myscanf:
+	addiu	$sp,$sp,4
+	jr	$ra
+
+
+
+
+func_beg_myprintf:
+	addiu	$sp,$sp,-8
+func_mid_myprintf:
+	addu	$t0,$a0,$0
+	addu	$a0,$0,$t0
+	li	$v0,1
+	syscall
+	li	$a0,10
+	li	$v0,11
+	syscall
+	addu	$a0,$t0,$0
+	addiu	$sp,$sp,8
+	jr	$ra
+func_end_myprintf:
+	addiu	$sp,$sp,8
+	jr	$ra
+
+
+
+
+func_beg_checkrange:
+	addiu	$sp,$sp,-8
+func_mid_checkrange:
+	j	while_mid_0
+while_beg_0:
+	addiu	$a0,$a0,-1073741824
+while_mid_0:
+	li	$t0,1073741824
+	slt	$t1,$t0,$a0
+	bne	$t1,$0,while_beg_0
+while_end_0:
+	j	while_mid_1
+while_beg_1:
+	addiu	$a0,$a0,1073741824
+while_mid_1:
+	slti	$t0,$a0,0
+	bne	$t0,$0,while_beg_1
+while_end_1:
+	addu	$v1,$a0,$0
+	addiu	$sp,$sp,8
+	jr	$ra
+func_end_checkrange:
+	addiu	$sp,$sp,8
+	jr	$ra
+
+
+
+
+func_beg_reduce:
+	addiu	$sp,$sp,-24
+	sw	$ra,20($sp)
+	sw	$s0,0($sp)
+	sw	$s1,4($sp)
+func_mid_reduce:
+	li	$t0,0
+	bne	$a0,$t0,if_mid_0
+if_beg_0:
+	addu	$t0,$a1,$a2
+	addu	$a0,$0,$t0
+	jal	func_beg_checkrange
+	addu	$v1,$v1,$0
+	lw	$s0,0($sp)
+	lw	$s1,4($sp)
+	lw	$ra,20($sp)
+	addiu	$sp,$sp,24
+	jr	$ra
+if_mid_0:
+if_end_0:
+	li	$t0,1
+	bne	$a0,$t0,if_mid_1
+if_beg_1:
+	li	$s0,0
+	li	$s1,1
+	j	while_mid_2
+while_beg_2:
+	div	$t0,$a1,$s1
+	div	$t1,$a1,$s1
+	addiu	$t2,$t1,1
+	slt	$t3,$t1,$0
+	movz	$t2,$t1,$t3
+	sra	$t4,$t2,1
+	sll	$t5,$t4,1
+	subu	$t6,$t0,$t5
+	div	$t7,$a2,$s1
+	div	$t8,$a2,$s1
+	addiu	$t9,$t8,1
+	slt	$t5,$t8,$0
+	movz	$t9,$t8,$t5
+	sra	$t0,$t9,1
+	sll	$t1,$t0,1
+	subu	$t2,$t7,$t1
+	bne	$t6,$t2,if_mid_2
+if_beg_2:
+	sll	$s0,$s0,1
+	j	if_end_2
+if_mid_2:
+	sll	$t0,$s0,1
+	addiu	$s0,$t0,1
+if_end_2:
+	sll	$s1,$s1,1
+while_mid_2:
+	li	$t0,1073741824
+	slt	$t1,$s1,$t0
+	bne	$t1,$0,while_beg_2
+while_end_2:
+	addu	$v1,$s0,$0
+	lw	$s0,0($sp)
+	lw	$s1,4($sp)
+	lw	$ra,20($sp)
+	addiu	$sp,$sp,24
+	jr	$ra
+if_mid_1:
+if_end_1:
+	li	$t0,2
+	bne	$a0,$t0,if_mid_3
+if_beg_3:
+	slt	$t0,$a2,$a1
+	beq	$t0,$0,if_mid_4
+if_beg_4:
+	addu	$v1,$a1,$0
+	lw	$s0,0($sp)
+	lw	$s1,4($sp)
+	lw	$ra,20($sp)
+	addiu	$sp,$sp,24
+	jr	$ra
+	j	if_end_4
+if_mid_4:
+	addu	$v1,$a2,$0
+	lw	$s0,0($sp)
+	lw	$s1,4($sp)
+	lw	$ra,20($sp)
+	addiu	$sp,$sp,24
+	jr	$ra
+if_end_4:
+if_mid_3:
+if_end_3:
+	li	$t0,3
+	bne	$a0,$t0,if_mid_5
+if_beg_5:
+	li	$s0,0
+	li	$s1,1
+	j	while_mid_3
+while_beg_3:
+	div	$t0,$a1,$s1
+	div	$t1,$a1,$s1
+	addiu	$t2,$t1,1
+	slt	$t3,$t1,$0
+	movz	$t2,$t1,$t3
+	sra	$t4,$t2,1
+	sll	$t5,$t4,1
+	subu	$t6,$t0,$t5
+	li	$t7,1
+	bne	$t6,$t7,if_mid_6
+if_beg_6:
+	sll	$t0,$s0,1
+	addiu	$s0,$t0,1
+	j	if_end_6
+if_mid_6:
+	div	$t0,$a2,$s1
+	div	$t1,$a2,$s1
+	addiu	$t2,$t1,1
+	slt	$t3,$t1,$0
+	movz	$t2,$t1,$t3
+	sra	$t4,$t2,1
+	sll	$t5,$t4,1
+	subu	$t6,$t0,$t5
+	li	$t7,1
+	bne	$t6,$t7,if_mid_7
+if_beg_7:
+	sll	$t0,$s0,1
+	addiu	$s0,$t0,1
+if_mid_7:
+if_end_7:
+	sll	$s0,$s0,1
+if_end_6:
+	sll	$s1,$s1,1
+while_mid_3:
+	li	$t0,1073741824
+	slt	$t1,$s1,$t0
+	bne	$t1,$0,while_beg_3
+while_end_3:
+	addu	$v1,$s0,$0
+	lw	$s0,0($sp)
+	lw	$s1,4($sp)
+	lw	$ra,20($sp)
+	addiu	$sp,$sp,24
+	jr	$ra
+if_mid_5:
+if_end_5:
+	li	$t0,4
+	bne	$a0,$t0,if_mid_8
+if_beg_8:
+	li	$s0,0
+	li	$s1,1
+	j	while_mid_4
+while_beg_4:
+	div	$t0,$a1,$s1
+	div	$t1,$a1,$s1
+	addiu	$t2,$t1,1
+	slt	$t3,$t1,$0
+	movz	$t2,$t1,$t3
+	sra	$t4,$t2,1
+	sll	$t5,$t4,1
+	subu	$t6,$t0,$t5
+	li	$t7,1
+	bne	$t6,$t7,if_mid_9
+if_beg_9:
+	div	$t0,$a2,$s1
+	div	$t1,$a2,$s1
+	addiu	$t2,$t1,1
+	slt	$t3,$t1,$0
+	movz	$t2,$t1,$t3
+	sra	$t4,$t2,1
+	sll	$t5,$t4,1
+	subu	$t6,$t0,$t5
+	li	$t7,1
+	bne	$t6,$t7,if_mid_10
+if_beg_10:
+	sll	$t0,$s0,1
+	addiu	$s0,$t0,1
+	j	if_end_10
+if_mid_10:
+	sll	$s0,$s0,1
+if_end_10:
+	j	if_end_9
+if_mid_9:
+	sll	$s0,$s0,1
+if_end_9:
+	sll	$s1,$s1,1
+while_mid_4:
+	li	$t0,1073741824
+	slt	$t1,$s1,$t0
+	bne	$t1,$0,while_beg_4
+while_end_4:
+	addu	$v1,$s0,$0
+	lw	$s0,0($sp)
+	lw	$s1,4($sp)
+	lw	$ra,20($sp)
+	addiu	$sp,$sp,24
+	jr	$ra
+if_mid_8:
+if_end_8:
+	li	$v1,0
+	lw	$s0,0($sp)
+	lw	$s1,4($sp)
+	lw	$ra,20($sp)
+	addiu	$sp,$sp,24
+	jr	$ra
+func_end_reduce:
+	lw	$s0,0($sp)
+	lw	$s1,4($sp)
+	lw	$ra,20($sp)
+	addiu	$sp,$sp,24
+	jr	$ra
+
+
+
+
+func_beg_getvalue:
+	addiu	$sp,$sp,-20
+func_mid_getvalue:
+	slti	$t0,$a2,0
+	beq	$t0,$0,if_mid_11
+if_beg_11:
+	li	$v1,0
+	addiu	$sp,$sp,20
+	jr	$ra
+if_mid_11:
+if_end_11:
+	slti	$t0,$a3,0
+	beq	$t0,$0,if_mid_12
+if_beg_12:
+	li	$v1,0
+	addiu	$sp,$sp,20
+	jr	$ra
+if_mid_12:
+if_end_12:
+	slt	$t0,$a2,$a0
+	bne	$t0,$0,if_mid_13
+if_beg_13:
+	li	$v1,0
+	addiu	$sp,$sp,20
+	jr	$ra
+if_mid_13:
+if_end_13:
+	slt	$t0,$a3,$a1
+	bne	$t0,$0,if_mid_14
+if_beg_14:
+	li	$v1,0
+	addiu	$sp,$sp,20
+	jr	$ra
+if_mid_14:
+if_end_14:
+	mul	$t0,$a1,$a2
+	addu	$t1,$t0,$a3
+	sll	$t2,$t1,2
+	addu	$t3,$gp,$t2
+	lw	$v1,0($t3)
+	addiu	$sp,$sp,20
+	jr	$ra
+func_end_getvalue:
+	addiu	$sp,$sp,20
+	jr	$ra
+
+
+
+
+func_beg_convn:
+	addiu	$sp,$sp,-56
+	sw	$ra,52($sp)
+	sw	$s0,4($sp)
+	sw	$s1,8($sp)
+	sw	$s2,12($sp)
+	sw	$s3,16($sp)
+	sw	$s4,20($sp)
+	sw	$s5,24($sp)
+	sw	$s6,28($sp)
+	sw	$s7,32($sp)
+func_mid_convn:
+	li	$s5,0
+	li	$s3,0
+	li	$t0,1
+	li	$s7,1
+	li	$s6,1
+	li	$s4,1
+	sw	$t0,0($sp)
+	j	while_mid_5
+while_beg_5:
+	li	$s3,0
+	j	while_mid_6
+while_beg_6:
+	li	$s2,0
+	addiu	$t0,$a3,1
+	slt	$t1,$a3,$0
+	movz	$t0,$a3,$t1
+	sra	$t2,$t0,1
+	subu	$s1,$s5,$t2
+	j	while_mid_7
+while_beg_7:
+	addiu	$t0,$a3,1
+	slt	$t1,$a3,$0
+	movz	$t0,$a3,$t1
+	sra	$t2,$t0,1
+	subu	$s0,$s3,$t2
+	j	while_mid_8
+while_beg_8:
+	sw	$a3,48($sp)
+	addu	$a3,$0,$s0
+	addu	$t0,$a2,$0
+	addu	$a2,$0,$s1
+	addu	$t1,$a1,$0
+	addu	$a1,$0,$t0
+	sw	$a0,36($sp)
+	addu	$a0,$0,$t1
+	sw	$t1,40($sp)
+	sw	$t0,44($sp)
+	jal	func_beg_getvalue
+	lw	$a3,48($sp)
+	lw	$a2,44($sp)
+	lw	$a1,40($sp)
+	lw	$a0,36($sp)
+	addu	$t0,$v1,$0
+	sw	$a2,44($sp)
+	addu	$a2,$0,$t0
+	sw	$a1,40($sp)
+	addu	$a1,$0,$s2
+	sw	$a0,36($sp)
+	lw	$a0,36($sp)
+	addu	$a0,$0,$a0
+	sw	$a0,36($sp)
+	sw	$a3,48($sp)
+	jal	func_beg_reduce
+	lw	$a3,48($sp)
+	lw	$a2,44($sp)
+	lw	$a1,40($sp)
+	lw	$a0,36($sp)
+	addu	$s2,$v1,$0
+	addiu	$s0,$s0,1
+	addiu	$t0,$a3,1
+	slt	$t1,$a3,$0
+	movz	$t0,$a3,$t1
+	sra	$t2,$t0,1
+	addu	$t3,$s3,$t2
+	slt	$t4,$s0,$t3
+	movz	$s4,$0,$t4
+while_mid_8:
+	li	$t0,1
+	beq	$s4,$t0,while_beg_8
+while_end_8:
+	li	$s4,1
+	addiu	$s1,$s1,1
+	addiu	$t0,$a3,1
+	slt	$t1,$a3,$0
+	movz	$t0,$a3,$t1
+	sra	$t2,$t0,1
+	addu	$t3,$s5,$t2
+	slt	$t4,$s1,$t3
+	movz	$s6,$0,$t4
+while_mid_7:
+	li	$t0,1
+	beq	$s6,$t0,while_beg_7
+while_end_7:
+	li	$s6,1
+	addu	$t0,$s2,$0
+	mul	$t1,$a2,$s5
+	addu	$t2,$t1,$s3
+	sll	$t3,$t2,2
+	addu	$t4,$gp,$t3
+	sw	$t0,4000($t4)
+	addiu	$s3,$s3,1
+	slt	$t5,$s3,$a2
+	movz	$s7,$0,$t5
+while_mid_6:
+	li	$t0,1
+	beq	$s7,$t0,while_beg_6
+while_end_6:
+	li	$s7,1
+	addiu	$s5,$s5,1
+	slt	$t0,$s5,$a1
+	lw	$t1,0($sp)
+	movz	$t1,$0,$t0
+	sw	$t1,0($sp)
+while_mid_5:
+	li	$t0,1
+	lw	$t1,0($sp)
+	beq	$t1,$t0,while_beg_5
+while_end_5:
+	li	$v1,0
+	lw	$s0,4($sp)
+	lw	$s1,8($sp)
+	lw	$s2,12($sp)
+	lw	$s3,16($sp)
+	lw	$s4,20($sp)
+	lw	$s5,24($sp)
+	lw	$s6,28($sp)
+	lw	$s7,32($sp)
+	lw	$ra,52($sp)
+	addiu	$sp,$sp,56
+	jr	$ra
+func_end_convn:
+	lw	$s0,4($sp)
+	lw	$s1,8($sp)
+	lw	$s2,12($sp)
+	lw	$s3,16($sp)
+	lw	$s4,20($sp)
+	lw	$s5,24($sp)
+	lw	$s6,28($sp)
+	lw	$s7,32($sp)
+	lw	$ra,52($sp)
+	addiu	$sp,$sp,56
+	jr	$ra
+
+
+
+
+func_beg_mymemmove:
+	addiu	$sp,$sp,-12
+	sw	$s0,0($sp)
+func_mid_mymemmove:
+	li	$s0,0
+	j	while_mid_9
+while_beg_9:
+	sll	$t0,$s0,2
+	addu	$t1,$gp,$t0
+	lw	$t2,4000($t1)
+	sll	$t3,$s0,2
+	addu	$t4,$gp,$t3
+	sw	$t2,0($t4)
+	addiu	$s0,$s0,1
+while_mid_9:
+	slt	$t0,$s0,$a0
+	bne	$t0,$0,while_beg_9
+while_end_9:
+func_end_mymemmove:
+	lw	$s0,0($sp)
+	addiu	$sp,$sp,12
+	jr	$ra
+
+
+
+
+func_beg_main:
+	la	$gp,__GP__
+	addiu	$sp,$sp,-28
+func_mid_main:
+	li	$s5,0
+	jal	func_beg_myscanf
+	addu	$s1,$v1,$0
+	jal	func_beg_myscanf
+	addu	$s2,$v1,$0
+	jal	func_beg_myscanf
+	addu	$s3,$v1,$0
+	jal	func_beg_myscanf
+	addu	$s4,$v1,$0
+	j	while_mid_10
+while_beg_10:
+	jal	func_beg_myscanf
+	addu	$t0,$v1,$0
+	sll	$t1,$s5,2
+	addu	$t2,$gp,$t1
+	sw	$t0,0($t2)
+	addiu	$s5,$s5,1
+while_mid_10:
+	slt	$t0,$s5,$s4
+	bne	$t0,$0,while_beg_10
+while_end_10:
+	jal	func_beg_myscanf
+	addu	$s0,$v1,$0
+	li	$s5,0
+	j	while_mid_11
+while_beg_11:
+	jal	func_beg_myscanf
+	addu	$t0,$v1,$0
+	sll	$t1,$s5,2
+	addu	$t2,$gp,$t1
+	sw	$t0,8000($t2)
+	addiu	$s5,$s5,1
+while_mid_11:
+	slt	$t0,$s5,$s0
+	bne	$t0,$0,while_beg_11
+while_end_11:
+	li	$s5,0
+	j	while_mid_12
+while_beg_12:
+	sll	$t0,$s5,2
+	addu	$t1,$gp,$t0
+	lw	$t2,8000($t1)
+	addu	$a3,$0,$s1
+	addu	$a2,$0,$s3
+	addu	$a1,$0,$s2
+	addu	$a0,$0,$t2
+	jal	func_beg_convn
+	addu	$t0,$v1,$0
+	mul	$t1,$s3,$s2
+	addu	$a0,$0,$t1
+	jal	func_beg_mymemmove
+	addiu	$s5,$s5,1
+while_mid_12:
+	slt	$t0,$s5,$s0
+	bne	$t0,$0,while_beg_12
+while_end_12:
+	li	$s5,0
+	j	while_mid_13
+while_beg_13:
+	sll	$t0,$s5,2
+	addu	$t1,$gp,$t0
+	lw	$t2,0($t1)
+	addu	$a0,$0,$t2
+	jal	func_beg_myprintf
+	addiu	$s5,$s5,1
+while_mid_13:
+	mul	$t0,$s3,$s2
+	slt	$t1,$s5,$t0
+	bne	$t1,$0,while_beg_13
+while_end_13:
+	li	$v0,10
+	syscall
+func_end_main:
+	li	$v0,10
+	syscall
+
+
+
+

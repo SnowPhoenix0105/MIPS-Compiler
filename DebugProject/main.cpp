@@ -4,8 +4,10 @@
 #include "../Develop/compile_controller.h"
 #include "../Develop/GCPTargetGenerator.h"
 #include "../Develop/OptimizerFormat.h"
+#include "../Develop/ReplaceByMov.h"
 
-#define DEBUG_006
+// #define DEBUG_006
+#define OUTPUT_IR
 
 using std::ostringstream;
 using std::ofstream;
@@ -157,4 +159,62 @@ int main(int argc, char* argv[])
 	simple_generator.translate(simple_asm_os);
 	gcp_generator.translate(gcp_asm_os);
 #endif // DEBUG_006
+
+
+
+#ifdef OUTPUT_IR
+	unique_ptr<istream> input_file(new ifstream("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\GCPDebug2\\source.c"));
+	unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(input_file)));
+	SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
+	syntactic_analyzer.parse();
+	ostringstream oss;
+	syntactic_analyzer.print_all_error(oss);
+	string err_msg = oss.str();
+
+	for (size_t i = 1; i != 4; ++i)
+	{
+		unique_ptr<ifstream> source(new ifstream("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\output_ir\\sources\\source" 
+			+ std::to_string(i) + ".c"));
+		ofstream origin_ir("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\output_ir\\results\\testfile"
+			+ std::to_string(i) + "_学号_姓名_优化前中间代码.txt");
+		ofstream optimized_ir("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\output_ir\\results\\testfile"
+			+ std::to_string(i) + "_学号_姓名_优化后中间代码.txt");
+		ofstream origin_mips("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\output_ir\\results\\testfile"
+			+ std::to_string(i) + "_学号_姓名_优化前目标代码.txt");
+		ofstream optimized_mips("D:\\Projects\\C++\\MIPS-Compiler\\DebugProject\\Resource\\output_ir\\results\\testfile"
+			+ std::to_string(i) + "_学号_姓名_优化后目标代码.txt");
+
+
+		unique_ptr<LexicalAnalyzer> lexical_analyzer(new LexicalAnalyzer(std::move(source)));
+		SyntacticAnalyzer syntactic_analyzer(std::move(lexical_analyzer));
+		syntactic_analyzer.parse();
+		shared_ptr<IrElemAllocator> allocator_ptr = syntactic_analyzer.get_allocator_ptr();
+		shared_ptr<IrTable> ir_table_ptr = syntactic_analyzer.get_ir_table();
+
+		// 输出未优化IR
+		origin_ir << ir_table_ptr->to_string(*allocator_ptr) << std::endl;
+
+		// 输出未优化目标代码
+		unique_ptr<ITargetCodeGenerator> simple_target_code_generator(new SimpleCodeGenerator(allocator_ptr, ir_table_ptr));
+		simple_target_code_generator->translate(origin_mips);
+
+
+		// 输出优化后目标代码
+		for (size_t i = 0; i != optimizers.size(); ++i)
+		{
+			ir_table_ptr = optimizers[i]->parse(*ir_table_ptr, allocator_ptr);
+		}
+
+		shared_ptr<IrTable> moved_ir = ReplaceByMov().parse(*ir_table_ptr, allocator_ptr);
+		optimized_ir << moved_ir->to_string(*allocator_ptr) << std::endl;
+
+		// 输出优化后目标代码
+		shared_ptr<IrTable> registered_ir = GCPRegisterAllocator(allocator_ptr, moved_ir).build();
+		unique_ptr<ITargetCodeGenerator> GCP_target_code_generator(new GCPTargetGenerator(allocator_ptr, registered_ir));
+		GCP_target_code_generator->translate(optimized_mips);
+	}
+
+
+#endif // OUTPUT_IR
+
 }

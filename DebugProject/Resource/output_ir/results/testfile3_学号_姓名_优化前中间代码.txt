@@ -1,0 +1,527 @@
+	aar	G_a_a,	int,	1000
+	aar	G_a_b,	int,	1000
+	aar	G_a_kernelid,	int,	40
+func_beg_myscanf:
+	func	int
+func_mid_myscanf:
+	scanf	myscanf_n,	int
+	#ret	=	myscanf_n	+	#zero
+	ret
+func_end_myscanf:
+
+
+
+
+func_beg_myprintf:
+	func	void
+	param	myprintf_n
+func_mid_myprintf:
+	printf	NIL,	myprintf_n,	int
+	ret
+func_end_myprintf:
+
+
+
+
+func_beg_checkrange:
+	func	int
+	param	checkrange_num
+func_mid_checkrange:
+	goto	while_mid_0
+while_beg_0:
+	t2	=	checkrange_num	-	1073741824
+	t1	=	t2	+	#zero
+	checkrange_num	=	t1	+	#zero
+while_mid_0:
+	t0	=	1073741824	<	checkrange_num
+	if t0 != #zero	goto	while_beg_0
+while_end_0:
+	goto	while_mid_1
+while_beg_1:
+	t5	=	checkrange_num	+	1073741824
+	t4	=	t5	+	#zero
+	checkrange_num	=	t4	+	#zero
+while_mid_1:
+	t3	=	checkrange_num	<	0
+	if t3 != #zero	goto	while_beg_1
+while_end_1:
+	#ret	=	checkrange_num	+	#zero
+	ret
+func_end_checkrange:
+
+
+
+
+func_beg_reduce:
+	func	int
+	param	reduce_kernelid
+	param	reduce_x
+	param	reduce_y
+func_mid_reduce:
+	if reduce_kernelid != 0	goto	if_mid_0
+if_beg_0:
+	t6	=	reduce_x	+	reduce_y
+	push	t6
+	call	func_beg_checkrange
+	t7	=	#ret	+	#zero
+	#ret	=	t7	+	#zero
+	ret
+if_mid_0:
+if_end_0:
+	if reduce_kernelid != 1	goto	if_mid_1
+if_beg_1:
+	t8	=	0	+	#zero
+	reduce_ret	=	t8	+	#zero
+	t9	=	1	+	#zero
+	reduce_i	=	t9	+	#zero
+	goto	while_mid_2
+while_beg_2:
+	t11	=	reduce_x	/	reduce_i
+	t12	=	reduce_x	/	reduce_i
+	t13	=	t12	/	2
+	t14	=	2	*	t13
+	t15	=	t11	-	t14
+	t16	=	reduce_y	/	reduce_i
+	t17	=	reduce_y	/	reduce_i
+	t18	=	t17	/	2
+	t19	=	2	*	t18
+	t20	=	t16	-	t19
+	if t15 != t20	goto	if_mid_2
+if_beg_2:
+	t22	=	2	*	reduce_ret
+	t21	=	t22	+	#zero
+	reduce_ret	=	t21	+	#zero
+	goto	if_end_2
+if_mid_2:
+	t24	=	2	*	reduce_ret
+	t25	=	t24	+	1
+	t23	=	t25	+	#zero
+	reduce_ret	=	t23	+	#zero
+if_end_2:
+	t27	=	2	*	reduce_i
+	t26	=	t27	+	#zero
+	reduce_i	=	t26	+	#zero
+while_mid_2:
+	t10	=	reduce_i	<	1073741824
+	if t10 != #zero	goto	while_beg_2
+while_end_2:
+	#ret	=	reduce_ret	+	#zero
+	ret
+if_mid_1:
+if_end_1:
+	if reduce_kernelid != 2	goto	if_mid_3
+if_beg_3:
+	t28	=	reduce_y	<	reduce_x
+	if t28 == #zero	goto	if_mid_4
+if_beg_4:
+	#ret	=	reduce_x	+	#zero
+	ret
+	goto	if_end_4
+if_mid_4:
+	#ret	=	reduce_y	+	#zero
+	ret
+if_end_4:
+if_mid_3:
+if_end_3:
+	if reduce_kernelid != 3	goto	if_mid_5
+if_beg_5:
+	t29	=	0	+	#zero
+	reduce_ret	=	t29	+	#zero
+	t30	=	1	+	#zero
+	reduce_i	=	t30	+	#zero
+	goto	while_mid_3
+while_beg_3:
+	t32	=	reduce_x	/	reduce_i
+	t33	=	reduce_x	/	reduce_i
+	t34	=	t33	/	2
+	t35	=	2	*	t34
+	t36	=	t32	-	t35
+	if t36 != 1	goto	if_mid_6
+if_beg_6:
+	t38	=	2	*	reduce_ret
+	t39	=	t38	+	1
+	t37	=	t39	+	#zero
+	reduce_ret	=	t37	+	#zero
+	goto	if_end_6
+if_mid_6:
+	t40	=	reduce_y	/	reduce_i
+	t41	=	reduce_y	/	reduce_i
+	t42	=	t41	/	2
+	t43	=	2	*	t42
+	t44	=	t40	-	t43
+	if t44 != 1	goto	if_mid_7
+if_beg_7:
+	t46	=	2	*	reduce_ret
+	t47	=	t46	+	1
+	t45	=	t47	+	#zero
+	reduce_ret	=	t45	+	#zero
+if_mid_7:
+if_end_7:
+	t49	=	2	*	reduce_ret
+	t48	=	t49	+	#zero
+	reduce_ret	=	t48	+	#zero
+if_end_6:
+	t51	=	2	*	reduce_i
+	t50	=	t51	+	#zero
+	reduce_i	=	t50	+	#zero
+while_mid_3:
+	t31	=	reduce_i	<	1073741824
+	if t31 != #zero	goto	while_beg_3
+while_end_3:
+	#ret	=	reduce_ret	+	#zero
+	ret
+if_mid_5:
+if_end_5:
+	if reduce_kernelid != 4	goto	if_mid_8
+if_beg_8:
+	t52	=	0	+	#zero
+	reduce_ret	=	t52	+	#zero
+	t53	=	1	+	#zero
+	reduce_i	=	t53	+	#zero
+	goto	while_mid_4
+while_beg_4:
+	t55	=	reduce_x	/	reduce_i
+	t56	=	reduce_x	/	reduce_i
+	t57	=	t56	/	2
+	t58	=	2	*	t57
+	t59	=	t55	-	t58
+	if t59 != 1	goto	if_mid_9
+if_beg_9:
+	t60	=	reduce_y	/	reduce_i
+	t61	=	reduce_y	/	reduce_i
+	t62	=	t61	/	2
+	t63	=	2	*	t62
+	t64	=	t60	-	t63
+	if t64 != 1	goto	if_mid_10
+if_beg_10:
+	t66	=	2	*	reduce_ret
+	t67	=	t66	+	1
+	t65	=	t67	+	#zero
+	reduce_ret	=	t65	+	#zero
+	goto	if_end_10
+if_mid_10:
+	t69	=	2	*	reduce_ret
+	t68	=	t69	+	#zero
+	reduce_ret	=	t68	+	#zero
+if_end_10:
+	goto	if_end_9
+if_mid_9:
+	t71	=	2	*	reduce_ret
+	t70	=	t71	+	#zero
+	reduce_ret	=	t70	+	#zero
+if_end_9:
+	t73	=	2	*	reduce_i
+	t72	=	t73	+	#zero
+	reduce_i	=	t72	+	#zero
+while_mid_4:
+	t54	=	reduce_i	<	1073741824
+	if t54 != #zero	goto	while_beg_4
+while_end_4:
+	#ret	=	reduce_ret	+	#zero
+	ret
+if_mid_8:
+if_end_8:
+	#ret	=	0	+	#zero
+	ret
+func_end_reduce:
+
+
+
+
+func_beg_getvalue:
+	func	int
+	param	getvalue_n
+	param	getvalue_m
+	param	getvalue_x
+	param	getvalue_y
+func_mid_getvalue:
+	t74	=	getvalue_x	<	0
+	if t74 == #zero	goto	if_mid_11
+if_beg_11:
+	#ret	=	0	+	#zero
+	ret
+if_mid_11:
+if_end_11:
+	t75	=	getvalue_y	<	0
+	if t75 == #zero	goto	if_mid_12
+if_beg_12:
+	#ret	=	0	+	#zero
+	ret
+if_mid_12:
+if_end_12:
+	t76	=	getvalue_x	<	getvalue_n
+	if t76 != #zero	goto	if_mid_13
+if_beg_13:
+	#ret	=	0	+	#zero
+	ret
+if_mid_13:
+if_end_13:
+	t77	=	getvalue_y	<	getvalue_m
+	if t77 != #zero	goto	if_mid_14
+if_beg_14:
+	#ret	=	0	+	#zero
+	ret
+if_mid_14:
+if_end_14:
+	t78	=	getvalue_m	*	getvalue_x
+	t79	=	t78	+	getvalue_y
+	t81	=	t79	<<	2
+	t80	=	#gp	+	t81
+	t82	=	t80[G_a_a]
+	#ret	=	t82	+	#zero
+	ret
+func_end_getvalue:
+
+
+
+
+func_beg_convn:
+	func	int
+	param	convn_kernelid
+	param	convn_n
+	param	convn_m
+	param	convn_c
+func_mid_convn:
+	convn_i	=	#zero	+	0
+	convn_j	=	#zero	+	0
+	convn_flag1	=	#zero	+	1
+	convn_flag2	=	#zero	+	1
+	convn_flag3	=	#zero	+	1
+	convn_flag4	=	#zero	+	1
+	goto	while_mid_5
+while_beg_5:
+	t83	=	0	+	#zero
+	convn_j	=	t83	+	#zero
+	goto	while_mid_6
+while_beg_6:
+	t84	=	0	+	#zero
+	convn_curr	=	t84	+	#zero
+	t86	=	convn_c	/	2
+	t87	=	convn_i	-	t86
+	t85	=	t87	+	#zero
+	convn_x	=	t85	+	#zero
+	goto	while_mid_7
+while_beg_7:
+	t89	=	convn_c	/	2
+	t90	=	convn_j	-	t89
+	t88	=	t90	+	#zero
+	convn_y	=	t88	+	#zero
+	goto	while_mid_8
+while_beg_8:
+	push	convn_y
+	push	convn_x
+	push	convn_m
+	push	convn_n
+	call	func_beg_getvalue
+	t92	=	#ret	+	#zero
+	push	t92
+	push	convn_curr
+	push	convn_kernelid
+	call	func_beg_reduce
+	t93	=	#ret	+	#zero
+	t91	=	t93	+	#zero
+	convn_curr	=	t91	+	#zero
+	t95	=	convn_y	+	1
+	t94	=	t95	+	#zero
+	convn_y	=	t94	+	#zero
+	t96	=	convn_c	/	2
+	t97	=	convn_j	+	t96
+	t98	=	convn_y	<	t97
+	if t98 != #zero	goto	if_mid_15
+if_beg_15:
+	t99	=	0	+	#zero
+	convn_flag4	=	t99	+	#zero
+if_mid_15:
+if_end_15:
+while_mid_8:
+	if convn_flag4 == 1	goto	while_beg_8
+while_end_8:
+	t100	=	1	+	#zero
+	convn_flag4	=	t100	+	#zero
+	t102	=	convn_x	+	1
+	t101	=	t102	+	#zero
+	convn_x	=	t101	+	#zero
+	t103	=	convn_c	/	2
+	t104	=	convn_i	+	t103
+	t105	=	convn_x	<	t104
+	if t105 != #zero	goto	if_mid_16
+if_beg_16:
+	t106	=	0	+	#zero
+	convn_flag3	=	t106	+	#zero
+if_mid_16:
+if_end_16:
+while_mid_7:
+	if convn_flag3 == 1	goto	while_beg_7
+while_end_7:
+	t107	=	1	+	#zero
+	convn_flag3	=	t107	+	#zero
+	t108	=	convn_curr	+	#zero
+	t109	=	convn_m	*	convn_i
+	t110	=	t109	+	convn_j
+	t112	=	t110	<<	2
+	t111	=	#gp	+	t112
+	t111[G_a_b]	=	t108
+	t114	=	convn_j	+	1
+	t113	=	t114	+	#zero
+	convn_j	=	t113	+	#zero
+	t115	=	convn_j	<	convn_m
+	if t115 != #zero	goto	if_mid_17
+if_beg_17:
+	t116	=	0	+	#zero
+	convn_flag2	=	t116	+	#zero
+if_mid_17:
+if_end_17:
+while_mid_6:
+	if convn_flag2 == 1	goto	while_beg_6
+while_end_6:
+	t117	=	1	+	#zero
+	convn_flag2	=	t117	+	#zero
+	t119	=	convn_i	+	1
+	t118	=	t119	+	#zero
+	convn_i	=	t118	+	#zero
+	t120	=	convn_i	<	convn_n
+	if t120 != #zero	goto	if_mid_18
+if_beg_18:
+	t121	=	0	+	#zero
+	convn_flag1	=	t121	+	#zero
+if_mid_18:
+if_end_18:
+while_mid_5:
+	if convn_flag1 == 1	goto	while_beg_5
+while_end_5:
+	#ret	=	0	+	#zero
+	ret
+func_end_convn:
+
+
+
+
+func_beg_mymemmove:
+	func	void
+	param	mymemmove_n
+func_mid_mymemmove:
+	mymemmove_i	=	#zero	+	0
+	goto	while_mid_9
+while_beg_9:
+	t127	=	mymemmove_i	<<	2
+	t126	=	#gp	+	t127
+	t128	=	t126[G_a_b]
+	t123	=	t128	+	#zero
+	t125	=	mymemmove_i	<<	2
+	t124	=	#gp	+	t125
+	t124[G_a_a]	=	t123
+	t130	=	mymemmove_i	+	1
+	t129	=	t130	+	#zero
+	mymemmove_i	=	t129	+	#zero
+while_mid_9:
+	t122	=	mymemmove_i	<	mymemmove_n
+	if t122 != #zero	goto	while_beg_9
+while_end_9:
+func_end_mymemmove:
+
+
+
+
+func_beg_main:
+	func	void
+func_mid_main:
+	main_i	=	#zero	+	0
+	call	func_beg_myscanf
+	t132	=	#ret	+	#zero
+	t131	=	t132	+	#zero
+	main_c	=	t131	+	#zero
+	call	func_beg_myscanf
+	t134	=	#ret	+	#zero
+	t133	=	t134	+	#zero
+	main_n	=	t133	+	#zero
+	call	func_beg_myscanf
+	t136	=	#ret	+	#zero
+	t135	=	t136	+	#zero
+	main_m	=	t135	+	#zero
+	call	func_beg_myscanf
+	t138	=	#ret	+	#zero
+	t137	=	t138	+	#zero
+	main_arrlen	=	t137	+	#zero
+	goto	while_mid_10
+while_beg_10:
+	call	func_beg_myscanf
+	t143	=	#ret	+	#zero
+	t140	=	t143	+	#zero
+	t142	=	main_i	<<	2
+	t141	=	#gp	+	t142
+	t141[G_a_a]	=	t140
+	t145	=	main_i	+	1
+	t144	=	t145	+	#zero
+	main_i	=	t144	+	#zero
+while_mid_10:
+	t139	=	main_i	<	main_arrlen
+	if t139 != #zero	goto	while_beg_10
+while_end_10:
+	call	func_beg_myscanf
+	t147	=	#ret	+	#zero
+	t146	=	t147	+	#zero
+	main_task	=	t146	+	#zero
+	t148	=	0	+	#zero
+	main_i	=	t148	+	#zero
+	goto	while_mid_11
+while_beg_11:
+	call	func_beg_myscanf
+	t153	=	#ret	+	#zero
+	t150	=	t153	+	#zero
+	t152	=	main_i	<<	2
+	t151	=	#gp	+	t152
+	t151[G_a_kernelid]	=	t150
+	t155	=	main_i	+	1
+	t154	=	t155	+	#zero
+	main_i	=	t154	+	#zero
+while_mid_11:
+	t149	=	main_i	<	main_task
+	if t149 != #zero	goto	while_beg_11
+while_end_11:
+	t156	=	0	+	#zero
+	main_i	=	t156	+	#zero
+	goto	while_mid_12
+while_beg_12:
+	t159	=	main_i	<<	2
+	t158	=	#gp	+	t159
+	t160	=	t158[G_a_kernelid]
+	push	main_c
+	push	main_m
+	push	main_n
+	push	t160
+	call	func_beg_convn
+	t161	=	#ret	+	#zero
+	t162	=	main_m	*	main_n
+	push	t162
+	call	func_beg_mymemmove
+	t164	=	main_i	+	1
+	t163	=	t164	+	#zero
+	main_i	=	t163	+	#zero
+while_mid_12:
+	t157	=	main_i	<	main_task
+	if t157 != #zero	goto	while_beg_12
+while_end_12:
+	t165	=	0	+	#zero
+	main_i	=	t165	+	#zero
+	goto	while_mid_13
+while_beg_13:
+	t169	=	main_i	<<	2
+	t168	=	#gp	+	t169
+	t170	=	t168[G_a_a]
+	push	t170
+	call	func_beg_myprintf
+	t172	=	main_i	+	1
+	t171	=	t172	+	#zero
+	main_i	=	t171	+	#zero
+while_mid_13:
+	t166	=	main_m	*	main_n
+	t167	=	main_i	<	t166
+	if t167 != #zero	goto	while_beg_13
+while_end_13:
+	ret
+func_end_main:
+
+
+
+
+

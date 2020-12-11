@@ -1,0 +1,417 @@
+	aar	G_a_bigintarr,	int,	200
+	aar	G_a_bigintlength,	int,	2
+	aar	G_a_result,	int,	200
+func_beg_min:
+	func	int
+	param	min_a
+	param	min_b
+func_mid_min:
+	t0	=	min_b	<	min_a
+	if t0 == #zero	goto	if_mid_0
+if_beg_0:
+	#ret	=	min_b	+	#zero
+	ret
+	goto	if_end_0
+if_mid_0:
+	#ret	=	min_a	+	#zero
+	ret
+if_end_0:
+func_end_min:
+
+
+
+
+func_beg_max:
+	func	int
+	param	max_a
+	param	max_b
+func_mid_max:
+	t1	=	max_b	<	max_a
+	if t1 == #zero	goto	if_mid_1
+if_beg_1:
+	#ret	=	max_a	+	#zero
+	ret
+	goto	if_end_1
+if_mid_1:
+	#ret	=	max_b	+	#zero
+	ret
+if_end_1:
+func_end_max:
+
+
+
+
+func_beg_compare:
+	func	int
+func_mid_compare:
+	compare_i	=	#zero	+	0
+	t3	=	#zero	+	0
+	t2	=	#gp	+	t3
+	t4	=	t2[G_a_bigintlength]
+	t6	=	#zero	+	4
+	t5	=	#gp	+	t6
+	t7	=	t5[G_a_bigintlength]
+	t8	=	t7	<	t4
+	if t8 == #zero	goto	if_mid_2
+if_beg_2:
+	#ret	=	#zero	+	1
+	ret
+if_mid_2:
+if_end_2:
+	t10	=	#zero	+	0
+	t9	=	#gp	+	t10
+	t11	=	t9[G_a_bigintlength]
+	t13	=	#zero	+	4
+	t12	=	#gp	+	t13
+	t14	=	t12[G_a_bigintlength]
+	t15	=	t11	<	t14
+	if t15 == #zero	goto	if_mid_3
+if_beg_3:
+	#ret	=	#zero	-	1
+	ret
+if_mid_3:
+if_end_3:
+	goto	while_mid_0
+while_beg_0:
+	t21	=	#zero	+	0
+	t23	=	compare_i	<<	2
+	t22	=	t21	+	t23
+	t24	=	#gp	+	t22
+	t25	=	t24[G_a_bigintarr]
+	t26	=	#zero	+	400
+	t28	=	compare_i	<<	2
+	t27	=	t26	+	t28
+	t29	=	#gp	+	t27
+	t30	=	t29[G_a_bigintarr]
+	t31	=	t30	<	t25
+	if t31 == #zero	goto	if_mid_4
+if_beg_4:
+	#ret	=	#zero	+	1
+	ret
+if_mid_4:
+if_end_4:
+	t32	=	#zero	+	0
+	t34	=	compare_i	<<	2
+	t33	=	t32	+	t34
+	t35	=	#gp	+	t33
+	t36	=	t35[G_a_bigintarr]
+	t37	=	#zero	+	400
+	t39	=	compare_i	<<	2
+	t38	=	t37	+	t39
+	t40	=	#gp	+	t38
+	t41	=	t40[G_a_bigintarr]
+	t42	=	t36	<	t41
+	if t42 == #zero	goto	if_mid_5
+if_beg_5:
+	#ret	=	#zero	-	1
+	ret
+if_mid_5:
+if_end_5:
+	compare_i	=	compare_i	+	1
+while_mid_0:
+	t18	=	#zero	+	0
+	t17	=	#gp	+	t18
+	t19	=	t17[G_a_bigintlength]
+	t20	=	compare_i	<	t19
+	if t20 != #zero	goto	while_beg_0
+while_end_0:
+	#ret	=	#zero	+	0
+	ret
+func_end_compare:
+
+
+
+
+func_beg_subtract:
+	func	int
+	aar	subtract_a_a,	int,	100
+	aar	subtract_a_b,	int,	100
+	aar	subtract_a_c,	int,	100
+func_mid_subtract:
+	t48	=	#zero	+	0
+	t47	=	#gp	+	t48
+	subtract_l1	=	t47[G_a_bigintlength]
+	t52	=	#zero	+	4
+	t51	=	#gp	+	t52
+	subtract_l2	=	t51[G_a_bigintlength]
+	push	subtract_l2
+	push	subtract_l1
+	call	func_beg_min
+	subtract_k	=	#ret	+	#zero
+	push	subtract_l2
+	push	subtract_l1
+	call	func_beg_max
+	subtract_j	=	#ret	+	#zero
+	call	func_beg_compare
+	t58	=	#ret	+	#zero
+	t59	=	t58	<	0
+	if t59 != #zero	goto	if_mid_6
+if_beg_6:
+	subtract_flag	=	#zero	+	0
+	subtract_i	=	#zero	+	0
+	goto	while_mid_1
+while_beg_1:
+	t66	=	subtract_l1	-	1
+	t67	=	t66	-	subtract_i
+	t68	=	#zero	+	0
+	t70	=	t67	<<	2
+	t69	=	t68	+	t70
+	t71	=	#gp	+	t69
+	t63	=	t71[G_a_bigintarr]
+	t65	=	subtract_i	<<	2
+	t64	=	#sp	+	t65
+	t64[subtract_a_a]	=	t63
+	subtract_i	=	subtract_i	+	1
+while_mid_1:
+	t62	=	subtract_i	<	subtract_l1
+	if t62 != #zero	goto	while_beg_1
+while_end_1:
+	subtract_i	=	#zero	+	0
+	goto	while_mid_2
+while_beg_2:
+	t80	=	subtract_l2	-	1
+	t81	=	t80	-	subtract_i
+	t82	=	#zero	+	400
+	t84	=	t81	<<	2
+	t83	=	t82	+	t84
+	t85	=	#gp	+	t83
+	t77	=	t85[G_a_bigintarr]
+	t79	=	subtract_i	<<	2
+	t78	=	#sp	+	t79
+	t78[subtract_a_b]	=	t77
+	subtract_i	=	subtract_i	+	1
+while_mid_2:
+	t76	=	subtract_i	<	subtract_l2
+	if t76 != #zero	goto	while_beg_2
+while_end_2:
+	goto	if_end_6
+if_mid_6:
+	subtract_flag	=	#zero	+	1
+	subtract_i	=	#zero	+	0
+	goto	while_mid_3
+while_beg_3:
+	t95	=	subtract_l2	-	1
+	t96	=	t95	-	subtract_i
+	t97	=	#zero	+	400
+	t99	=	t96	<<	2
+	t98	=	t97	+	t99
+	t100	=	#gp	+	t98
+	t92	=	t100[G_a_bigintarr]
+	t94	=	subtract_i	<<	2
+	t93	=	#sp	+	t94
+	t93[subtract_a_a]	=	t92
+	subtract_i	=	subtract_i	+	1
+while_mid_3:
+	t91	=	subtract_i	<	subtract_l2
+	if t91 != #zero	goto	while_beg_3
+while_end_3:
+	subtract_i	=	#zero	+	0
+	goto	while_mid_4
+while_beg_4:
+	t109	=	subtract_l1	-	1
+	t110	=	t109	-	subtract_i
+	t111	=	#zero	+	0
+	t113	=	t110	<<	2
+	t112	=	t111	+	t113
+	t114	=	#gp	+	t112
+	t106	=	t114[G_a_bigintarr]
+	t108	=	subtract_i	<<	2
+	t107	=	#sp	+	t108
+	t107[subtract_a_b]	=	t106
+	subtract_i	=	subtract_i	+	1
+while_mid_4:
+	t105	=	subtract_i	<	subtract_l1
+	if t105 != #zero	goto	while_beg_4
+while_end_4:
+if_end_6:
+	subtract_i	=	#zero	+	0
+	goto	while_mid_5
+while_beg_5:
+	t121	=	subtract_i	<<	2
+	t120	=	#sp	+	t121
+	t122	=	t120[subtract_a_a]
+	t124	=	subtract_i	<<	2
+	t123	=	#sp	+	t124
+	t125	=	t123[subtract_a_b]
+	t126	=	t122	<	t125
+	if t126 != #zero	goto	if_mid_7
+if_beg_7:
+	t131	=	subtract_i	<<	2
+	t130	=	#sp	+	t131
+	t132	=	t130[subtract_a_a]
+	t134	=	subtract_i	<<	2
+	t133	=	#sp	+	t134
+	t135	=	t133[subtract_a_b]
+	t127	=	t132	-	t135
+	t129	=	subtract_i	<<	2
+	t128	=	#sp	+	t129
+	t128[subtract_a_c]	=	t127
+	goto	if_end_7
+if_mid_7:
+	t141	=	subtract_i	<<	2
+	t140	=	#sp	+	t141
+	t142	=	t140[subtract_a_a]
+	t143	=	t142	+	10
+	t145	=	subtract_i	<<	2
+	t144	=	#sp	+	t145
+	t146	=	t144[subtract_a_b]
+	t137	=	t143	-	t146
+	t139	=	subtract_i	<<	2
+	t138	=	#sp	+	t139
+	t138[subtract_a_c]	=	t137
+	t152	=	subtract_i	+	1
+	t154	=	t152	<<	2
+	t153	=	#sp	+	t154
+	t155	=	t153[subtract_a_a]
+	t148	=	t155	-	1
+	t149	=	subtract_i	+	1
+	t151	=	t149	<<	2
+	t150	=	#sp	+	t151
+	t150[subtract_a_a]	=	t148
+if_end_7:
+	subtract_i	=	subtract_i	+	1
+while_mid_5:
+	t119	=	subtract_i	<	subtract_k
+	if t119 != #zero	goto	while_beg_5
+while_end_5:
+	goto	while_mid_6
+while_beg_6:
+	t161	=	subtract_i	<<	2
+	t160	=	#sp	+	t161
+	t162	=	t160[subtract_a_a]
+	t163	=	t162	<	0
+	if t163 != #zero	goto	if_mid_8
+if_beg_8:
+	t168	=	subtract_i	<<	2
+	t167	=	#sp	+	t168
+	t164	=	t167[subtract_a_a]
+	t166	=	subtract_i	<<	2
+	t165	=	#sp	+	t166
+	t165[subtract_a_c]	=	t164
+	goto	if_end_8
+if_mid_8:
+	t174	=	subtract_i	<<	2
+	t173	=	#sp	+	t174
+	t175	=	t173[subtract_a_a]
+	t170	=	t175	+	10
+	t172	=	subtract_i	<<	2
+	t171	=	#sp	+	t172
+	t171[subtract_a_c]	=	t170
+	t181	=	subtract_i	+	1
+	t183	=	t181	<<	2
+	t182	=	#sp	+	t183
+	t184	=	t182[subtract_a_a]
+	t177	=	t184	-	1
+	t178	=	subtract_i	+	1
+	t180	=	t178	<<	2
+	t179	=	#sp	+	t180
+	t179[subtract_a_a]	=	t177
+if_end_8:
+	subtract_i	=	subtract_i	+	1
+while_mid_6:
+	t159	=	subtract_i	<	subtract_j
+	if t159 != #zero	goto	while_beg_6
+while_end_6:
+	goto	while_mid_7
+while_beg_7:
+	subtract_i	=	subtract_i	-	1
+while_mid_7:
+	t188	=	subtract_i	-	1
+	t190	=	t188	<<	2
+	t189	=	#sp	+	t190
+	t191	=	t189[subtract_a_c]
+	t241	=	#zero	+	0
+	if t191 == t241	goto	while_beg_7
+while_end_7:
+	subtract_j	=	#zero	+	0
+	t242	=	#zero	+	1
+	if subtract_flag != t242	goto	if_mid_9
+if_beg_9:
+	printf	"-",	NIL,	char
+if_mid_9:
+if_end_9:
+	subtract_k	=	subtract_i	-	1
+	goto	while_mid_8
+while_beg_8:
+	t203	=	subtract_k	<<	2
+	t202	=	#sp	+	t203
+	t199	=	t202[subtract_a_c]
+	t201	=	subtract_j	<<	2
+	t200	=	#gp	+	t201
+	t200[G_a_result]	=	t199
+	subtract_k	=	subtract_k	-	1
+	subtract_j	=	subtract_j	+	1
+while_mid_8:
+	t197	=	#zero	-	1
+	t198	=	t197	<	subtract_k
+	if t198 != #zero	goto	while_beg_8
+while_end_8:
+	#ret	=	subtract_j	+	#zero
+	ret
+func_end_subtract:
+
+
+
+
+func_beg_main:
+	func	void
+func_mid_main:
+	main_i	=	#zero	+	0
+	scanf	main_n,	int
+	t209	=	main_n	+	#zero
+	t211	=	#zero	+	0
+	t210	=	#gp	+	t211
+	t210[G_a_bigintlength]	=	t209
+	goto	while_mid_9
+while_beg_9:
+	scanf	t213,	int
+	t214	=	#zero	+	0
+	t216	=	main_i	<<	2
+	t215	=	t214	+	t216
+	t217	=	#gp	+	t215
+	t217[G_a_bigintarr]	=	t213
+	main_i	=	main_i	+	1
+while_mid_9:
+	t212	=	main_i	<	main_n
+	if t212 != #zero	goto	while_beg_9
+while_end_9:
+	scanf	main_n,	int
+	t220	=	main_n	+	#zero
+	t222	=	#zero	+	4
+	t221	=	#gp	+	t222
+	t221[G_a_bigintlength]	=	t220
+	main_i	=	#zero	+	0
+	goto	while_mid_10
+while_beg_10:
+	scanf	t225,	int
+	t226	=	#zero	+	400
+	t228	=	main_i	<<	2
+	t227	=	t226	+	t228
+	t229	=	#gp	+	t227
+	t229[G_a_bigintarr]	=	t225
+	main_i	=	main_i	+	1
+while_mid_10:
+	t224	=	main_i	<	main_n
+	if t224 != #zero	goto	while_beg_10
+while_end_10:
+	main_i	=	#zero	+	0
+	call	func_beg_subtract
+	main_n	=	#ret	+	#zero
+	goto	while_mid_11
+while_beg_11:
+	t237	=	main_i	<<	2
+	t236	=	#gp	+	t237
+	t238	=	t236[G_a_result]
+	printf	NIL,	t238,	int
+	main_i	=	main_i	+	1
+while_mid_11:
+	t235	=	main_i	<	main_n
+	if t235 != #zero	goto	while_beg_11
+while_end_11:
+	ret
+func_end_main:
+
+
+
+
+
