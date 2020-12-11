@@ -166,5 +166,7 @@ if __name__ == "__main__":
     # generator.auto_gen(10, True)
     # generator = InputAndExpectGenerator("auto_samples\\o1_3")
     # generator.auto_gen(1, False)
-    generator = InputAndExpectGenerator("auto_samples\\mov")
+    # generator = InputAndExpectGenerator("auto_samples\\mov")
+    # generator.auto_gen(10, True)
+    generator = InputAndExpectGenerator("auto_samples\\branch_init")
     generator.auto_gen(10, True)

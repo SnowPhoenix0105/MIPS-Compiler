@@ -958,7 +958,12 @@ void GCPRegisterAllocator::walk()
 			var_status->clear();
 			for (irelem_t var : var_activition_analyze_result->get_in(current_index))
 			{
-				irelem_t location = save_reg_alloc.at(var);
+				auto it = save_reg_alloc.find(var);
+				if (it == save_reg_alloc.end())
+				{
+					continue;
+				}
+				irelem_t location = it->second;
 				if (location == IrType::NIL)
 				{
 					location = var;
