@@ -121,6 +121,10 @@ class InputAndExpectGenerator:
         command = "g++ -m32 " + self.source_cpp_file_name() + " -o " + self.exe_file_name()
         os.system(command)
 
+    def run_exe_and_reencode(self, num: int):
+        command = self.exe_file_name() + " > " + self.expect_file_name(num) + " < " + self.input_file_name(num)
+        os.system(command)
+
     def gen_input(self, num:int):
         with open(self.input_file_name(num), 'w', encoding='utf8') as f:
             for is_int in self.input_type_list:
@@ -128,10 +132,6 @@ class InputAndExpectGenerator:
                     f.write(str(random.randint(-512, 512)) + '\n')
                 else:
                     f.write(self.char_table[random.randint(0, len(self.char_table) + 1)] + '\n')
-
-    def run_exe_and_reencode(self, num: int):
-        command = self.exe_file_name() + " > " + self.expect_file_name(num) + " < " + self.input_file_name(num)
-        os.system(command)
             
     def auto_gen(self, count: int, need_input: bool=True):
         self.scan_scanfs()
