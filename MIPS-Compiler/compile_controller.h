@@ -13,7 +13,7 @@
 #include "OptimizerFormat.h"
 
 
-
+extern vector<shared_ptr<IOptimizer>> optimizers;
 
 void start_compile(unique_ptr<istream> input_file, ostream& output_file);
 

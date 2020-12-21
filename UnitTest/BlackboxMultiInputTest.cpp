@@ -44,7 +44,7 @@ namespace BlackboxTest
 		TEST_CASE(sample1, 1)
 		TEST_CASE(sample2, 4)
 		TEST_CASE(sample3, 1)
-		// TEST_CASE(sample4, 1)
+		TEST_CASE(sample4, 10)
 		TEST_CASE(sample5, 1)
 		TEST_CASE(sample6, 1)
 		TEST_CASE(sample7, 4)
